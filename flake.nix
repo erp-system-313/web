@@ -6,8 +6,14 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
       in
@@ -21,7 +27,7 @@
           shellHook = ''
             if ! command -v tsc &> /dev/null; then
               echo "Installing global npm packages..."
-              npm install -g typescript eslint prettier
+              npm install typescript eslint prettier
             fi
 
             if [ -f package.json ] && [ ! -d node_modules ]; then
@@ -33,3 +39,4 @@
       }
     );
 }
+
