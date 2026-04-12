@@ -15,15 +15,17 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             nodejs_20
-            nodePackages.typescript
-            nodePackages.eslint
-            nodePackages.prettier
             git
           ];
 
           shellHook = ''
+            if ! command -v tsc &> /dev/null; then
+              echo "Installing global npm packages..."
+              npm install -g typescript eslint prettier
+            fi
+
             if [ -f package.json ] && [ ! -d node_modules ]; then
-              echo "Installing npm dependencies..."
+              echo "Installing project dependencies..."
               npm install
             fi
           '';
