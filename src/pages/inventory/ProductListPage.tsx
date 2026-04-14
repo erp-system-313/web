@@ -1,35 +1,31 @@
-// src/pages/inventory/ProductList.tsx
-import React, { useState, useEffect } from 'react';
+// src/pages/inventory/ProductListPage.tsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SearchBar } from '../../components/common/SearchBar';
 import { Pagination } from '../../components/common/Pagination';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { Product, ProductFilters } from '../../types/product.types';
 import { useProducts } from '../../hooks/useProducts';
+import { Product, ProductFilters } from '../../types/product.types';
 import { formatCurrency } from '../../utils/formatters';
 
-export const ProductList: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+export const ProductListPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { products, loading, totalPages, fetchProducts, deleteProduct } = useProducts();
+  
   const [filters, setFilters] = useState<ProductFilters>({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  
-  const { fetchProducts, deleteProduct } = useProducts();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const loadProducts = useCallback(async () => {
+    await fetchProducts({ ...filters, search: searchTerm }, currentPage);
+  }, [fetchProducts, filters, searchTerm, currentPage]);
 
   useEffect(() => {
     loadProducts();
-  }, [filters, currentPage]);
+  }, [loadProducts]);
 
-  const loadProducts = async () => {
-    setLoading(true);
-    const result = await fetchProducts(filters, currentPage);
-    setProducts(result.data);
-    setTotalPages(result.totalPages);
-    setLoading(false);
-  };
-
-  const handleSearch = (searchTerm: string) => {
-    setFilters({ ...filters, search: searchTerm });
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
     setCurrentPage(1);
   };
 
@@ -38,24 +34,36 @@ export const ProductList: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleStockStatusFilter = (status: string) => {
-    setFilters({ ...filters, stockStatus: status as any });
+  const handleStockStatusFilter = (stockStatus: string) => {
+    setFilters({ ...filters, stockStatus: stockStatus as any });
     setCurrentPage(1);
   };
 
-  const handlePriceRangeFilter = (min: number, max: number) => {
-    setFilters({ ...filters, minPrice: min, maxPrice: max });
+  const handlePriceRangeFilter = (minPrice: number, maxPrice: number) => {
+    setFilters({ ...filters, minPrice, maxPrice });
     setCurrentPage(1);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleAddProduct = () => {
+    navigate('/inventory/products/new');
+  };
+
+  const handleViewProduct = (id: string) => {
+    navigate(`/inventory/products/${id}`);
+  };
+
+  const handleEditProduct = (id: string) => {
+    navigate(`/inventory/products/${id}/edit`);
+  };
+
+  const handleDeleteProduct = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       await deleteProduct(id);
-      loadProducts();
+      await loadProducts();
     }
   };
 
-  const getStockStatusBadge = (product: Product) => {
+  const getStockStatusBadge = (product: Product): JSX.Element => {
     if (product.stockQuantity === 0) {
       return <span className="badge bg-danger">Out of Stock</span>;
     }
@@ -65,44 +73,41 @@ export const ProductList: React.FC = () => {
     return <span className="badge bg-success">In Stock</span>;
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <div className="product-list-container">
+    <div className="product-list-page">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>Products</h1>
-        <button 
-          className="btn btn-primary"
-          onClick={() => window.location.href = '/inventory/products/new'}
-        >
+        <button className="btn btn-primary" onClick={handleAddProduct}>
           + Add Product
         </button>
       </div>
 
-      {/* Search Bar */}
       <SearchBar 
         onSearch={handleSearch}
         placeholder="Search products by name or SKU..."
       />
 
-      {/* Filter Panel */}
       <div className="filter-panel card p-3 mb-4">
         <div className="row">
           <div className="col-md-4">
-            <label>Category</label>
+            <label className="form-label">Category</label>
             <select 
               className="form-select"
               onChange={(e) => handleCategoryFilter(e.target.value)}
             >
               <option value="">All Categories</option>
-              <option value="cat1">Electronics</option>
-              <option value="cat2">Clothing</option>
-              <option value="cat3">Food</option>
+              <option value="electronics">Electronics</option>
+              <option value="clothing">Clothing</option>
+              <option value="food">Food</option>
             </select>
           </div>
           
           <div className="col-md-3">
-            <label>Stock Status</label>
+            <label className="form-label">Stock Status</label>
             <select 
               className="form-select"
               onChange={(e) => handleStockStatusFilter(e.target.value)}
@@ -115,7 +120,7 @@ export const ProductList: React.FC = () => {
           </div>
           
           <div className="col-md-5">
-            <label>Price Range</label>
+            <label className="form-label">Price Range</label>
             <div className="d-flex gap-2">
               <input 
                 type="number" 
@@ -135,7 +140,6 @@ export const ProductList: React.FC = () => {
         </div>
       </div>
 
-      {/* Product Table */}
       <div className="table-responsive">
         <table className="table table-hover">
           <thead className="table-light">
@@ -170,19 +174,19 @@ export const ProductList: React.FC = () => {
                 <td>
                   <button 
                     className="btn btn-sm btn-outline-primary me-2"
-                    onClick={() => window.location.href = `/inventory/products/${product.id}`}
+                    onClick={() => handleViewProduct(product.id)}
                   >
                     View
                   </button>
                   <button 
                     className="btn btn-sm btn-outline-secondary me-2"
-                    onClick={() => window.location.href = `/inventory/products/${product.id}/edit`}
+                    onClick={() => handleEditProduct(product.id)}
                   >
                     Edit
                   </button>
                   <button 
                     className="btn btn-sm btn-outline-danger"
-                    onClick={() => handleDelete(product.id)}
+                    onClick={() => handleDeleteProduct(product.id)}
                   >
                     Delete
                   </button>
@@ -193,7 +197,6 @@ export const ProductList: React.FC = () => {
         </table>
       </div>
 
-      {/* Pagination */}
       <Pagination 
         currentPage={currentPage}
         totalPages={totalPages}
@@ -202,3 +205,5 @@ export const ProductList: React.FC = () => {
     </div>
   );
 };
+
+export default ProductListPage;

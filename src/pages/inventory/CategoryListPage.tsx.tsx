@@ -1,24 +1,27 @@
-// src/pages/inventory/Categories.tsx
-import React, { useState, useEffect } from 'react';
-import { Category } from '../../types/category.types';
-import { useCategories } from '../../hooks/useCategories';
+// src/pages/inventory/CategoryListPage.tsx
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal } from '../../components/common/Modal';
+import { useCategories } from '../../hooks/useCategories';
+import { Category, CreateCategoryDto } from '../../types/category.types';
 
-export const Categories: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
+export const CategoryListPage: React.FC = () => {
+  const { categories, loading, fetchCategories, createCategory, updateCategory, deleteCategory } = useCategories();
+  
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '', parentId: '' });
-  const { fetchCategories, createCategory, updateCategory, deleteCategory } = useCategories();
+  const [formData, setFormData] = useState<CreateCategoryDto>({
+    name: '',
+    description: '',
+    parentId: null,
+  });
+
+  const loadCategories = useCallback(async () => {
+    await fetchCategories();
+  }, [fetchCategories]);
 
   useEffect(() => {
     loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
-    const data = await fetchCategories();
-    setCategories(data);
-  };
+  }, [loadCategories]);
 
   const handleSubmit = async () => {
     if (editingCategory) {
@@ -28,8 +31,8 @@ export const Categories: React.FC = () => {
     }
     setShowModal(false);
     setEditingCategory(null);
-    setFormData({ name: '', description: '', parentId: '' });
-    loadCategories();
+    setFormData({ name: '', description: '', parentId: null });
+    await loadCategories();
   };
 
   const handleEdit = (category: Category) => {
@@ -37,7 +40,7 @@ export const Categories: React.FC = () => {
     setFormData({
       name: category.name,
       description: category.description,
-      parentId: category.parentId || ''
+      parentId: category.parentId,
     });
     setShowModal(true);
   };
@@ -45,13 +48,13 @@ export const Categories: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Delete this category? Products will be uncategorized.')) {
       await deleteCategory(id);
-      loadCategories();
+      await loadCategories();
     }
   };
 
-  const renderCategoryTree = (parentId: string | null = null, level = 0) => {
+  const renderCategoryTree = (parentId: string | null = null, level = 0): JSX.Element[] => {
     return categories
-      .filter(cat => cat.parentId === parentId)
+      .filter(category => category.parentId === parentId)
       .map(category => (
         <div key={category.id}>
           <div className="d-flex justify-content-between align-items-center p-2" style={{ marginLeft: `${level * 20}px` }}>
@@ -74,8 +77,12 @@ export const Categories: React.FC = () => {
       ));
   };
 
+  if (loading) {
+    return <div className="text-center p-5">Loading categories...</div>;
+  }
+
   return (
-    <div className="categories-container">
+    <div className="category-list-page">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>Categories</h1>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>
@@ -86,6 +93,11 @@ export const Categories: React.FC = () => {
       <div className="card">
         <div className="card-body">
           {renderCategoryTree(null)}
+          {categories.length === 0 && (
+            <div className="text-center text-muted p-5">
+              No categories found. Click "Add Category" to create one.
+            </div>
+          )}
         </div>
       </div>
 
@@ -94,17 +106,18 @@ export const Categories: React.FC = () => {
         onClose={() => {
           setShowModal(false);
           setEditingCategory(null);
-          setFormData({ name: '', description: '', parentId: '' });
+          setFormData({ name: '', description: '', parentId: null });
         }}
         title={editingCategory ? 'Edit Category' : 'Add Category'}
       >
         <div className="mb-3">
-          <label className="form-label">Category Name</label>
+          <label className="form-label">Category Name *</label>
           <input
             type="text"
             className="form-control"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
           />
         </div>
         <div className="mb-3">
@@ -120,19 +133,28 @@ export const Categories: React.FC = () => {
           <label className="form-label">Parent Category</label>
           <select
             className="form-select"
-            value={formData.parentId}
-            onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
+            value={formData.parentId || ''}
+            onChange={(e) => setFormData({ ...formData, parentId: e.target.value || null })}
           >
             <option value="">None (Top Level)</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
             ))}
           </select>
         </div>
-        <button className="btn btn-primary" onClick={handleSubmit}>
-          Save Category
-        </button>
+        <div className="d-flex gap-2">
+          <button className="btn btn-primary" onClick={handleSubmit}>
+            Save Category
+          </button>
+          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </button>
+        </div>
       </Modal>
     </div>
   );
 };
+
+export default CategoryListPage;
