@@ -1,40 +1,45 @@
-// src/pages/purchasing/PurchaseOrderForm.tsx
+// src/pages/purchasing/CreatePurchaseOrderPage.tsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { PurchaseOrder, PurchaseOrderItem } from '../../types/purchaseOrder.types';
-import { Supplier } from '../../types/supplier.types';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
 import { useSuppliers } from '../../hooks/useSuppliers';
+import { CreatePurchaseOrderDto, PurchaseOrderItem } from '../../types/purchaseOrder.types';
+import { Supplier } from '../../types/supplier.types';
 
-export const PurchaseOrderForm: React.FC = () => {
+export const CreatePurchaseOrderPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { createPurchaseOrder } = usePurchaseOrders();
+  const { suppliers, fetchSuppliers } = useSuppliers();
+  
+  const defaultSupplierId = searchParams.get('supplier') || '';
+  
   const [formData, setFormData] = useState({
-    supplierId: '',
+    supplierId: defaultSupplierId,
     orderDate: new Date().toISOString().split('T')[0],
     deliveryDate: '',
     paymentTerms: 'Net 30',
     notes: '',
     status: 'draft' as const,
-    items: [] as PurchaseOrderItem[]
+    items: [] as PurchaseOrderItem[],
   });
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
-  const { createPurchaseOrder } = usePurchaseOrders();
-  const { fetchSuppliers } = useSuppliers();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    loadSuppliers();
-  }, []);
+    fetchSuppliers({}, 1);
+  }, [fetchSuppliers]);
 
-  const loadSuppliers = async () => {
-    const data = await fetchSuppliers({}, 1);
-    setSuppliers(data);
-  };
+  useEffect(() => {
+    if (formData.supplierId && suppliers.length > 0) {
+      const supplier = suppliers.find(s => s.id === formData.supplierId);
+      setSelectedSupplier(supplier || null);
+    }
+  }, [formData.supplierId, suppliers]);
 
   const handleSupplierChange = (supplierId: string) => {
     setFormData({ ...formData, supplierId });
-    const supplier = suppliers.find(s => s.id === supplierId);
-    setSelectedSupplier(supplier || null);
   };
 
   const addProduct = () => {
@@ -49,9 +54,9 @@ export const PurchaseOrderForm: React.FC = () => {
           productSku: '',
           quantity: 1,
           unitPrice: 0,
-          totalPrice: 0
-        }
-      ]
+          totalPrice: 0,
+        },
+      ],
     });
   };
 
@@ -73,42 +78,64 @@ export const PurchaseOrderForm: React.FC = () => {
 
   const calculateTotals = () => {
     const subtotal = formData.items.reduce((sum, item) => sum + item.totalPrice, 0);
-    const taxAmount = subtotal * 0.1; // 10% tax
+    const taxAmount = subtotal * 0.1;
     const shippingCost = 50;
     const totalAmount = subtotal + taxAmount + shippingCost;
     return { subtotal, taxAmount, shippingCost, totalAmount };
   };
 
   const handleSave = async (status: 'draft' | 'submitted') => {
+    setIsSubmitting(true);
     const totals = calculateTotals();
-    const poData = {
+    const poData: CreatePurchaseOrderDto = {
       ...formData,
       ...totals,
-      status
+      status,
     };
-    await createPurchaseOrder(poData);
+    
+    try {
+      await createPurchaseOrder(poData);
+      navigate('/purchasing/orders');
+    } catch (error) {
+      console.error('Failed to create purchase order:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
     navigate('/purchasing/orders');
   };
 
   const totals = calculateTotals();
 
   return (
-    <div className="purchase-order-form-container">
+    <div className="create-purchase-order-page">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>Create Purchase Order</h1>
         <div>
-          <button className="btn btn-secondary me-2" onClick={() => handleSave('draft')}>
+          <button 
+            className="btn btn-secondary me-2" 
+            onClick={() => handleSave('draft')}
+            disabled={isSubmitting}
+          >
             Save Draft
           </button>
-          <button className="btn btn-primary" onClick={() => handleSave('submitted')}>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => handleSave('submitted')}
+            disabled={isSubmitting}
+          >
             Submit Order
+          </button>
+          <button className="btn btn-outline-secondary ms-2" onClick={handleCancel}>
+            Cancel
           </button>
         </div>
       </div>
 
       <div className="row">
         <div className="col-md-8">
-          {/* Supplier Section */}
           <div className="card mb-4">
             <div className="card-header">
               <h5 className="mb-0">Supplier Information</h5>
@@ -123,7 +150,7 @@ export const PurchaseOrderForm: React.FC = () => {
                   required
                 >
                   <option value="">Choose a supplier...</option>
-                  {suppliers.map(supplier => (
+                  {suppliers.map((supplier) => (
                     <option key={supplier.id} value={supplier.id}>
                       {supplier.name} - {supplier.city}
                     </option>
@@ -142,7 +169,6 @@ export const PurchaseOrderForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Order Lines Section */}
           <div className="card mb-4">
             <div className="card-header d-flex justify-content-between align-items-center">
               <h5 className="mb-0">Order Lines</h5>
@@ -174,6 +200,7 @@ export const PurchaseOrderForm: React.FC = () => {
                             <option value="">Select product</option>
                             <option value="prod1">Product A (SKU: A001)</option>
                             <option value="prod2">Product B (SKU: B002)</option>
+                            <option value="prod3">Product C (SKU: C003)</option>
                           </select>
                         </td>
                         <td style={{ width: '20%' }}>
@@ -214,7 +241,6 @@ export const PurchaseOrderForm: React.FC = () => {
           </div>
         </div>
 
-        {/* Summary Section */}
         <div className="col-md-4">
           <div className="card mb-4">
             <div className="card-header">
@@ -295,3 +321,5 @@ export const PurchaseOrderForm: React.FC = () => {
     </div>
   );
 };
+
+export default CreatePurchaseOrderPage;
