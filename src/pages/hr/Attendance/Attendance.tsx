@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { Card, Typography, Table, Button, Space, Tag, message } from 'antd';
 import { ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useAttendance, useClockIn, useClockOut } from '../../../hooks';
-import type { Attendance } from '../../../types/hr';
 import styles from './Attendance.module.css';
 
 const { Title } = Typography;
 
-export const Attendance: React.FC = () => {
+export const AttendancePage: React.FC = () => {
   const { data: records, loading, refetch } = useAttendance();
   const { clockIn, loading: clockingIn } = useClockIn();
   const { clockOut, loading: clockingOut } = useClockOut();
@@ -119,4 +118,4 @@ export const Attendance: React.FC = () => {
   );
 };
 
-export default Attendance;
+export default AttendancePage;

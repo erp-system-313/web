@@ -6,7 +6,7 @@ import type { Employee } from '../../../types/hr';
 const { Title } = Typography;
 
 export const EmployeesList: React.FC = () => {
-  const { data: employees, loading, total, refetch } = useEmployees();
+  const { data: employees, loading, total } = useEmployees();
   
   const columns = [
     {

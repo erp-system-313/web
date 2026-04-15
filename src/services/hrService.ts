@@ -65,7 +65,7 @@ export const hrService = {
       return { ...mockEmployees[index], ...data, updatedAt: new Date().toISOString() };
     },
 
-    delete: async (id: number): Promise<void> => {
+    delete: async (_id: number): Promise<void> => {
       await delay(200);
       return;
     },
@@ -163,8 +163,12 @@ export const hrService = {
       await delay(300);
       return {
         id: Math.floor(Math.random() * 1000),
-        ...data,
+        employeeId: data.employeeId || 1,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        type: data.type,
         status: 'PENDING',
+        reason: data.reason || '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

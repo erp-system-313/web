@@ -1,4 +1,4 @@
-import { Employee } from '../types/models/employee';
+import type { Employee } from '../types/hr';
 
 export const mockEmployees: Employee[] = [
   {

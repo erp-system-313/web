@@ -7,7 +7,6 @@ import styles from './LeaveRequests.module.css';
 
 const { Title } = Typography;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
 export const LeaveRequests: React.FC = () => {

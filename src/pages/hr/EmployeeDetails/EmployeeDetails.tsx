@@ -1,7 +1,6 @@
 import { Form, Input, Select, InputNumber, Card, Typography, Button, Space, Divider } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEmployee } from '../../../hooks';
-import type { EmployeeStatus } from '../../../types/hr';
 import styles from './EmployeeDetails.module.css';
 
 const { Title } = Typography;
