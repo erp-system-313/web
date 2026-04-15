@@ -1,10 +1,13 @@
 import { Table, Card, Typography } from 'antd';
-import { mockEmployees } from '../../../data/mockEmployees';
+import { Link } from 'react-router-dom';
+import { useEmployees } from '../../../hooks';
 import type { Employee } from '../../../types/hr';
 
 const { Title } = Typography;
 
 export const EmployeesList: React.FC = () => {
+  const { data: employees, loading, total, refetch } = useEmployees();
+  
   const columns = [
     {
       title: 'Name',
@@ -33,9 +36,7 @@ export const EmployeesList: React.FC = () => {
       key: 'actions',
       render: (_: unknown, record: Employee) => (
         <span>
-          <a href={`/hr/employees/${record.id}`}>View</a>
-          {' | '}
-          <a href={`/hr/employees/${record.id}/edit`}>Edit</a>
+          <Link to={`/hr/employees/${record.id}`}>View</Link>
         </span>
       ),
     },
@@ -45,9 +46,14 @@ export const EmployeesList: React.FC = () => {
     <Card>
       <Title level={3}>Employee List</Title>
       <Table
-        dataSource={mockEmployees}
+        dataSource={employees}
         columns={columns}
         rowKey="id"
+        loading={loading}
+        pagination={{
+          total,
+          pageSize: 10,
+        }}
       />
     </Card>
   );

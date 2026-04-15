@@ -1,18 +1,50 @@
 import { Form, Input, Select, InputNumber, Card, Typography, Button, Space, Divider } from 'antd';
-import { mockEmployees } from '../../../data/mockEmployees';
-import type { Employee, EmployeeStatus } from '../../../types/hr';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useEmployee } from '../../../hooks';
+import type { EmployeeStatus } from '../../../types/hr';
 import styles from './EmployeeDetails.module.css';
 
 const { Title } = Typography;
 const { Option } = Select;
 
 export const EmployeeDetails: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const employeeId = id ? parseInt(id, 10) : null;
+  const { data: employee, loading, refetch } = useEmployee(employeeId);
   const [form] = Form.useForm();
-  const employee = mockEmployees[0];
 
   const onFinish = (values: unknown) => {
     console.log('Form values:', values);
+    refetch();
   };
+
+  const handleCancel = () => {
+    navigate('/hr/employees');
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <Card>
+          <Title level={3}>Loading...</Title>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!employee) {
+    return (
+      <div className={styles.container}>
+        <Card>
+          <Title level={3}>Employee not found</Title>
+          <Button type="primary" onClick={() => navigate('/hr/employees')}>
+            Back to List
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -103,9 +135,7 @@ export const EmployeeDetails: React.FC = () => {
             <Button type="primary" htmlType="submit">
               Save Changes
             </Button>
-            <Button>
-              Cancel
-            </Button>
+            <Button onClick={handleCancel}>Cancel</Button>
           </Space>
         </Form>
       </Card>
