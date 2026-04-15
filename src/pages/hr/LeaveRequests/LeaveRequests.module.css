@@ -1,0 +1,65 @@
+.container {
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.header h3 {
+  margin: 0;
+}
+
+.balanceSection {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.balanceCards {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.balanceCard {
+  min-width: 120px;
+  text-align: center;
+}
+
+.balanceType {
+  font-weight: bold;
+  color: #1890ff;
+  margin-bottom: 8px;
+}
+
+.balanceRemaining {
+  font-size: 24px;
+  font-weight: bold;
+  color: #52c41a;
+}
+
+.balanceUsed {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-weight: 500;
+}
