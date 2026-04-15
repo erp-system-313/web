@@ -22,7 +22,7 @@ export const useCustomer = (id?: number) => {
       setData(customer);
       setContacts(customerContacts);
       setSalesHistory(history);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to fetch customer details");
     } finally {
       setLoading(false);

@@ -15,7 +15,7 @@ export const useSalesOrders = (filters?: SalesOrderFilters) => {
       const response = await salesService.salesOrders.getAll(filters);
       setData(response.items);
       setTotal(response.total);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to fetch sales orders");
     } finally {
       setLoading(false);

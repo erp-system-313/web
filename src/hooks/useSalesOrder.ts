@@ -19,7 +19,7 @@ export const useSalesOrder = (id?: number) => {
     try {
       const order = await salesService.salesOrders.getById(id);
       setData(order);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to fetch sales order");
     } finally {
       setLoading(false);
@@ -37,7 +37,7 @@ export const useSalesOrder = (id?: number) => {
     try {
       const newOrder = await salesService.salesOrders.create(data);
       return newOrder;
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to create sales order");
       return null;
     } finally {
@@ -54,7 +54,7 @@ export const useSalesOrder = (id?: number) => {
       const updated = await salesService.salesOrders.update(id, updates);
       setData(updated);
       return updated;
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to update sales order");
       return null;
     } finally {
@@ -68,7 +68,7 @@ export const useSalesOrder = (id?: number) => {
     try {
       await salesService.salesOrders.delete(id);
       return true;
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to delete sales order");
       return false;
     } finally {
