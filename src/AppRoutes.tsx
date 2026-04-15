@@ -7,6 +7,10 @@ import AttendancePage from './pages/hr/Attendance/Attendance';
 import LeaveRequestsPage from './pages/hr/LeaveRequests/LeaveRequests';
 import LoginPage from './pages/auth/Login/Login';
 import DashboardPage from './pages/common/Dashboard/Dashboard';
+import ProfilePage from './pages/common/Profile/Profile';
+import UsersListPage from './pages/admin/Users/Users';
+import SettingsPage from './pages/admin/Settings/Settings';
+import AuditLogsPage from './pages/admin/AuditLogs/AuditLogs';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const authContext = useContext(AuthContext);
@@ -25,12 +29,25 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 export const AppRoutes = () => {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
+      
+      {/* Protected routes */}
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      
+      {/* HR routes */}
       <Route path="/hr/employees" element={<ProtectedRoute><EmployeesList /></ProtectedRoute>} />
       <Route path="/hr/employees/:id" element={<ProtectedRoute><EmployeeDetails /></ProtectedRoute>} />
       <Route path="/hr/attendance" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
       <Route path="/hr/leave" element={<ProtectedRoute><LeaveRequestsPage /></ProtectedRoute>} />
+      
+      {/* Admin routes */}
+      <Route path="/admin/users" element={<ProtectedRoute><UsersListPage /></ProtectedRoute>} />
+      <Route path="/admin/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      <Route path="/admin/audit-logs" element={<ProtectedRoute><AuditLogsPage /></ProtectedRoute>} />
+      
+      {/* Default redirects */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
