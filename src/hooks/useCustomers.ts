@@ -15,7 +15,7 @@ export const useCustomers = (filters?: CustomerFilters) => {
       const response = await salesService.customers.getAll(filters);
       setData(response.items);
       setTotal(response.total);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to fetch customers");
     } finally {
       setLoading(false);
