@@ -1,16 +1,16 @@
-import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
   Button,
   Space,
   Table,
-  Form,
   Input,
   Select,
   message,
   Row,
   Col,
+  Form,
+  InputNumber,
 } from "antd";
 import {
   SaveOutlined,
@@ -18,16 +18,38 @@ import {
   PlusOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { StatusBadge } from "../../../components/common";
 import { useInvoice } from "../../../hooks";
+import { invoiceFormSchema } from "../../../schemas/finance";
 import styles from "./InvoiceForm.module.css";
 
-interface LineItem {
+const CUSTOMER_OPTIONS = [
+  { value: 1, label: "Acme Corp" },
+  { value: 2, label: "Tech Solutions" },
+  { value: 3, label: "Global Industries" },
+];
+
+const PRODUCT_OPTIONS = [
+  { value: 1, label: "Product A" },
+  { value: 2, label: "Product B" },
+  { value: 3, label: "Product C" },
+];
+
+interface LineItemData {
   id: string;
   productId?: number;
   quantity: number;
   unitPrice: number;
-  lineTotal: number;
+  taxRate?: number;
+}
+
+interface InvoiceFormData {
+  customerId: number;
+  invoiceDate: string;
+  dueDate: string;
+  lines: LineItemData[];
 }
 
 export const InvoiceForm: React.FC = () => {
@@ -43,42 +65,70 @@ export const InvoiceForm: React.FC = () => {
     create,
     update,
   } = useInvoice(invoiceId);
-  const [form] = Form.useForm();
-  const [customerId, setCustomerId] = useState<number | null>(null);
-  const [lines, setLines] = useState<LineItem[]>([
-    { id: "1", quantity: 1, unitPrice: 0, lineTotal: 0 },
-  ]);
 
-  const handleSubmit = async (status: string) => {
-    try {
-      const values = await form.validateFields();
-      void lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+  const {
+    register,
+    control,
+    watch,
+    formState: { errors },
+  } = useForm<InvoiceFormData>({
+    resolver: yupResolver(invoiceFormSchema) as any,
+    defaultValues: {
+      customerId: 0,
+      invoiceDate: new Date().toISOString().split("T")[0],
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      lines: [
+        {
+          id: "1",
+          productId: undefined,
+          quantity: 1,
+          unitPrice: 0,
+          taxRate: 0.1,
+        },
+      ],
+    },
+  });
 
-      const invoiceData = {
-        customerId: customerId!,
-        invoiceDate: values.invoiceDate,
-        dueDate: values.dueDate,
-        status: status as "DRAFT" | "SENT" | "PAID" | "CANCELLED",
-        lines: lines
-          .filter((l) => l.productId)
-          .map((l) => ({
-            productId: l.productId,
-            quantity: l.quantity,
-            unitPrice: l.unitPrice,
-            taxRate: 0.1,
-          })),
-      };
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "lines",
+  });
 
-      if (isEditMode) {
-        await update(invoiceData);
-        message.success("Invoice updated");
-      } else {
-        await create(invoiceData);
-        message.success("Invoice created");
-      }
-      navigate("/finance/invoices");
-    } catch {
-      message.error("Please fill in all required fields");
+  const watchedLines = watch("lines");
+
+  const handleSave = (status: "DRAFT" | "SENT") => {
+    const data = watch();
+    const invoiceData = {
+      customerId: data.customerId,
+      invoiceDate: data.invoiceDate,
+      dueDate: data.dueDate,
+      status,
+      lines: data.lines
+        .filter((l) => l.productId)
+        .map((l) => ({
+          productId: l.productId,
+          quantity: l.quantity,
+          unitPrice: l.unitPrice,
+          taxRate: l.taxRate || 0.1,
+        })),
+    };
+
+    if (isEditMode) {
+      update(invoiceData).then(() => {
+        message.success(
+          `Invoice ${status === "DRAFT" ? "saved as draft" : "created and sent"}`,
+        );
+        navigate("/finance/invoices");
+      });
+    } else {
+      create(invoiceData).then(() => {
+        message.success(
+          `Invoice ${status === "DRAFT" ? "saved as draft" : "created and sent"}`,
+        );
+        navigate("/finance/invoices");
+      });
     }
   };
 
@@ -99,45 +149,50 @@ export const InvoiceForm: React.FC = () => {
         {existingInvoice && <StatusBadge status={existingInvoice.status} />}
       </div>
 
-      <Form form={form} layout="vertical">
+      <Form layout="vertical">
         <Card title="Invoice Details" className={styles.card}>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item label="Customer" rules={[{ required: true }]}>
-                <Select
-                  placeholder="Select customer..."
-                  value={customerId}
-                  onChange={(newId: number) => setCustomerId(newId)}
-                  options={[
-                    { value: 1, label: "Acme Corp" },
-                    { value: 2, label: "Tech Solutions" },
-                    { value: 3, label: "Global Industries" },
-                  ]}
-                  showSearch
-                  filterOption={(input, option) =>
-                    (option?.label ?? "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
+              <Form.Item
+                label="Customer"
+                help={errors.customerId?.message}
+                validateStatus={errors.customerId ? "error" : ""}
+              >
+                <Controller
+                  name="customerId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      placeholder="Select customer..."
+                      options={CUSTOMER_OPTIONS}
+                      showSearch
+                      filterOption={(input, option) =>
+                        (option?.label ?? "")
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                    />
+                  )}
                 />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
-                name="invoiceDate"
                 label="Invoice Date"
-                rules={[{ required: true }]}
+                help={errors.invoiceDate?.message}
+                validateStatus={errors.invoiceDate ? "error" : ""}
               >
-                <Input type="date" />
+                <Input type="date" {...register("invoiceDate")} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
-                name="dueDate"
                 label="Due Date"
-                rules={[{ required: true }]}
+                help={errors.dueDate?.message}
+                validateStatus={errors.dueDate ? "error" : ""}
               >
-                <Input type="date" />
+                <Input type="date" {...register("dueDate")} />
               </Form.Item>
             </Col>
           </Row>
@@ -145,43 +200,94 @@ export const InvoiceForm: React.FC = () => {
 
         <Card title="Line Items" className={styles.card}>
           <Table
-            dataSource={lines}
+            dataSource={fields.map((field) => ({
+              ...field,
+              key: field.id,
+            }))}
             rowKey="id"
             pagination={false}
             columns={[
-              { title: "Product", dataIndex: "productId", key: "productId" },
+              {
+                title: "Product",
+                key: "productId",
+                width: 200,
+                render: (_: unknown, __: unknown, index: number) => (
+                  <Controller
+                    name={`lines.${index}.productId`}
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        placeholder="Select product"
+                        allowClear
+                        style={{ width: "100%" }}
+                        options={PRODUCT_OPTIONS}
+                      />
+                    )}
+                  />
+                ),
+              },
               {
                 title: "Qty",
-                dataIndex: "quantity",
                 key: "quantity",
                 width: 100,
+                render: (_: unknown, __: unknown, index: number) => (
+                  <Controller
+                    name={`lines.${index}.quantity`}
+                    control={control}
+                    render={({ field }) => (
+                      <InputNumber
+                        {...field}
+                        min={1}
+                        style={{ width: "100%" }}
+                        onChange={(value) => field.onChange(value || 1)}
+                      />
+                    )}
+                  />
+                ),
               },
               {
                 title: "Unit Price",
-                dataIndex: "unitPrice",
                 key: "unitPrice",
                 width: 120,
+                render: (_: unknown, __: unknown, index: number) => (
+                  <Controller
+                    name={`lines.${index}.unitPrice`}
+                    control={control}
+                    render={({ field }) => (
+                      <InputNumber
+                        {...field}
+                        min={0}
+                        precision={2}
+                        prefix="$"
+                        style={{ width: "100%" }}
+                        onChange={(value) => field.onChange(value || 0)}
+                      />
+                    )}
+                  />
+                ),
               },
               {
                 title: "Total",
                 key: "total",
                 width: 120,
-                render: (_: unknown, record: LineItem) =>
-                  `$${(record.unitPrice * record.quantity).toFixed(2)}`,
+                render: () => {
+                  const line = watchedLines?.[0];
+                  const total = (line?.quantity || 0) * (line?.unitPrice || 0);
+                  return `$${total.toFixed(2)}`;
+                },
               },
               {
                 title: "",
                 key: "action",
                 width: 50,
-                render: (_: unknown, record: LineItem) => (
+                render: (_: unknown, __: unknown, index: number) => (
                   <Button
                     type="text"
                     danger
                     icon={<DeleteOutlined />}
-                    onClick={() =>
-                      setLines(lines.filter((l) => l.id !== record.id))
-                    }
-                    disabled={lines.length === 1}
+                    onClick={() => fields.length > 1 && remove(index)}
+                    disabled={fields.length === 1}
                   />
                 ),
               },
@@ -191,15 +297,13 @@ export const InvoiceForm: React.FC = () => {
             type="dashed"
             icon={<PlusOutlined />}
             onClick={() =>
-              setLines([
-                ...lines,
-                {
-                  id: String(Date.now()),
-                  quantity: 1,
-                  unitPrice: 0,
-                  lineTotal: 0,
-                },
-              ])
+              append({
+                id: String(Date.now()),
+                productId: undefined,
+                quantity: 1,
+                unitPrice: 0,
+                taxRate: 0.1,
+              })
             }
             className={styles.addBtn}
           >
@@ -212,14 +316,14 @@ export const InvoiceForm: React.FC = () => {
             <Button
               type="primary"
               icon={<SaveOutlined />}
-              onClick={() => handleSubmit("DRAFT")}
+              onClick={() => handleSave("DRAFT")}
               loading={saving}
             >
               Save as Draft
             </Button>
             <Button
               type="primary"
-              onClick={() => handleSubmit("SENT")}
+              onClick={() => handleSave("SENT")}
               loading={saving}
             >
               Create & Send
