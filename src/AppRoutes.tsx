@@ -1,8 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
-import { EmployeesList } from '../pages/hr/EmployeesList';
-import { EmployeeDetails } from '../pages/hr/EmployeeDetails';
-import { Attendance } from '../pages/hr/Attendance';
-import { LeaveRequests } from '../pages/hr/LeaveRequests';
+import { EmployeesList } from './pages/hr/EmployeesList/EmployeesList';
+import { EmployeeDetails } from './pages/hr/EmployeeDetails/EmployeeDetails';
+import { Attendance } from './pages/hr/Attendance/Attendance';
+import { LeaveRequests } from './pages/hr/LeaveRequests/LeaveRequests';
 
 export const AppRoutes = () => {
   return (
