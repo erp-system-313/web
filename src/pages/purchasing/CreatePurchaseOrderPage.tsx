@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Card, Select, Input, InputNumber, Table, DatePicker, message, Divider, Descriptions } from 'antd';
+import { Button, Card, Select, Input, InputNumber, Table, Space, message } from 'antd';
 import { PlusOutlined, DeleteOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -12,9 +12,9 @@ import styles from './CreatePurchaseOrderPage.module.css';
 const schema = yup.object({
   supplierId: yup.string().required('Supplier is required'),
   orderDate: yup.string().required('Order date is required'),
-  deliveryDate: yup.string(),
+  deliveryDate: yup.string().default(''),
   paymentTerms: yup.string().required('Payment terms is required'),
-  notes: yup.string(),
+  notes: yup.string().default(''),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -33,7 +33,7 @@ const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
 
 interface UseSuppliersReturn {
   suppliers: Supplier[];
-  fetchSuppliers: (filters: object, page: number) => Promise<void>;
+  fetchSuppliers: () => Promise<void>;
 }
 
 const useSuppliers = (): UseSuppliersReturn => {
@@ -126,7 +126,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [items, setItems] = useState<PurchaseOrderItem[]>([]);
 
-  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
       supplierId: defaultSupplierId,
@@ -221,12 +221,12 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       title: 'Product',
       dataIndex: 'productId',
       key: 'productId',
-      render: (_: unknown, _: unknown, index: number) => (
+      render: (_: unknown, record: PurchaseOrderItem, index: number) => (
         <Select
           placeholder="Select product"
           style={{ width: '100%' }}
           options={mockProducts}
-          value={items[index]?.productId || undefined}
+          value={record.productId || undefined}
           onChange={(value) => updateItem(index, value, items[index]?.quantity || 1, items[index]?.unitPrice || 0)}
         />
       ),
@@ -236,10 +236,10 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       dataIndex: 'quantity',
       key: 'quantity',
       width: 120,
-      render: (_: unknown, _: unknown, index: number) => (
+      render: (_: unknown, record: PurchaseOrderItem, index: number) => (
         <InputNumber
           min={1}
-          value={items[index]?.quantity || 1}
+          value={record.quantity || 1}
           onChange={(value) => updateItem(index, items[index]?.productId, value || 1, items[index]?.unitPrice || 0)}
           style={{ width: '100%' }}
         />
@@ -250,12 +250,12 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       dataIndex: 'unitPrice',
       key: 'unitPrice',
       width: 120,
-      render: (_: unknown, _: unknown, index: number) => (
+      render: (_: unknown, record: PurchaseOrderItem, index: number) => (
         <InputNumber
           min={0}
           precision={2}
           prefix="$"
-          value={items[index]?.unitPrice || 0}
+          value={record.unitPrice || 0}
           onChange={(value) => updateItem(index, items[index]?.productId, items[index]?.quantity || 1, value || 0)}
           style={{ width: '100%' }}
         />
@@ -272,7 +272,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       title: '',
       key: 'actions',
       width: 80,
-      render: (_: unknown, _: unknown, index: number) => (
+      render: (_: unknown, _record: PurchaseOrderItem, index: number) => (
         <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeItem(index)} />
       ),
     },
@@ -422,10 +422,11 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                 <span>Shipping:</span>
                 <span>${totals.shippingCost.toFixed(2)}</span>
               </div>
-              <Divider style={{ margin: '12px 0' }} />
-              <div className={styles.summaryTotal}>
-                <span>Total:</span>
-                <span>${totals.totalAmount.toFixed(2)}</span>
+              <div style={{ borderTop: '1px solid #f0f0f0', margin: '12px 0', paddingTop: 12 }}>
+                <div className={styles.summaryTotal}>
+                  <span>Total:</span>
+                  <span>${totals.totalAmount.toFixed(2)}</span>
+                </div>
               </div>
             </Card>
           </div>

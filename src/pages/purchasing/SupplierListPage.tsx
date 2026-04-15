@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Select, Table, Input, Space, Modal, message, Rate } from 'antd';
+import { Button, Card, Select, Table, Input, Space, message, Rate } from 'antd';
 import { PlusOutlined, EyeOutlined, ShoppingCartOutlined, SearchOutlined } from '@ant-design/icons';
 import type { Supplier, SupplierFilters } from '../../types/supplier.types';
 import styles from './SupplierListPage.module.css';

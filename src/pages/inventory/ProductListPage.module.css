@@ -18,21 +18,6 @@
   border-radius: 8px;
 }
 
-.filterRow {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.filterItem {
-  min-width: 200px;
-}
-
-.tableActions {
-  display: flex;
-  gap: 8px;
-}
-
 .productInfo {
   display: flex;
   flex-direction: column;
@@ -71,4 +56,9 @@
 
 .stockQuantity {
   font-weight: 500;
+}
+
+.tableActions {
+  display: flex;
+  gap: 8px;
 }

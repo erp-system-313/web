@@ -6,25 +6,23 @@ import type { Product, ProductFilters, StockStatus } from '../../types/product.t
 import { formatCurrency } from '../../utils/formatters';
 import styles from './ProductListPage.module.css';
 
-interface UseProductsReturn {
+interface ProductData {
   products: Product[];
   loading: boolean;
-  total: number;
   fetchProducts: (filters: ProductFilters, page: number) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
 }
 
-const useProducts = (): UseProductsReturn => {
+const useProducts = (): ProductData => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
-  const [total, setTotal] = useState(0);
 
   const mockProducts: Product[] = [
     {
       id: '1',
       name: 'Wireless Mouse',
       sku: 'WM-001',
-      description: 'Ergonomic wireless mouse with USB receiver',
+      description: 'Ergonomic wireless mouse',
       categoryId: 'electronics',
       categoryName: 'Electronics',
       unitPrice: 29.99,
@@ -39,7 +37,7 @@ const useProducts = (): UseProductsReturn => {
       id: '2',
       name: 'USB-C Cable',
       sku: 'USB-C-01',
-      description: 'High-speed USB-C charging cable 6ft',
+      description: 'High-speed USB-C cable 6ft',
       categoryId: 'electronics',
       categoryName: 'Electronics',
       unitPrice: 12.99,
@@ -77,16 +75,7 @@ const useProducts = (): UseProductsReturn => {
     }
     if (filters.search) {
       const search = filters.search.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(search) || 
-        p.sku.toLowerCase().includes(search)
-      );
-    }
-    if (filters.minPrice !== undefined) {
-      filtered = filtered.filter(p => p.unitPrice >= filters.minPrice!);
-    }
-    if (filters.maxPrice !== undefined) {
-      filtered = filtered.filter(p => p.unitPrice <= filters.maxPrice!);
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search));
     }
     if (filters.stockStatus) {
       filtered = filtered.filter(p => {
@@ -97,7 +86,6 @@ const useProducts = (): UseProductsReturn => {
     }
 
     setProducts(filtered);
-    setTotal(filtered.length);
     setLoading(false);
   }, []);
 
@@ -107,13 +95,12 @@ const useProducts = (): UseProductsReturn => {
     message.success('Product deleted successfully');
   };
 
-  return { products, loading, total, fetchProducts, deleteProduct };
+  return { products, loading, fetchProducts, deleteProduct };
 };
 
 const categories = [
   { value: 'electronics', label: 'Electronics' },
   { value: 'office', label: 'Office Supplies' },
-  { value: 'clothing', label: 'Clothing' },
 ];
 
 const stockStatusOptions = [
@@ -125,7 +112,7 @@ const stockStatusOptions = [
 
 export const ProductListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { products, loading, total, fetchProducts, deleteProduct } = useProducts();
+  const { products, loading, fetchProducts, deleteProduct } = useProducts();
   
   const [filters, setFilters] = useState<ProductFilters>({});
   const [searchText, setSearchText] = useState('');
@@ -147,10 +134,7 @@ export const ProductListPage: React.FC = () => {
   };
 
   const handleStockStatusFilter = (stockStatus: string) => {
-    setFilters(prev => ({ 
-      ...prev, 
-      stockStatus: stockStatus ? stockStatus as StockStatus : undefined 
-    }));
+    setFilters(prev => ({ ...prev, stockStatus: stockStatus ? stockStatus as StockStatus : undefined }));
   };
 
   const handleAddProduct = () => {
@@ -178,12 +162,8 @@ export const ProductListPage: React.FC = () => {
   };
 
   const getStockTag = (product: Product) => {
-    if (product.stockQuantity === 0) {
-      return <Tag color="error">Out of Stock</Tag>;
-    }
-    if (product.stockQuantity <= product.reorderPoint) {
-      return <Tag color="warning">Low Stock</Tag>;
-    }
+    if (product.stockQuantity === 0) return <Tag color="error">Out of Stock</Tag>;
+    if (product.stockQuantity <= product.reorderPoint) return <Tag color="warning">Low Stock</Tag>;
     return <Tag color="success">In Stock</Tag>;
   };
 
@@ -198,16 +178,8 @@ export const ProductListPage: React.FC = () => {
         </div>
       ),
     },
-    {
-      title: 'SKU',
-      dataIndex: 'sku',
-      key: 'sku',
-    },
-    {
-      title: 'Category',
-      dataIndex: 'categoryName',
-      key: 'categoryName',
-    },
+    { title: 'SKU', dataIndex: 'sku', key: 'sku' },
+    { title: 'Category', dataIndex: 'categoryName', key: 'categoryName' },
     {
       title: 'Stock',
       key: 'stock',
@@ -233,22 +205,9 @@ export const ProductListPage: React.FC = () => {
       key: 'actions',
       render: (_: unknown, record: Product) => (
         <Space className={styles.tableActions}>
-          <Button 
-            type="text" 
-            icon={<EyeOutlined />} 
-            onClick={() => handleViewProduct(record.id)}
-          />
-          <Button 
-            type="text" 
-            icon={<EditOutlined />} 
-            onClick={() => handleEditProduct(record.id)}
-          />
-          <Button 
-            type="text" 
-            danger 
-            icon={<DeleteOutlined />} 
-            onClick={() => handleDeleteProduct(record.id)}
-          />
+          <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewProduct(record.id)} />
+          <Button type="text" icon={<EditOutlined />} onClick={() => handleEditProduct(record.id)} />
+          <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDeleteProduct(record.id)} />
         </Space>
       ),
     },
@@ -258,49 +217,18 @@ export const ProductListPage: React.FC = () => {
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Products</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddProduct}>
-          Add Product
-        </Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddProduct}>Add Product</Button>
       </div>
 
       <Card className={styles.filterPanel}>
         <Space size="large" wrap>
-          <Input.Search
-            placeholder="Search products by name or SKU..."
-            allowClear
-            prefix={<SearchOutlined />}
-            onSearch={handleSearch}
-            style={{ width: 300 }}
-          />
-          <Select
-            placeholder="Category"
-            allowClear
-            style={{ width: 200 }}
-            options={categories}
-            onChange={handleCategoryFilter}
-          />
-          <Select
-            placeholder="Stock Status"
-            allowClear
-            style={{ width: 150 }}
-            options={stockStatusOptions}
-            onChange={handleStockStatusFilter}
-          />
+          <Input.Search placeholder="Search products..." allowClear prefix={<SearchOutlined />} onSearch={handleSearch} style={{ width: 300 }} />
+          <Select placeholder="Category" allowClear style={{ width: 200 }} options={categories} onChange={handleCategoryFilter} />
+          <Select placeholder="Stock Status" allowClear style={{ width: 150 }} options={stockStatusOptions} onChange={handleStockStatusFilter} />
         </Space>
       </Card>
 
-      <Table
-        columns={columns}
-        dataSource={products}
-        rowKey="id"
-        loading={loading}
-        pagination={{
-          total,
-          pageSize: 10,
-          showSizeChanger: false,
-          showTotal: (total) => `Total ${total} products`,
-        }}
-      />
+      <Table columns={columns} dataSource={products} rowKey="id" loading={loading} pagination={{ pageSize: 10, showSizeChanger: false, showTotal: (total) => `Total ${total} products` }} />
     </div>
   );
 };
