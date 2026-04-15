@@ -1,13 +1,19 @@
 import { useState } from 'react';
-import { Card, Typography, Table, Button, Space, Tag, Modal, message, Select, Input, DatePicker } from 'antd';
+import { useForm } from 'react-hook-form';
+import { Card, Typography, Table, Button, Space, Tag, Modal, message } from 'antd';
 import { PlusOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { useLeaveRequests, useLeaveBalances, useCreateLeaveRequest, useApproveLeaveRequest, useRejectLeaveRequest } from '../../../hooks';
 import type { LeaveRequest, LeaveStatus, LeaveType } from '../../../types/hr';
 import styles from './LeaveRequests.module.css';
 
-const { Title } = Typography;
-const { Option } = Select;
-const { TextArea } = Input;
+const { Title, Text } = Typography;
+
+interface LeaveFormData {
+  leaveType: LeaveType;
+  startDate: string;
+  endDate: string;
+  reason: string;
+}
 
 export const LeaveRequests: React.FC = () => {
   const { data: requests, loading, refetch } = useLeaveRequests();
@@ -17,28 +23,25 @@ export const LeaveRequests: React.FC = () => {
   const { reject, loading: rejecting } = useRejectLeaveRequest();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [leaveType, setLeaveType] = useState<LeaveType | undefined>();
-  const [reason, setReason] = useState('');
-  const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
-  const handleSubmit = async () => {
-    if (!leaveType || !dateRange || !reason) {
-      message.error('Please fill in all fields');
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<LeaveFormData>();
 
+  const onSubmit = async (data: LeaveFormData) => {
     try {
       await create({
-        startDate: dateRange[0],
-        endDate: dateRange[1],
-        type: leaveType,
-        reason,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        type: data.leaveType,
+        reason: data.reason,
       });
       message.success('Leave request submitted');
       setIsModalOpen(false);
-      setLeaveType(undefined);
-      setReason('');
-      setDateRange(null);
+      reset();
       refetch();
     } catch {
       message.error('Failed to submit leave request');
@@ -180,49 +183,78 @@ export const LeaveRequests: React.FC = () => {
         <Modal
           title="New Leave Request"
           open={isModalOpen}
-          onOk={handleSubmit}
-          onCancel={() => setIsModalOpen(false)}
-          confirmLoading={creating}
+          onCancel={() => { setIsModalOpen(false); reset(); }}
+          footer={null}
         >
-          <div className={styles.formFields}>
-            <div className={styles.field}>
-              <label>Leave Type</label>
-              <Select
-                placeholder="Select leave type"
-                value={leaveType}
-                onChange={setLeaveType}
-                style={{ width: '100%' }}
-              >
-                <Option value="ANNUAL">Annual Leave</Option>
-                <Option value="SICK">Sick Leave</Option>
-                <Option value="PERSONAL">Personal Leave</Option>
-                <Option value="UNPAID">Unpaid Leave</Option>
-              </Select>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className={styles.formFields}>
+              <div className={styles.field}>
+                <label>Leave Type *</label>
+                <select 
+                  {...register('leaveType', { required: 'Please select a leave type' })}
+                  style={{ width: '100%', padding: '8px', height: '40px' }}
+                >
+                  <option value="">Select leave type</option>
+                  <option value="ANNUAL">Annual Leave</option>
+                  <option value="SICK">Sick Leave</option>
+                  <option value="PERSONAL">Personal Leave</option>
+                  <option value="UNPAID">Unpaid Leave</option>
+                </select>
+                {errors.leaveType && (
+                  <Text type="danger" style={{ fontSize: 12 }}>{errors.leaveType.message}</Text>
+                )}
+              </div>
+              
+              <div className={styles.field}>
+                <label>Start Date *</label>
+                <input 
+                  type="date"
+                  {...register('startDate', { required: 'Start date is required' })}
+                  style={{ width: '100%', padding: '8px', height: '40px' }}
+                />
+                {errors.startDate && (
+                  <Text type="danger" style={{ fontSize: 12 }}>{errors.startDate.message}</Text>
+                )}
+              </div>
+              
+              <div className={styles.field}>
+                <label>End Date *</label>
+                <input 
+                  type="date"
+                  {...register('endDate', { required: 'End date is required' })}
+                  style={{ width: '100%', padding: '8px', height: '40px' }}
+                />
+                {errors.endDate && (
+                  <Text type="danger" style={{ fontSize: 12 }}>{errors.endDate.message}</Text>
+                )}
+              </div>
+              
+              <div className={styles.field}>
+                <label>Reason *</label>
+                <textarea 
+                  {...register('reason', { 
+                    required: 'Reason is required',
+                    minLength: { value: 10, message: 'Please provide more details' }
+                  })}
+                  rows={4}
+                  placeholder="Enter reason for leave"
+                  style={{ width: '100%', padding: '8px' }}
+                />
+                {errors.reason && (
+                  <Text type="danger" style={{ fontSize: 12 }}>{errors.reason.message}</Text>
+                )}
+              </div>
             </div>
-            <div className={styles.field}>
-              <label>Date Range</label>
-              <DatePicker.RangePicker
-                onChange={(dates) => {
-                  if (dates && dates[0] && dates[1]) {
-                    setDateRange([
-                      dates[0].format('YYYY-MM-DD'),
-                      dates[1].format('YYYY-MM-DD'),
-                    ]);
-                  }
-                }}
-                style={{ width: '100%' }}
-              />
+            
+            <div style={{ marginTop: 16, textAlign: 'right' }}>
+              <Button onClick={() => { setIsModalOpen(false); reset(); }} style={{ marginRight: 8 }}>
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit" loading={creating}>
+                Submit Request
+              </Button>
             </div>
-            <div className={styles.field}>
-              <label>Reason</label>
-              <TextArea
-                rows={4}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Enter reason for leave"
-              />
-            </div>
-          </div>
+          </form>
         </Modal>
       </Card>
     </div>
