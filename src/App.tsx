@@ -1,16 +1,23 @@
-import { BrowserRouter, Link } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
+import { ConfigProvider } from 'antd';
+import { AuthProvider } from './contexts/AuthContext';
 import { AppRoutes } from './AppRoutes';
 
 function App() {
   return (
-    <BrowserRouter>
-      <nav style={{ padding: '16px', borderBottom: '1px solid #ccc', display: 'flex', gap: '16px' }}>
-        <Link to="/hr/employees">Employees</Link>
-        <Link to="/hr/attendance">Attendance</Link>
-        <Link to="/hr/leave">Leave Requests</Link>
-      </nav>
-      <AppRoutes />
-    </BrowserRouter>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#1890ff',
+        },
+      }}
+    >
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </ConfigProvider>
   );
 }
 
