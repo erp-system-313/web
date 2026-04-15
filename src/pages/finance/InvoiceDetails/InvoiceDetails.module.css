@@ -1,0 +1,29 @@
+.container {
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  margin-bottom: 16px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.card {
+  background: #fff;
+  margin-bottom: 16px;
+}
+
+.sectionActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
