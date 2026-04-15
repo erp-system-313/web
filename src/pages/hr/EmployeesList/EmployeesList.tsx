@@ -1,10 +1,10 @@
 import { Table, Card, Typography } from 'antd';
-import { mockEmployees } from '../../data/mockEmployees';
-import type { Employee } from '../../types/models/employee';
+import { mockEmployees } from '../../../data/mockEmployees';
+import type { Employee } from '../../../types/hr';
 
 const { Title } = Typography;
 
-const EmployeeList = () => {
+export const EmployeesList: React.FC = () => {
   const columns = [
     {
       title: 'Name',
@@ -31,11 +31,11 @@ const EmployeeList = () => {
     {
       title: 'Actions',
       key: 'actions',
-      render: (_: unknown, _record: Employee) => (
+      render: (_: unknown, record: Employee) => (
         <span>
-          <a href={`/hr/employees/${_record.id}`}>View</a>
+          <a href={`/hr/employees/${record.id}`}>View</a>
           {' | '}
-          <a href={`/hr/employees/${_record.id}/edit`}>Edit</a>
+          <a href={`/hr/employees/${record.id}/edit`}>Edit</a>
         </span>
       ),
     },
@@ -53,4 +53,4 @@ const EmployeeList = () => {
   );
 };
 
-export default EmployeeList;
+export default EmployeesList;
