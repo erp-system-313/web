@@ -76,3 +76,45 @@
   justify-content: flex-end;
   padding: 16px 0;
 }
+
+.formItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formItem label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #262626;
+}
+
+.dateInput,
+.textInput,
+.numberInput,
+.textarea {
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.dateInput:focus,
+.textInput:focus,
+.numberInput:focus,
+.textarea:focus {
+  border-color: #1890ff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.error {
+  color: #ff4d4f;
+  font-size: 12px;
+}

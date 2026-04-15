@@ -1,44 +1,58 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  Card,
-  Form,
-  Input,
-  DatePicker,
-  Button,
-  Space,
-  message,
-  Divider,
-  Row,
-  Col,
-} from "antd";
+import { Card, Button, Space, message, Divider, Row, Col } from "antd";
 import {
   SaveOutlined,
   SendOutlined,
   ArrowLeftOutlined,
+  PlusOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
-import {
-  StatusBadge,
-  Autocomplete,
-  TabPanel,
-} from "../../../components/common";
-import { useSalesOrder, useCustomers, useProducts } from "../../../hooks";
-import { mockProducts } from "../../../mocks/productsMockData";
-import type { CreateSalesOrderDto } from "../../../types/sales";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { StatusBadge, Autocomplete } from "../../../components/common";
+import { useSalesOrder, useProducts } from "../../../hooks";
 import styles from "./SalesOrderForm.module.css";
 
-const { TextArea } = Input;
-
-interface LineItem {
-  id: string;
-  productId?: number;
-  productName?: string;
-  productSku?: string;
-  quantity: number;
-  unitPrice: number;
-  lineTotal: number;
+interface FormValues {
+  customerId?: number;
+  orderDate?: string;
+  requiredDate?: string;
+  notes?: string;
+  shippingAddress?: string;
+  paymentTerms?: string;
+  lines: {
+    productId?: number;
+    productName?: string;
+    productSku?: string;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+  }[];
 }
+
+const schema = yup.object({
+  customerId: yup.number().required("Customer is required"),
+  orderDate: yup.string().required("Order date is required"),
+  requiredDate: yup.string().optional(),
+  notes: yup.string().optional(),
+  shippingAddress: yup.string().optional(),
+  paymentTerms: yup.string().optional(),
+  lines: yup
+    .array()
+    .of(
+      yup.object({
+        productId: yup.number().required("Product is required"),
+        productName: yup.string(),
+        productSku: yup.string(),
+        quantity: yup.number().min(1).required(),
+        unitPrice: yup.number().min(0).required(),
+        lineTotal: yup.number(),
+      }),
+    )
+    .required(),
+});
 
 export const SalesOrderForm: React.FC = () => {
   const navigate = useNavigate();
@@ -46,7 +60,6 @@ export const SalesOrderForm: React.FC = () => {
   const isEditMode = Boolean(id);
   const orderId = isEditMode ? parseInt(id || "0", 10) : undefined;
 
-  const [form] = Form.useForm();
   const {
     data: existingOrder,
     loading,
@@ -56,156 +69,163 @@ export const SalesOrderForm: React.FC = () => {
   } = useSalesOrder(orderId);
   const { searchProducts } = useProducts();
 
-  const [customerId, setCustomerId] = useState<number | null>(null);
-  const [lineItems, setLineItems] = useState<LineItem[]>([
-    { id: "1", quantity: 1, unitPrice: 0, lineTotal: 0 },
-  ]);
-  const [notes, setNotes] = useState("");
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+    reset,
+  } = useForm<FormValues>({
+    resolver: yupResolver(schema) as never,
+    defaultValues: {
+      lines: [
+        { productId: undefined, quantity: 1, unitPrice: 0, lineTotal: 0 },
+      ],
+    },
+  });
 
-  useEffect(() => {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "lines",
+  });
+
+  const watchedLines = watch("lines");
+
+  React.useEffect(() => {
     if (existingOrder) {
-      form.setFieldsValue({
+      reset({
         customerId: existingOrder.customerId,
-        orderDate: dayjs(existingOrder.orderDate),
-        requiredDate: existingOrder.requiredDate
-          ? dayjs(existingOrder.requiredDate)
-          : undefined,
-      });
-      setCustomerId(existingOrder.customerId);
-      setNotes(existingOrder.notes || "");
-      if (existingOrder.lines) {
-        setLineItems(
-          existingOrder.lines.map((line) => ({
-            id: String(line.id),
+        orderDate: existingOrder.orderDate,
+        requiredDate: existingOrder.requiredDate,
+        notes: existingOrder.notes || "",
+        shippingAddress: existingOrder.shippingAddress || "",
+        paymentTerms: existingOrder.paymentTerms || "",
+        lines:
+          existingOrder.lines?.map((line) => ({
             productId: line.productId,
             productName: line.productName,
             productSku: line.productSku,
             quantity: line.quantity,
             unitPrice: line.unitPrice,
             lineTotal: line.lineTotal,
-          })),
-        );
-      }
+          })) || [],
+      });
     }
-  }, [existingOrder, form]);
+  }, [existingOrder, reset]);
 
-  const handleCustomerChange = (newCustomerId: number | null) => {
-    setCustomerId(newCustomerId);
-    if (newCustomerId) {
-      form.setFieldValue("customerId", newCustomerId);
-    }
-  };
-
-  const handleSaveDraft = async () => {
+  const onSubmit = async (data: FormValues) => {
     try {
-      const values = await form.validateFields();
-      const dto: CreateSalesOrderDto = {
-        customerId: customerId!,
-        orderDate: values.orderDate.format("YYYY-MM-DD"),
-        requiredDate: values.requiredDate?.format("YYYY-MM-DD"),
-        status: "DRAFT",
-        notes,
-        lines: lineItems
-          .filter((item) => item.productId)
-          .map((item) => ({
-            productId: item.productId!,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-          })),
+      const validLines = data.lines.filter((line) => line.productId);
+      const orderData = {
+        customerId: data.customerId!,
+        orderDate: data.orderDate!,
+        requiredDate: data.requiredDate,
+        notes: data.notes,
+        shippingAddress: data.shippingAddress,
+        paymentTerms: data.paymentTerms,
+        status: "DRAFT" as const,
+        lines: validLines.map((line) => ({
+          productId: line.productId!,
+          quantity: line.quantity,
+          unitPrice: line.unitPrice,
+        })),
       };
 
       if (isEditMode) {
-        await update(dto);
+        await update(orderData);
         message.success("Order saved successfully");
       } else {
-        await create(dto);
+        await create(orderData);
         message.success("Order created successfully");
       }
       navigate("/sales/orders");
     } catch {
-      message.error("Please fill in all required fields");
+      message.error("Failed to save order");
     }
   };
 
-  const handleSubmit = async () => {
+  const onSubmitForApproval = handleSubmit(async (data) => {
     try {
-      const values = await form.validateFields();
-      const dto: CreateSalesOrderDto = {
-        customerId: customerId!,
-        orderDate: values.orderDate.format("YYYY-MM-DD"),
-        requiredDate: values.requiredDate?.format("YYYY-MM-DD"),
-        status: "CONFIRMED",
-        notes,
-        lines: lineItems
-          .filter((item) => item.productId)
-          .map((item) => ({
-            productId: item.productId!,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-          })),
+      const validLines = data.lines.filter((line) => line.productId);
+      const orderData = {
+        customerId: data.customerId!,
+        orderDate: data.orderDate!,
+        requiredDate: data.requiredDate,
+        notes: data.notes,
+        shippingAddress: data.shippingAddress,
+        paymentTerms: data.paymentTerms,
+        status: "CONFIRMED" as const,
+        lines: validLines.map((line) => ({
+          productId: line.productId!,
+          quantity: line.quantity,
+          unitPrice: line.unitPrice,
+        })),
       };
 
       if (isEditMode) {
-        await update(dto);
+        await update(orderData);
         message.success("Order submitted successfully");
       } else {
-        await create(dto);
+        await create(orderData);
         message.success("Order created and submitted");
       }
       navigate("/sales/orders");
     } catch {
-      message.error("Please fill in all required fields");
+      message.error("Failed to submit order");
+    }
+  });
+
+  const handleProductChange = (
+    index: number,
+    productId: number | null,
+    product?: { name?: string; sku?: string; unitPrice?: number },
+  ) => {
+    if (productId && product) {
+      setValue(`lines.${index}.productId`, productId, { shouldValidate: true });
+      setValue(`lines.${index}.productName`, product.name, {
+        shouldDirty: true,
+      });
+      setValue(`lines.${index}.productSku`, product.sku, { shouldDirty: true });
+      setValue(`lines.${index}.unitPrice`, product.unitPrice || 0, {
+        shouldDirty: true,
+      });
+      setValue(
+        `lines.${index}.lineTotal`,
+        (product.unitPrice || 0) * watchedLines[index].quantity,
+        { shouldDirty: true },
+      );
+    } else {
+      setValue(`lines.${index}.productId`, undefined, { shouldValidate: true });
+      setValue(`lines.${index}.productName`, undefined);
+      setValue(`lines.${index}.productSku`, undefined);
+      setValue(`lines.${index}.unitPrice`, 0);
+      setValue(`lines.${index}.lineTotal`, 0);
     }
   };
 
-  const fetchCustomerOptions = async (query: string) => {
-    const { data } = useCustomers({ search: query });
-    return data;
+  const handleQuantityChange = (index: number, quantity: number) => {
+    setValue(`lines.${index}.quantity`, quantity, { shouldDirty: true });
+    const unitPrice = watchedLines[index].unitPrice || 0;
+    setValue(`lines.${index}.lineTotal`, unitPrice * quantity, {
+      shouldDirty: true,
+    });
   };
+
+  const totals = watchedLines.reduce(
+    (acc, line) => {
+      acc.subtotal += line.lineTotal || 0;
+      return acc;
+    },
+    { subtotal: 0 },
+  );
+  const tax = totals.subtotal * 0.1;
+  const total = totals.subtotal + tax;
 
   const fetchProductOptions = async (query: string) => {
     return searchProducts(query);
   };
-
-  const tabItems = [
-    {
-      label: "Notes",
-      key: "notes",
-      children: (
-        <TextArea
-          rows={4}
-          placeholder="Add notes for this order..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      ),
-    },
-    {
-      label: "Shipping",
-      key: "shipping",
-      children: (
-        <Form.Item label="Shipping Address">
-          <Input.TextArea rows={3} placeholder="Enter shipping address" />
-        </Form.Item>
-      ),
-    },
-    {
-      label: "Payment",
-      key: "payment",
-      children: (
-        <Form.Item label="Payment Terms">
-          <Input placeholder="e.g., NET 30" />
-        </Form.Item>
-      ),
-    },
-  ];
-
-  const totals = useMemo(() => {
-    const subtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
-    const tax = subtotal * 0.1;
-    const total = subtotal + tax;
-    return { subtotal, tax, total };
-  }, [lineItems]);
 
   if (isEditMode && loading) {
     return <div>Loading...</div>;
@@ -224,36 +244,64 @@ export const SalesOrderForm: React.FC = () => {
         {existingOrder && <StatusBadge status={existingOrder.status} />}
       </div>
 
-      <Form form={form} layout="vertical" className={styles.form}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Card title="Order Details" className={styles.card}>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item
-                name="customerId"
-                label="Customer"
-                rules={[{ required: true, message: "Customer is required" }]}
-              >
-                <Autocomplete
-                  placeholder="Search customer..."
-                  value={customerId}
-                  onChange={handleCustomerChange}
-                  fetchOptions={fetchCustomerOptions}
+              <div className={styles.formItem}>
+                <label>Customer *</label>
+                <Controller
+                  name="customerId"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      placeholder="Search customer..."
+                      value={field.value}
+                      onChange={(newId) => {
+                        field.onChange(newId);
+                      }}
+                      fetchOptions={async (query) => {
+                        const results = await searchProducts(query);
+                        return results as unknown as Array<{
+                          id: number;
+                          name: string;
+                        }>;
+                      }}
+                      displayFormatter={(item) => `${item.name}`}
+                    />
+                  )}
                 />
-              </Form.Item>
+                {errors.customerId && (
+                  <span className={styles.error}>
+                    {errors.customerId.message}
+                  </span>
+                )}
+              </div>
             </Col>
             <Col span={8}>
-              <Form.Item
-                name="orderDate"
-                label="Order Date"
-                rules={[{ required: true, message: "Order date is required" }]}
-              >
-                <DatePicker style={{ width: "100%" }} />
-              </Form.Item>
+              <div className={styles.formItem}>
+                <label>Order Date *</label>
+                <input
+                  type="date"
+                  {...register("orderDate")}
+                  className={styles.dateInput}
+                />
+                {errors.orderDate && (
+                  <span className={styles.error}>
+                    {errors.orderDate.message}
+                  </span>
+                )}
+              </div>
             </Col>
             <Col span={8}>
-              <Form.Item name="requiredDate" label="Required Date">
-                <DatePicker style={{ width: "100%" }} />
-              </Form.Item>
+              <div className={styles.formItem}>
+                <label>Required Date</label>
+                <input
+                  type="date"
+                  {...register("requiredDate")}
+                  className={styles.dateInput}
+                />
+              </div>
             </Col>
           </Row>
         </Card>
@@ -271,75 +319,59 @@ export const SalesOrderForm: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {lineItems.map((item, index) => (
-                <tr key={item.id}>
+              {fields.map((field, index) => (
+                <tr key={field.id}>
                   <td>
-                    <Autocomplete
-                      placeholder="Search product..."
-                      value={item.productId}
-                      onChange={(newId) => {
-                        const updated = [...lineItems];
-                        if (newId) {
-                          const prod = mockProducts.find((p) => p.id === newId);
-                          if (prod) {
-                            updated[index] = {
-                              ...updated[index],
-                              productId: prod.id,
-                              productName: prod.name,
-                              productSku: prod.sku,
-                              unitPrice: prod.unitPrice,
-                              lineTotal:
-                                prod.unitPrice * updated[index].quantity,
-                            };
+                    <Controller
+                      name={`lines.${index}.productId`}
+                      control={control}
+                      render={() => (
+                        <Autocomplete
+                          placeholder="Search product..."
+                          value={watchedLines[index]?.productId}
+                          onChange={(newId, item) =>
+                            handleProductChange(
+                              index,
+                              newId,
+                              item?.data as {
+                                name?: string;
+                                sku?: string;
+                                unitPrice?: number;
+                              },
+                            )
                           }
-                        } else {
-                          updated[index] = {
-                            ...updated[index],
-                            productId: undefined,
-                            productName: undefined,
-                            productSku: undefined,
-                            unitPrice: 0,
-                            lineTotal: 0,
-                          };
-                        }
-                        setLineItems(updated);
-                      }}
-                      fetchOptions={fetchProductOptions}
-                      displayFormatter={(p) => `${p.name} (${p.sku})`}
+                          fetchOptions={fetchProductOptions}
+                          displayFormatter={(p) => `${p.name} (${p.sku})`}
+                        />
+                      )}
                     />
                   </td>
-                  <td>{item.productSku || "-"}</td>
+                  <td>{watchedLines[index]?.productSku || "-"}</td>
                   <td>
-                    <Input
+                    <input
                       type="number"
                       min={1}
-                      value={item.quantity}
-                      onChange={(e) => {
-                        const qty = parseInt(e.target.value) || 1;
-                        const updated = [...lineItems];
-                        updated[index] = {
-                          ...updated[index],
-                          quantity: qty,
-                          lineTotal: qty * updated[index].unitPrice,
-                        };
-                        setLineItems(updated);
-                      }}
-                      style={{ width: 80 }}
+                      {...register(`lines.${index}.quantity`, {
+                        valueAsNumber: true,
+                        onChange: (e) =>
+                          handleQuantityChange(
+                            index,
+                            parseInt(e.target.value) || 1,
+                          ),
+                      })}
+                      className={styles.numberInput}
                     />
                   </td>
-                  <td>${item.unitPrice.toFixed(2)}</td>
-                  <td>${item.lineTotal.toFixed(2)}</td>
+                  <td>${(watchedLines[index]?.unitPrice || 0).toFixed(2)}</td>
+                  <td>${(watchedLines[index]?.lineTotal || 0).toFixed(2)}</td>
                   <td>
                     <Button
                       type="text"
                       danger
-                      onClick={() =>
-                        setLineItems(lineItems.filter((_, i) => i !== index))
-                      }
-                      disabled={lineItems.length === 1}
-                    >
-                      Delete
-                    </Button>
+                      icon={<DeleteOutlined />}
+                      onClick={() => remove(index)}
+                      disabled={fields.length === 1}
+                    />
                   </td>
                 </tr>
               ))}
@@ -347,16 +379,14 @@ export const SalesOrderForm: React.FC = () => {
           </table>
           <Button
             type="dashed"
+            icon={<PlusOutlined />}
             onClick={() =>
-              setLineItems([
-                ...lineItems,
-                {
-                  id: String(Date.now()),
-                  quantity: 1,
-                  unitPrice: 0,
-                  lineTotal: 0,
-                },
-              ])
+              append({
+                productId: undefined,
+                quantity: 1,
+                unitPrice: 0,
+                lineTotal: 0,
+              })
             }
             className={styles.addLineBtn}
           >
@@ -372,17 +402,51 @@ export const SalesOrderForm: React.FC = () => {
             </div>
             <div className={styles.totalRow}>
               <span>Tax (10%):</span>
-              <span>${totals.tax.toFixed(2)}</span>
+              <span>${tax.toFixed(2)}</span>
             </div>
             <div className={`${styles.totalRow} ${styles.grandTotal}`}>
               <span>Total:</span>
-              <span>${totals.total.toFixed(2)}</span>
+              <span>${total.toFixed(2)}</span>
             </div>
           </div>
         </Card>
 
         <Card title="Additional Information" className={styles.card}>
-          <TabPanel items={tabItems} />
+          <Row gutter={16}>
+            <Col span={24}>
+              <div className={styles.formItem}>
+                <label>Notes</label>
+                <textarea
+                  {...register("notes")}
+                  rows={3}
+                  placeholder="Add notes for this order..."
+                  className={styles.textarea}
+                />
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className={styles.formItem}>
+                <label>Shipping Address</label>
+                <textarea
+                  {...register("shippingAddress")}
+                  rows={2}
+                  placeholder="Enter shipping address..."
+                  className={styles.textarea}
+                />
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className={styles.formItem}>
+                <label>Payment Terms</label>
+                <input
+                  type="text"
+                  {...register("paymentTerms")}
+                  placeholder="e.g., NET 30"
+                  className={styles.textInput}
+                />
+              </div>
+            </Col>
+          </Row>
         </Card>
 
         <div className={styles.actions}>
@@ -390,7 +454,7 @@ export const SalesOrderForm: React.FC = () => {
             <Button
               type="primary"
               icon={<SaveOutlined />}
-              onClick={handleSaveDraft}
+              htmlType="submit"
               loading={saving}
             >
               Save Draft
@@ -398,14 +462,14 @@ export const SalesOrderForm: React.FC = () => {
             <Button
               type="primary"
               icon={<SendOutlined />}
-              onClick={handleSubmit}
+              onClick={onSubmitForApproval}
               loading={saving}
             >
               Submit Order
             </Button>
           </Space>
         </div>
-      </Form>
+      </form>
     </div>
   );
 };
