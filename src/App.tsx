@@ -1,28 +1,33 @@
 import { ConfigProvider } from "antd";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AppLayout } from "./layouts";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
-  SalesOrdersList,
-  SalesOrderForm,
-  CustomersList,
-  CustomerDetails,
-} from "./pages/sales";
+  InvoicesList,
+  InvoiceForm,
+  InvoiceDetails,
+  JournalEntries,
+  ChartOfAccounts,
+} from "./pages/finance";
 import { theme } from "./styles/theme";
 
 function App() {
   return (
     <ConfigProvider theme={theme}>
       <BrowserRouter>
-        <AppLayout>
+        <div>
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/sales/orders" element={<SalesOrdersList />} />
-            <Route path="/sales/orders/new" element={<SalesOrderForm />} />
-            <Route path="/sales/orders/:id/edit" element={<SalesOrderForm />} />
-            <Route path="/sales/customers" element={<CustomersList />} />
-            <Route path="/sales/customers/:id" element={<CustomerDetails />} />
+            <Route path="/" element={<InvoicesList />} />
+            <Route path="/finance/invoices" element={<InvoicesList />} />
+            <Route path="/finance/invoices/new" element={<InvoiceForm />} />
+            <Route path="/finance/invoices/:id" element={<InvoiceDetails />} />
+            <Route
+              path="/finance/invoices/:id/edit"
+              element={<InvoiceForm />}
+            />
+            <Route path="/finance/journal" element={<JournalEntries />} />
+            <Route path="/finance/journal/new" element={<JournalEntries />} />
+            <Route path="/finance/accounts" element={<ChartOfAccounts />} />
           </Routes>
-        </AppLayout>
+        </div>
       </BrowserRouter>
     </ConfigProvider>
   );
