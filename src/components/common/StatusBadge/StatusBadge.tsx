@@ -1,9 +1,16 @@
 import React from "react";
 import { Tag } from "antd";
 import type { SalesOrderStatus } from "../../../types/sales";
+import type { InvoiceStatus, JournalEntryStatus } from "../../../types/finance";
 import styles from "./StatusBadge.module.css";
 
-type Status = SalesOrderStatus | "ACTIVE" | "INACTIVE" | boolean;
+type Status =
+  | SalesOrderStatus
+  | InvoiceStatus
+  | JournalEntryStatus
+  | "ACTIVE"
+  | "INACTIVE"
+  | boolean;
 
 const statusConfig: Record<string, { color: string; label: string }> = {
   DRAFT: { color: "default", label: "Draft" },
