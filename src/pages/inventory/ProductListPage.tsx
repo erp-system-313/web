@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Select, Table, Tag, Space, Input, Modal, message } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-import { Product, ProductFilters, StockStatus } from '../../types/product.types';
+import type { Product, ProductFilters, StockStatus } from '../../types/product.types';
 import { formatCurrency } from '../../utils/formatters';
 import styles from './ProductListPage.module.css';
 
@@ -67,7 +67,7 @@ const useProducts = (): UseProductsReturn => {
     },
   ];
 
-  const fetchProducts = useCallback(async (filters: ProductFilters, page: number) => {
+  const fetchProducts = useCallback(async (filters: ProductFilters, _page: number) => {
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     let filtered = [...mockProducts];
@@ -151,10 +151,6 @@ export const ProductListPage: React.FC = () => {
       ...prev, 
       stockStatus: stockStatus ? stockStatus as StockStatus : undefined 
     }));
-  };
-
-  const handlePriceRangeFilter = (minPrice: number | undefined, maxPrice: number | undefined) => {
-    setFilters(prev => ({ ...prev, minPrice, maxPrice }));
   };
 
   const handleAddProduct = () => {

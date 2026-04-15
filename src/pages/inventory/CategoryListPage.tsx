@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Modal, Form, Input, Select, Card, Tree, message, Space, Popconfirm } from 'antd';
+import { Button, Modal, Input, Select, Card, Tree, message, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Category, CreateCategoryDto } from '../../types/category.types';
+import type { Category, CreateCategoryDto } from '../../types/category.types';
 import styles from './CategoryListPage.module.css';
 
 interface UseCategoriesReturn {
@@ -100,8 +100,8 @@ const useCategories = (): UseCategoriesReturn => {
 
 const schema = yup.object({
   name: yup.string().required('Category name is required'),
-  description: yup.string(),
-  parentId: yup.string().nullable(),
+  description: yup.string().default(''),
+  parentId: yup.string().nullable().default(null),
 });
 
 type CategoryFormData = yup.InferType<typeof schema>;
@@ -111,7 +111,6 @@ export const CategoryListPage: React.FC = () => {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [form] = Form.useForm();
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormData>({
     resolver: yupResolver(schema),
