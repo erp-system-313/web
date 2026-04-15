@@ -1,0 +1,81 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.backLink {
+  margin-bottom: 8px;
+  color: #1677ff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.infoCard {
+  height: 100%;
+}
+
+.infoCardTitle {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 12px;
+}
+
+.infoRow {
+  margin-bottom: 8px;
+}
+
+.infoLabel {
+  font-weight: 500;
+}
+
+.tabContent {
+  padding: 16px 0;
+}
+
+.rating {
+  color: #faad14;
+}
+
+.progressSection {
+  margin-bottom: 16px;
+}
+
+.statCard {
+  text-align: center;
+  padding: 24px;
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1677ff;
+}
+
+.statLabel {
+  color: #999;
+  font-size: 14px;
+}
