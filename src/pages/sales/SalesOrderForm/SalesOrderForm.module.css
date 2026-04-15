@@ -1,0 +1,78 @@
+.container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: #fff;
+}
+
+.lineItemsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lineItemsTable th,
+.lineItemsTable td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.lineItemsTable th {
+  font-weight: 600;
+  color: #666;
+}
+
+.addLineBtn {
+  margin-top: 16px;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  width: 200px;
+  font-size: 14px;
+}
+
+.grandTotal {
+  font-size: 16px;
+  font-weight: 600;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0;
+}
