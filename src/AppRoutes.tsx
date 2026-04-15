@@ -6,22 +6,21 @@ import { EmployeeDetails } from './pages/hr/EmployeeDetails/EmployeeDetails';
 import AttendancePage from './pages/hr/Attendance/Attendance';
 import LeaveRequestsPage from './pages/hr/LeaveRequests/LeaveRequests';
 import LoginPage from './pages/auth/Login/Login';
+import DashboardPage from './pages/common/Dashboard/Dashboard';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useContext(AuthContext);
+  const authContext = useContext(AuthContext);
   
-  if (isLoading) {
+  if (!authContext || authContext.isLoading) {
     return <div>Loading...</div>;
   }
   
-  if (!isAuthenticated) {
+  if (!authContext.isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   
   return <>{children}</>;
 };
-
-const DashboardPage = () => <div style={{ padding: 24 }}><h1>Dashboard</h1><p>Welcome to the ERP Dashboard</p></div>;
 
 export const AppRoutes = () => {
   return (

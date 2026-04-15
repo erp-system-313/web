@@ -8,14 +8,16 @@ import styles from './Login.module.css';
 const { Title, Text } = Typography;
 
 export const LoginPage: React.FC = () => {
-  const { login } = useContext(AuthContext);
+  const authContext = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values: { email: string; password: string; remember?: boolean }) => {
+    if (!authContext) return;
+    
     setLoading(true);
     try {
-      const result = await login({ email: values.email, password: values.password });
+      const result = await authContext.login({ email: values.email, password: values.password });
       
       if (result.success) {
         message.success('Login successful');
