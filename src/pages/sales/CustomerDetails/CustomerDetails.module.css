@@ -1,0 +1,22 @@
+.container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: #fff;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
