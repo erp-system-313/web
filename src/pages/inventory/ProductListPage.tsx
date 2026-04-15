@@ -1,47 +1,160 @@
-// src/pages/inventory/ProductListPage.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SearchBar } from '../../components/common/SearchBar';
-import { Pagination } from '../../components/common/Pagination';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { useProducts } from '../../hooks/useProducts';
-import { Product, ProductFilters } from '../../types/product.types';
+import { Button, Card, Select, Table, Tag, Space, Input, Modal, message } from 'antd';
+import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { Product, ProductFilters, StockStatus } from '../../types/product.types';
 import { formatCurrency } from '../../utils/formatters';
+import styles from './ProductListPage.module.css';
+
+interface UseProductsReturn {
+  products: Product[];
+  loading: boolean;
+  total: number;
+  fetchProducts: (filters: ProductFilters, page: number) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+}
+
+const useProducts = (): UseProductsReturn => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+
+  const mockProducts: Product[] = [
+    {
+      id: '1',
+      name: 'Wireless Mouse',
+      sku: 'WM-001',
+      description: 'Ergonomic wireless mouse with USB receiver',
+      categoryId: 'electronics',
+      categoryName: 'Electronics',
+      unitPrice: 29.99,
+      costPrice: 15.00,
+      stockQuantity: 150,
+      reorderPoint: 20,
+      isActive: true,
+      createdAt: '2024-01-15T10:00:00Z',
+      updatedAt: '2024-01-15T10:00:00Z',
+    },
+    {
+      id: '2',
+      name: 'USB-C Cable',
+      sku: 'USB-C-01',
+      description: 'High-speed USB-C charging cable 6ft',
+      categoryId: 'electronics',
+      categoryName: 'Electronics',
+      unitPrice: 12.99,
+      costPrice: 5.00,
+      stockQuantity: 8,
+      reorderPoint: 15,
+      isActive: true,
+      createdAt: '2024-01-16T10:00:00Z',
+      updatedAt: '2024-01-16T10:00:00Z',
+    },
+    {
+      id: '3',
+      name: 'Notebook A5',
+      sku: 'NB-A5-01',
+      description: 'Lined notebook with 200 pages',
+      categoryId: 'office',
+      categoryName: 'Office Supplies',
+      unitPrice: 8.99,
+      costPrice: 3.00,
+      stockQuantity: 0,
+      reorderPoint: 25,
+      isActive: true,
+      createdAt: '2024-01-17T10:00:00Z',
+      updatedAt: '2024-01-17T10:00:00Z',
+    },
+  ];
+
+  const fetchProducts = useCallback(async (filters: ProductFilters, page: number) => {
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    let filtered = [...mockProducts];
+    
+    if (filters.categoryId) {
+      filtered = filtered.filter(p => p.categoryId === filters.categoryId);
+    }
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(search) || 
+        p.sku.toLowerCase().includes(search)
+      );
+    }
+    if (filters.minPrice !== undefined) {
+      filtered = filtered.filter(p => p.unitPrice >= filters.minPrice!);
+    }
+    if (filters.maxPrice !== undefined) {
+      filtered = filtered.filter(p => p.unitPrice <= filters.maxPrice!);
+    }
+    if (filters.stockStatus) {
+      filtered = filtered.filter(p => {
+        if (filters.stockStatus === 'out_of_stock') return p.stockQuantity === 0;
+        if (filters.stockStatus === 'low_stock') return p.stockQuantity > 0 && p.stockQuantity <= p.reorderPoint;
+        return p.stockQuantity > p.reorderPoint;
+      });
+    }
+
+    setProducts(filtered);
+    setTotal(filtered.length);
+    setLoading(false);
+  }, []);
+
+  const deleteProduct = async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    setProducts(prev => prev.filter(p => p.id !== id));
+    message.success('Product deleted successfully');
+  };
+
+  return { products, loading, total, fetchProducts, deleteProduct };
+};
+
+const categories = [
+  { value: 'electronics', label: 'Electronics' },
+  { value: 'office', label: 'Office Supplies' },
+  { value: 'clothing', label: 'Clothing' },
+];
+
+const stockStatusOptions = [
+  { value: '', label: 'All' },
+  { value: 'in_stock', label: 'In Stock' },
+  { value: 'low_stock', label: 'Low Stock' },
+  { value: 'out_of_stock', label: 'Out of Stock' },
+];
 
 export const ProductListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { products, loading, totalPages, fetchProducts, deleteProduct } = useProducts();
+  const { products, loading, total, fetchProducts, deleteProduct } = useProducts();
   
   const [filters, setFilters] = useState<ProductFilters>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchText, setSearchText] = useState('');
 
   const loadProducts = useCallback(async () => {
-    await fetchProducts({ ...filters, search: searchTerm }, currentPage);
-  }, [fetchProducts, filters, searchTerm, currentPage]);
+    await fetchProducts({ ...filters, search: searchText }, 1);
+  }, [fetchProducts, filters, searchText]);
 
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setCurrentPage(1);
+  const handleSearch = (value: string) => {
+    setSearchText(value);
   };
 
   const handleCategoryFilter = (categoryId: string) => {
-    setFilters({ ...filters, categoryId });
-    setCurrentPage(1);
+    setFilters(prev => ({ ...prev, categoryId: categoryId || undefined }));
   };
 
   const handleStockStatusFilter = (stockStatus: string) => {
-    setFilters({ ...filters, stockStatus: stockStatus as any });
-    setCurrentPage(1);
+    setFilters(prev => ({ 
+      ...prev, 
+      stockStatus: stockStatus ? stockStatus as StockStatus : undefined 
+    }));
   };
 
-  const handlePriceRangeFilter = (minPrice: number, maxPrice: number) => {
-    setFilters({ ...filters, minPrice, maxPrice });
-    setCurrentPage(1);
+  const handlePriceRangeFilter = (minPrice: number | undefined, maxPrice: number | undefined) => {
+    setFilters(prev => ({ ...prev, minPrice, maxPrice }));
   };
 
   const handleAddProduct = () => {
@@ -56,151 +169,141 @@ export const ProductListPage: React.FC = () => {
     navigate(`/inventory/products/${id}/edit`);
   };
 
-  const handleDeleteProduct = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      await deleteProduct(id);
-      await loadProducts();
-    }
+  const handleDeleteProduct = (id: string) => {
+    Modal.confirm({
+      title: 'Delete Product',
+      content: 'Are you sure you want to delete this product?',
+      okText: 'Delete',
+      okType: 'danger',
+      onOk: async () => {
+        await deleteProduct(id);
+      },
+    });
   };
 
-  const getStockStatusBadge = (product: Product): JSX.Element => {
+  const getStockTag = (product: Product) => {
     if (product.stockQuantity === 0) {
-      return <span className="badge bg-danger">Out of Stock</span>;
+      return <Tag color="error">Out of Stock</Tag>;
     }
     if (product.stockQuantity <= product.reorderPoint) {
-      return <span className="badge bg-warning">Low Stock</span>;
+      return <Tag color="warning">Low Stock</Tag>;
     }
-    return <span className="badge bg-success">In Stock</span>;
+    return <Tag color="success">In Stock</Tag>;
   };
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  const columns = [
+    {
+      title: 'Product Info',
+      key: 'productInfo',
+      render: (_: unknown, record: Product) => (
+        <div className={styles.productInfo}>
+          <span className={styles.productName}>{record.name}</span>
+          <span className={styles.productDescription}>{record.description}</span>
+        </div>
+      ),
+    },
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+      key: 'sku',
+    },
+    {
+      title: 'Category',
+      dataIndex: 'categoryName',
+      key: 'categoryName',
+    },
+    {
+      title: 'Stock',
+      key: 'stock',
+      render: (_: unknown, record: Product) => (
+        <div className={styles.stockSection}>
+          <span className={styles.stockQuantity}>{record.stockQuantity} units</span>
+          {getStockTag(record)}
+        </div>
+      ),
+    },
+    {
+      title: 'Price',
+      key: 'price',
+      render: (_: unknown, record: Product) => (
+        <div className={styles.priceSection}>
+          <span className={styles.priceMain}>{formatCurrency(record.unitPrice)}</span>
+          <span className={styles.priceCost}>Cost: {formatCurrency(record.costPrice)}</span>
+        </div>
+      ),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_: unknown, record: Product) => (
+        <Space className={styles.tableActions}>
+          <Button 
+            type="text" 
+            icon={<EyeOutlined />} 
+            onClick={() => handleViewProduct(record.id)}
+          />
+          <Button 
+            type="text" 
+            icon={<EditOutlined />} 
+            onClick={() => handleEditProduct(record.id)}
+          />
+          <Button 
+            type="text" 
+            danger 
+            icon={<DeleteOutlined />} 
+            onClick={() => handleDeleteProduct(record.id)}
+          />
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div className="product-list-page">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Products</h1>
-        <button className="btn btn-primary" onClick={handleAddProduct}>
-          + Add Product
-        </button>
+    <div>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Products</h1>
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddProduct}>
+          Add Product
+        </Button>
       </div>
 
-      <SearchBar 
-        onSearch={handleSearch}
-        placeholder="Search products by name or SKU..."
-      />
+      <Card className={styles.filterPanel}>
+        <Space size="large" wrap>
+          <Input.Search
+            placeholder="Search products by name or SKU..."
+            allowClear
+            prefix={<SearchOutlined />}
+            onSearch={handleSearch}
+            style={{ width: 300 }}
+          />
+          <Select
+            placeholder="Category"
+            allowClear
+            style={{ width: 200 }}
+            options={categories}
+            onChange={handleCategoryFilter}
+          />
+          <Select
+            placeholder="Stock Status"
+            allowClear
+            style={{ width: 150 }}
+            options={stockStatusOptions}
+            onChange={handleStockStatusFilter}
+          />
+        </Space>
+      </Card>
 
-      <div className="filter-panel card p-3 mb-4">
-        <div className="row">
-          <div className="col-md-4">
-            <label className="form-label">Category</label>
-            <select 
-              className="form-select"
-              onChange={(e) => handleCategoryFilter(e.target.value)}
-            >
-              <option value="">All Categories</option>
-              <option value="electronics">Electronics</option>
-              <option value="clothing">Clothing</option>
-              <option value="food">Food</option>
-            </select>
-          </div>
-          
-          <div className="col-md-3">
-            <label className="form-label">Stock Status</label>
-            <select 
-              className="form-select"
-              onChange={(e) => handleStockStatusFilter(e.target.value)}
-            >
-              <option value="">All</option>
-              <option value="in_stock">In Stock</option>
-              <option value="low_stock">Low Stock</option>
-              <option value="out_of_stock">Out of Stock</option>
-            </select>
-          </div>
-          
-          <div className="col-md-5">
-            <label className="form-label">Price Range</label>
-            <div className="d-flex gap-2">
-              <input 
-                type="number" 
-                className="form-control" 
-                placeholder="Min Price"
-                onChange={(e) => handlePriceRangeFilter(Number(e.target.value), filters.maxPrice || 0)}
-              />
-              <span className="align-self-center">-</span>
-              <input 
-                type="number" 
-                className="form-control" 
-                placeholder="Max Price"
-                onChange={(e) => handlePriceRangeFilter(filters.minPrice || 0, Number(e.target.value))}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="table-responsive">
-        <table className="table table-hover">
-          <thead className="table-light">
-            <tr>
-              <th>Product Info</th>
-              <th>SKU</th>
-              <th>Category</th>
-              <th>Stock</th>
-              <th>Price</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td>
-                  <div>
-                    <strong>{product.name}</strong>
-                    <div className="text-muted small">{product.description}</div>
-                  </div>
-                </td>
-                <td>{product.sku}</td>
-                <td>{product.categoryName}</td>
-                <td>
-                  <div>{product.stockQuantity} units</div>
-                  <div className="mt-1">{getStockStatusBadge(product)}</div>
-                </td>
-                <td>
-                  <div>{formatCurrency(product.unitPrice)}</div>
-                  <div className="text-muted small">Cost: {formatCurrency(product.costPrice)}</div>
-                </td>
-                <td>
-                  <button 
-                    className="btn btn-sm btn-outline-primary me-2"
-                    onClick={() => handleViewProduct(product.id)}
-                  >
-                    View
-                  </button>
-                  <button 
-                    className="btn btn-sm btn-outline-secondary me-2"
-                    onClick={() => handleEditProduct(product.id)}
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => handleDeleteProduct(product.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+      <Table
+        columns={columns}
+        dataSource={products}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          total,
+          pageSize: 10,
+          showSizeChanger: false,
+          showTotal: (total) => `Total ${total} products`,
+        }}
       />
     </div>
   );
