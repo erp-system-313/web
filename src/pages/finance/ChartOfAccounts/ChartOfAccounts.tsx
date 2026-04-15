@@ -1,11 +1,10 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Button,
   Tree,
   Card,
   Tag,
   Modal,
-  Form,
   Input,
   Select,
   Table,
@@ -15,6 +14,7 @@ import {
   Col,
   message,
   Divider,
+  Form,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
@@ -26,7 +26,10 @@ import {
   DollarOutlined,
   ShoppingOutlined,
 } from "@ant-design/icons";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useAccounts } from "../../../hooks";
+import { editAccountSchema, addAccountSchema } from "../../../schemas/finance";
 import type { Account, AccountType } from "../../../types/finance";
 import styles from "./ChartOfAccounts.module.css";
 
@@ -47,7 +50,7 @@ const getTypeColor = (type: AccountType): string => {
   }
 };
 
-const getTypeIcon = (type: AccountType): React.ReactNode => {
+const getTypeIcon = (type: AccountType) => {
   switch (type) {
     case "ASSET":
       return <WalletOutlined />;
@@ -64,6 +67,26 @@ const getTypeIcon = (type: AccountType): React.ReactNode => {
   }
 };
 
+const ACCOUNT_TYPE_OPTIONS = [
+  { value: "ASSET", label: "Asset" },
+  { value: "LIABILITY", label: "Liability" },
+  { value: "EQUITY", label: "Equity" },
+  { value: "INCOME", label: "Income" },
+  { value: "EXPENSE", label: "Expense" },
+];
+
+interface EditFormValues {
+  name: string;
+  type: string;
+}
+
+interface AddFormValues {
+  code: string;
+  name: string;
+  type: string;
+  parentId?: number;
+}
+
 export const ChartOfAccounts: React.FC = () => {
   const { data: accounts } = useAccounts();
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
@@ -74,8 +97,16 @@ export const ChartOfAccounts: React.FC = () => {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [searchText, setSearchText] = useState("");
   const [typeFilter, setTypeFilter] = useState<AccountType | null>(null);
-  const [form] = Form.useForm();
-  const [addForm] = Form.useForm();
+
+  const editForm = useForm<EditFormValues>({
+    resolver: yupResolver(editAccountSchema) as any,
+    defaultValues: { name: "", type: "" },
+  });
+
+  const addForm = useForm<AddFormValues>({
+    resolver: yupResolver(addAccountSchema) as any,
+    defaultValues: { code: "", name: "", type: "", parentId: undefined },
+  });
 
   const filteredAccounts = useMemo(() => {
     return accounts.filter((account) => {
@@ -98,8 +129,8 @@ export const ChartOfAccounts: React.FC = () => {
     return ((selectedAccountId * 17) % 100) + 10;
   }, [selectedAccountId]);
 
-  const typeSummary = useMemo(() => {
-    return {
+  const typeSummary = useMemo(
+    () => ({
       ASSET: accounts
         .filter((a) => a.type === "ASSET")
         .reduce((s, a) => s + a.balance, 0),
@@ -115,15 +146,14 @@ export const ChartOfAccounts: React.FC = () => {
       EXPENSE: accounts
         .filter((a) => a.type === "EXPENSE")
         .reduce((s, a) => s + a.balance, 0),
-    };
-  }, [accounts]);
+    }),
+    [accounts],
+  );
 
   const treeData = useMemo(() => {
     const grouped: Record<string, Account[]> = {};
     filteredAccounts.forEach((account) => {
-      if (!grouped[account.type]) {
-        grouped[account.type] = [];
-      }
+      if (!grouped[account.type]) grouped[account.type] = [];
       grouped[account.type].push(account);
     });
 
@@ -146,9 +176,7 @@ export const ChartOfAccounts: React.FC = () => {
         key: account.id,
         title: (
           <div
-            className={`${styles.treeAccountRow} ${
-              selectedAccountId === account.id ? styles.selected : ""
-            }`}
+            className={`${styles.treeAccountRow} ${selectedAccountId === account.id ? styles.selected : ""}`}
             onClick={() => setSelectedAccountId(account.id)}
           >
             <span className={styles.accountCode}>{account.code}</span>
@@ -162,22 +190,22 @@ export const ChartOfAccounts: React.FC = () => {
     }));
   }, [filteredAccounts, selectedAccountId, typeSummary]);
 
-  const handleEdit = () => {
+  const handleEditSubmit = () => {
     message.success(`Account ${selectedAccount?.code} updated (mock)`);
     setEditModalOpen(false);
     setSelectedAccount(null);
-    form.resetFields();
+    editForm.reset();
   };
 
-  const handleAdd = () => {
+  const handleAddSubmit = () => {
     message.success("Account created (mock)");
     setAddModalOpen(false);
-    addForm.resetFields();
+    addForm.reset();
   };
 
   const openEditModal = (account: Account) => {
     setSelectedAccount(account);
-    form.setFieldsValue(account);
+    editForm.reset({ name: account.name, type: account.type });
     setEditModalOpen(true);
   };
 
@@ -191,11 +219,7 @@ export const ChartOfAccounts: React.FC = () => {
         <strong style={{ fontFamily: "monospace" }}>{code}</strong>
       ),
     },
-    {
-      title: "Account Name",
-      dataIndex: "name",
-      key: "name",
-    },
+    { title: "Account Name", dataIndex: "name", key: "name" },
     {
       title: "Type",
       dataIndex: "type",
@@ -247,7 +271,10 @@ export const ChartOfAccounts: React.FC = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => setAddModalOpen(true)}
+          onClick={() => {
+            addForm.reset();
+            setAddModalOpen(true);
+          }}
         >
           Add Account
         </Button>
@@ -341,13 +368,7 @@ export const ChartOfAccounts: React.FC = () => {
                   onChange={(value) =>
                     setTypeFilter(value as AccountType | null)
                   }
-                  options={[
-                    { value: "ASSET", label: "Asset" },
-                    { value: "LIABILITY", label: "Liability" },
-                    { value: "EQUITY", label: "Equity" },
-                    { value: "INCOME", label: "Income" },
-                    { value: "EXPENSE", label: "Expense" },
-                  ]}
+                  options={ACCOUNT_TYPE_OPTIONS}
                 />
               </Space>
             }
@@ -497,30 +518,33 @@ export const ChartOfAccounts: React.FC = () => {
         onCancel={() => {
           setEditModalOpen(false);
           setSelectedAccount(null);
-          form.resetFields();
+          editForm.reset();
         }}
-        onOk={() => form.submit()}
+        onOk={() => editForm.handleSubmit(handleEditSubmit)()}
       >
-        <Form form={form} layout="vertical" onFinish={handleEdit}>
-          <Form.Item name="code" label="Account Code">
-            <Input disabled />
-          </Form.Item>
-          <Form.Item name="name" label="Account Name">
-            <Input />
-          </Form.Item>
-          <Form.Item name="type" label="Account Type">
-            <Select
-              options={[
-                { value: "ASSET", label: "Asset" },
-                { value: "LIABILITY", label: "Liability" },
-                { value: "EQUITY", label: "Equity" },
-                { value: "INCOME", label: "Income" },
-                { value: "EXPENSE", label: "Expense" },
-              ]}
+        <Form layout="vertical">
+          <Form.Item
+            label="Account Name"
+            help={editForm.formState.errors.name?.message}
+            validateStatus={editForm.formState.errors.name ? "error" : ""}
+          >
+            <Input
+              {...editForm.register("name")}
+              placeholder="Enter account name"
             />
           </Form.Item>
-          <Form.Item name="balance" label="Balance">
-            <Input prefix="$" disabled />
+          <Form.Item
+            label="Account Type"
+            help={editForm.formState.errors.type?.message}
+            validateStatus={editForm.formState.errors.type ? "error" : ""}
+          >
+            <Select
+              {...editForm.register("type")}
+              placeholder="Select account type"
+              options={ACCOUNT_TYPE_OPTIONS}
+              onChange={(value) => editForm.setValue("type", value)}
+              value={editForm.watch("type")}
+            />
           </Form.Item>
         </Form>
       </Modal>
@@ -530,42 +554,42 @@ export const ChartOfAccounts: React.FC = () => {
         open={addModalOpen}
         onCancel={() => {
           setAddModalOpen(false);
-          addForm.resetFields();
+          addForm.reset();
         }}
-        onOk={() => addForm.submit()}
+        onOk={() => addForm.handleSubmit(handleAddSubmit)()}
       >
-        <Form form={addForm} layout="vertical" onFinish={handleAdd}>
+        <Form layout="vertical">
           <Form.Item
-            name="code"
             label="Account Code"
-            rules={[{ required: true, message: "Account code is required" }]}
+            help={addForm.formState.errors.code?.message}
+            validateStatus={addForm.formState.errors.code ? "error" : ""}
           >
-            <Input placeholder="e.g., 1100-1" />
+            <Input {...addForm.register("code")} placeholder="e.g., 1100-1" />
           </Form.Item>
           <Form.Item
-            name="name"
             label="Account Name"
-            rules={[{ required: true, message: "Account name is required" }]}
+            help={addForm.formState.errors.name?.message}
+            validateStatus={addForm.formState.errors.name ? "error" : ""}
           >
-            <Input placeholder="e.g., Accounts Receivable" />
-          </Form.Item>
-          <Form.Item
-            name="type"
-            label="Account Type"
-            rules={[{ required: true, message: "Account type is required" }]}
-          >
-            <Select
-              placeholder="Select account type"
-              options={[
-                { value: "ASSET", label: "Asset" },
-                { value: "LIABILITY", label: "Liability" },
-                { value: "EQUITY", label: "Equity" },
-                { value: "INCOME", label: "Income" },
-                { value: "EXPENSE", label: "Expense" },
-              ]}
+            <Input
+              {...addForm.register("name")}
+              placeholder="e.g., Accounts Receivable"
             />
           </Form.Item>
-          <Form.Item name="parentId" label="Parent Account">
+          <Form.Item
+            label="Account Type"
+            help={addForm.formState.errors.type?.message}
+            validateStatus={addForm.formState.errors.type ? "error" : ""}
+          >
+            <Select
+              {...addForm.register("type")}
+              placeholder="Select account type"
+              options={ACCOUNT_TYPE_OPTIONS}
+              onChange={(value) => addForm.setValue("type", value)}
+              value={addForm.watch("type")}
+            />
+          </Form.Item>
+          <Form.Item label="Parent Account">
             <Select
               placeholder="Select parent account (optional)"
               allowClear
@@ -573,6 +597,8 @@ export const ChartOfAccounts: React.FC = () => {
                 value: a.id,
                 label: `${a.code} - ${a.name}`,
               }))}
+              onChange={(value) => addForm.setValue("parentId", value)}
+              value={addForm.watch("parentId")}
             />
           </Form.Item>
         </Form>
