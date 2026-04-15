@@ -1,18 +1,125 @@
-// src/pages/inventory/CategoryListPage.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal } from '../../components/common/Modal';
-import { useCategories } from '../../hooks/useCategories';
+import { Button, Modal, Form, Input, Select, Card, Tree, message, Space, Popconfirm } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { Category, CreateCategoryDto } from '../../types/category.types';
+import styles from './CategoryListPage.module.css';
+
+interface UseCategoriesReturn {
+  categories: Category[];
+  loading: boolean;
+  fetchCategories: () => Promise<void>;
+  createCategory: (data: CreateCategoryDto) => Promise<void>;
+  updateCategory: (id: string, data: CreateCategoryDto) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
+}
+
+const useCategories = (): UseCategoriesReturn => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const mockCategories: Category[] = [
+    {
+      id: '1',
+      name: 'Electronics',
+      description: 'Electronic devices and accessories',
+      parentId: null,
+      productCount: 45,
+      createdAt: '2024-01-15T10:00:00Z',
+      updatedAt: '2024-01-15T10:00:00Z',
+    },
+    {
+      id: '2',
+      name: 'Office Supplies',
+      description: 'Stationery and office equipment',
+      parentId: null,
+      productCount: 120,
+      createdAt: '2024-01-16T10:00:00Z',
+      updatedAt: '2024-01-16T10:00:00Z',
+    },
+    {
+      id: '3',
+      name: 'Computers',
+      description: 'Laptops and desktops',
+      parentId: '1',
+      productCount: 25,
+      createdAt: '2024-01-17T10:00:00Z',
+      updatedAt: '2024-01-17T10:00:00Z',
+    },
+    {
+      id: '4',
+      name: 'Accessories',
+      description: 'Electronic accessories',
+      parentId: '1',
+      productCount: 20,
+      createdAt: '2024-01-18T10:00:00Z',
+      updatedAt: '2024-01-18T10:00:00Z',
+    },
+  ];
+
+  const fetchCategories = useCallback(async () => {
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setCategories(mockCategories);
+    setLoading(false);
+  }, []);
+
+  const createCategory = async (data: CreateCategoryDto) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const newCategory: Category = {
+      id: String(Date.now()),
+      ...data,
+      productCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setCategories(prev => [...prev, newCategory]);
+    message.success('Category created successfully');
+  };
+
+  const updateCategory = async (id: string, data: CreateCategoryDto) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    setCategories(prev => prev.map(cat => 
+      cat.id === id 
+        ? { ...cat, ...data, updatedAt: new Date().toISOString() }
+        : cat
+    ));
+    message.success('Category updated successfully');
+  };
+
+  const deleteCategory = async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    setCategories(prev => prev.filter(cat => cat.id !== id));
+    message.success('Category deleted successfully');
+  };
+
+  return { categories, loading, fetchCategories, createCategory, updateCategory, deleteCategory };
+};
+
+const schema = yup.object({
+  name: yup.string().required('Category name is required'),
+  description: yup.string(),
+  parentId: yup.string().nullable(),
+});
+
+type CategoryFormData = yup.InferType<typeof schema>;
 
 export const CategoryListPage: React.FC = () => {
   const { categories, loading, fetchCategories, createCategory, updateCategory, deleteCategory } = useCategories();
   
-  const [showModal, setShowModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState<CreateCategoryDto>({
-    name: '',
-    description: '',
-    parentId: null,
+  const [form] = Form.useForm();
+  
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormData>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      description: '',
+      parentId: null,
+    },
   });
 
   const loadCategories = useCallback(async () => {
@@ -23,135 +130,159 @@ export const CategoryListPage: React.FC = () => {
     loadCategories();
   }, [loadCategories]);
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data: CategoryFormData) => {
+    const categoryData: CreateCategoryDto = {
+      name: data.name,
+      description: data.description || '',
+      parentId: data.parentId || null,
+    };
+
     if (editingCategory) {
-      await updateCategory(editingCategory.id, formData);
+      await updateCategory(editingCategory.id, categoryData);
     } else {
-      await createCategory(formData);
+      await createCategory(categoryData);
     }
-    setShowModal(false);
+    handleCloseModal();
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
     setEditingCategory(null);
-    setFormData({ name: '', description: '', parentId: null });
-    await loadCategories();
+    reset({ name: '', description: '', parentId: null });
   };
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
-    setFormData({
+    reset({
       name: category.name,
       description: category.description,
       parentId: category.parentId,
     });
-    setShowModal(true);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Delete this category? Products will be uncategorized.')) {
-      await deleteCategory(id);
-      await loadCategories();
-    }
+    await deleteCategory(id);
   };
 
-  const renderCategoryTree = (parentId: string | null = null, level = 0): JSX.Element[] => {
+  const buildTreeData = () => {
     return categories
-      .filter(category => category.parentId === parentId)
-      .map(category => (
-        <div key={category.id}>
-          <div className="d-flex justify-content-between align-items-center p-2" style={{ marginLeft: `${level * 20}px` }}>
-            <div>
-              <strong>{category.name}</strong>
-              <div className="text-muted small">{category.description}</div>
-              <span className="badge bg-secondary">{category.productCount} products</span>
-            </div>
-            <div>
-              <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEdit(category)}>
-                Edit
-              </button>
-              <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(category.id)}>
-                Delete
-              </button>
-            </div>
-          </div>
-          {renderCategoryTree(category.id, level + 1)}
-        </div>
-      ));
+      .filter(cat => !cat.parentId)
+      .map(cat => ({
+        key: cat.id,
+        title: (
+          <Space>
+            <span>{cat.name}</span>
+            <span style={{ color: '#999', fontSize: 12 }}>({cat.productCount} products)</span>
+            <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(cat)} />
+            <Popconfirm
+              title="Delete this category?"
+              description="Products will be uncategorized."
+              onConfirm={() => handleDelete(cat.id)}
+              okText="Delete"
+              okType="danger"
+            >
+              <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          </Space>
+        ),
+        children: categories
+          .filter(child => child.parentId === cat.id)
+          .map(child => ({
+            key: child.id,
+            title: (
+              <Space>
+                <span>{child.name}</span>
+                <span style={{ color: '#999', fontSize: 12 }}>({child.productCount} products)</span>
+                <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(child)} />
+                <Popconfirm
+                  title="Delete this category?"
+                  description="Products will be uncategorized."
+                  onConfirm={() => handleDelete(child.id)}
+                  okText="Delete"
+                  okType="danger"
+                >
+                  <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+                </Popconfirm>
+              </Space>
+            ),
+          })),
+      }));
   };
 
-  if (loading) {
-    return <div className="text-center p-5">Loading categories...</div>;
-  }
+  const parentCategoryOptions = categories
+    .filter(cat => cat.id !== editingCategory?.id)
+    .map(cat => ({ value: cat.id, label: cat.name }));
 
   return (
-    <div className="category-list-page">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Categories</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          + Add Category
-        </button>
+    <div>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Categories</h1>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>
+          Add Category
+        </Button>
       </div>
 
-      <div className="card">
-        <div className="card-body">
-          {renderCategoryTree(null)}
-          {categories.length === 0 && (
-            <div className="text-center text-muted p-5">
-              No categories found. Click "Add Category" to create one.
-            </div>
-          )}
-        </div>
-      </div>
+      <Card>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 48 }}>Loading categories...</div>
+        ) : categories.length === 0 ? (
+          <div className={styles.emptyState}>
+            No categories found. Click "Add Category" to create one.
+          </div>
+        ) : (
+          <Tree
+            showLine
+            defaultExpandAll
+            treeData={buildTreeData()}
+          />
+        )}
+      </Card>
 
       <Modal
-        show={showModal}
-        onClose={() => {
-          setShowModal(false);
-          setEditingCategory(null);
-          setFormData({ name: '', description: '', parentId: null });
-        }}
         title={editingCategory ? 'Edit Category' : 'Add Category'}
+        open={isModalOpen}
+        onCancel={handleCloseModal}
+        footer={null}
       >
-        <div className="mb-3">
-          <label className="form-label">Category Name *</label>
-          <input
-            type="text"
-            className="form-control"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Description</label>
-          <textarea
-            className="form-control"
-            rows={3}
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Parent Category</label>
-          <select
-            className="form-select"
-            value={formData.parentId || ''}
-            onChange={(e) => setFormData({ ...formData, parentId: e.target.value || null })}
-          >
-            <option value="">None (Top Level)</option>
-            {categories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="d-flex gap-2">
-          <button className="btn btn-primary" onClick={handleSubmit}>
-            Save Category
-          </button>
-          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
-            Cancel
-          </button>
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className={styles.formItem}>
+            <label style={{ display: 'block', marginBottom: 8 }}>Category Name *</label>
+            <Input
+              {...register('name')}
+              status={errors.name ? 'error' : undefined}
+            />
+            {errors.name && (
+              <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errors.name.message}</span>
+            )}
+          </div>
+
+          <div className={styles.formItem}>
+            <label style={{ display: 'block', marginBottom: 8 }}>Description</label>
+            <Input.TextArea
+              {...register('description')}
+              rows={3}
+            />
+          </div>
+
+          <div className={styles.formItem}>
+            <label style={{ display: 'block', marginBottom: 8 }}>Parent Category</label>
+            <Select
+              {...register('parentId')}
+              placeholder="None (Top Level)"
+              allowClear
+              style={{ width: '100%' }}
+              options={parentCategoryOptions}
+            />
+          </div>
+
+          <div className={styles.formActions}>
+            <Button onClick={handleCloseModal}>Cancel</Button>
+            <Button type="primary" htmlType="submit">
+              {editingCategory ? 'Update Category' : 'Save Category'}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );
