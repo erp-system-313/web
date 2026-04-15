@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -7,13 +7,13 @@ import {
   Table,
   Descriptions,
   Modal,
-  Form,
   Input,
   InputNumber,
   Select,
   message,
   Row,
   Col,
+  Form,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -23,16 +23,30 @@ import {
   DollarOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { StatusBadge, TabPanel } from "../../../components/common";
 import { useInvoice } from "../../../hooks";
-import type {
-  InvoiceLine,
-  Payment,
-  PaymentMethod,
-} from "../../../types/finance";
+import { recordPaymentSchema } from "../../../schemas/finance";
+import type { InvoiceLine, Payment } from "../../../types/finance";
 import styles from "./InvoiceDetails.module.css";
 
 const { TextArea } = Input;
+
+const PAYMENT_METHOD_OPTIONS = [
+  { value: "CASH", label: "Cash" },
+  { value: "CARD", label: "Card" },
+  { value: "BANK_TRANSFER", label: "Bank Transfer" },
+  { value: "CHEQUE", label: "Cheque" },
+];
+
+interface PaymentFormValues {
+  amount: number;
+  paymentDate: string;
+  method: string;
+  reference?: string;
+  notes?: string;
+}
 
 export const InvoiceDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -46,7 +60,17 @@ export const InvoiceDetails: React.FC = () => {
     recordPayment,
   } = useInvoice(invoiceId);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [paymentForm] = Form.useForm();
+
+  const paymentForm = useForm<PaymentFormValues>({
+    resolver: yupResolver(recordPaymentSchema) as any,
+    defaultValues: {
+      amount: invoice?.balanceDue || 0,
+      paymentDate: new Date().toISOString().split("T")[0],
+      method: "",
+      reference: "",
+      notes: "",
+    },
+  });
 
   if (loading) {
     return <div className={styles.container}>Loading...</div>;
@@ -56,21 +80,26 @@ export const InvoiceDetails: React.FC = () => {
     return <div className={styles.container}>Invoice not found</div>;
   }
 
-  const handleRecordPayment = async (values: {
-    amount: number;
-    paymentDate: string;
-    method: PaymentMethod;
-    reference?: string;
-    notes?: string;
-  }) => {
-    const success = await recordPayment(values);
+  const handleRecordPayment = async (values: PaymentFormValues) => {
+    const success = await recordPayment(values as any);
     if (success) {
       message.success("Payment recorded successfully");
       setPaymentModalOpen(false);
-      paymentForm.resetFields();
+      paymentForm.reset();
     } else {
       message.error("Failed to record payment");
     }
+  };
+
+  const openPaymentModal = () => {
+    paymentForm.reset({
+      amount: invoice.balanceDue,
+      paymentDate: new Date().toISOString().split("T")[0],
+      method: "",
+      reference: "",
+      notes: "",
+    });
+    setPaymentModalOpen(true);
   };
 
   const lineItemColumns: ColumnsType<InvoiceLine> = [
@@ -89,11 +118,7 @@ export const InvoiceDetails: React.FC = () => {
       align: "right" as const,
       render: (v: number) => `$${v.toFixed(2)}`,
     },
-    {
-      title: "GL Account",
-      dataIndex: "glAccountName",
-      key: "glAccountName",
-    },
+    { title: "GL Account", dataIndex: "glAccountName", key: "glAccountName" },
     {
       title: "Total",
       dataIndex: "lineTotal",
@@ -156,7 +181,7 @@ export const InvoiceDetails: React.FC = () => {
             <Button
               type="primary"
               icon={<DollarOutlined />}
-              onClick={() => setPaymentModalOpen(true)}
+              onClick={openPaymentModal}
               disabled={invoice.balanceDue === 0}
             >
               Record Payment
@@ -286,7 +311,7 @@ export const InvoiceDetails: React.FC = () => {
               </Button>
               <Button
                 icon={<DollarOutlined />}
-                onClick={() => setPaymentModalOpen(true)}
+                onClick={openPaymentModal}
                 block
                 disabled={invoice.balanceDue === 0}
               >
@@ -301,53 +326,59 @@ export const InvoiceDetails: React.FC = () => {
         title="Record Payment"
         open={paymentModalOpen}
         onCancel={() => setPaymentModalOpen(false)}
-        onOk={() => paymentForm.submit()}
+        onOk={() => paymentForm.handleSubmit(handleRecordPayment)()}
         confirmLoading={saving}
       >
-        <Form
-          form={paymentForm}
-          layout="vertical"
-          onFinish={handleRecordPayment}
-          initialValues={{ amount: invoice.balanceDue }}
-        >
+        <Form layout="vertical">
           <Form.Item
-            name="amount"
             label="Amount"
-            rules={[{ required: true, message: "Amount is required" }]}
+            help={paymentForm.formState.errors.amount?.message}
+            validateStatus={paymentForm.formState.errors.amount ? "error" : ""}
           >
             <InputNumber
+              {...paymentForm.register("amount")}
               prefix="$"
               min={0.01}
               max={invoice.balanceDue}
               style={{ width: "100%" }}
+              onChange={(value) => paymentForm.setValue("amount", value || 0)}
+              value={paymentForm.watch("amount")}
             />
           </Form.Item>
           <Form.Item
-            name="paymentDate"
             label="Payment Date"
-            rules={[{ required: true, message: "Date is required" }]}
+            help={paymentForm.formState.errors.paymentDate?.message}
+            validateStatus={
+              paymentForm.formState.errors.paymentDate ? "error" : ""
+            }
           >
-            <Input type="date" />
+            <Input {...paymentForm.register("paymentDate")} type="date" />
           </Form.Item>
           <Form.Item
-            name="method"
             label="Payment Method"
-            rules={[{ required: true, message: "Method is required" }]}
+            help={paymentForm.formState.errors.method?.message}
+            validateStatus={paymentForm.formState.errors.method ? "error" : ""}
           >
             <Select
-              options={[
-                { value: "CASH", label: "Cash" },
-                { value: "CARD", label: "Card" },
-                { value: "BANK_TRANSFER", label: "Bank Transfer" },
-                { value: "CHEQUE", label: "Cheque" },
-              ]}
+              {...paymentForm.register("method")}
+              placeholder="Select payment method"
+              options={PAYMENT_METHOD_OPTIONS}
+              onChange={(value) => paymentForm.setValue("method", value)}
+              value={paymentForm.watch("method")}
             />
           </Form.Item>
-          <Form.Item name="reference" label="Reference">
-            <Input placeholder="e.g., Transaction number" />
+          <Form.Item label="Reference">
+            <Input
+              {...paymentForm.register("reference")}
+              placeholder="e.g., Transaction number"
+            />
           </Form.Item>
-          <Form.Item name="notes" label="Notes">
-            <TextArea rows={2} placeholder="Optional notes" />
+          <Form.Item label="Notes">
+            <TextArea
+              {...paymentForm.register("notes")}
+              rows={2}
+              placeholder="Optional notes"
+            />
           </Form.Item>
         </Form>
       </Modal>
