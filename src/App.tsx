@@ -5,6 +5,7 @@ import {
   InvoiceForm,
   InvoiceDetails,
   JournalEntries,
+  JournalEntryForm,
   ChartOfAccounts,
 } from "./pages/finance";
 import { theme } from "./styles/theme";
@@ -24,7 +25,7 @@ function App() {
               element={<InvoiceForm />}
             />
             <Route path="/finance/journal" element={<JournalEntries />} />
-            <Route path="/finance/journal/new" element={<JournalEntries />} />
+            <Route path="/finance/journal/new" element={<JournalEntryForm />} />
             <Route path="/finance/accounts" element={<ChartOfAccounts />} />
           </Routes>
         </div>
