@@ -28,6 +28,10 @@ export const Dashboard: React.FC = () => {
     { title: 'Employees', path: '/hr/employees', description: 'Manage employee records' },
     { title: 'Attendance', path: '/hr/attendance', description: 'Track daily attendance' },
     { title: 'Leave Requests', path: '/hr/leave', description: 'Review and approve leave' },
+    { title: 'Profile', path: '/profile', description: 'View and edit your profile' },
+    { title: 'User Management', path: '/admin/users', description: 'Manage system users' },
+    { title: 'Company Settings', path: '/admin/settings', description: 'Configure company settings' },
+    { title: 'Audit Logs', path: '/admin/audit-logs', description: 'View system audit logs' },
   ];
 
   return (
