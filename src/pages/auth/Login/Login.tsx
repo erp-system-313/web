@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Input, Button, Card, Typography, message, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +20,7 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
@@ -62,44 +62,68 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', marginBottom: 8 }}>Email</label>
-            <Input 
-              {...register('email', { 
+            <Controller
+              name="email"
+              control={control}
+              rules={{
                 required: 'Email is required',
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                   message: 'Invalid email address'
                 }
-              })}
-              prefix={<UserOutlined />} 
-              placeholder="Email address"
-              status={errors.email ? 'error' : undefined}
+              }}
+              render={({ field, fieldState }) => (
+                <>
+                  <Input
+                    {...field}
+                    prefix={<UserOutlined />}
+                    placeholder="Email address"
+                    status={fieldState.error ? 'error' : undefined}
+                  />
+                  {fieldState.error && (
+                    <Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text>
+                  )}
+                </>
+              )}
             />
-            {errors.email && (
-              <Text type="danger" style={{ fontSize: 12 }}>{errors.email.message}</Text>
-            )}
           </div>
 
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', marginBottom: 8 }}>Password</label>
-            <Input.Password 
-              {...register('password', { 
+            <Controller
+              name="password"
+              control={control}
+              rules={{
                 required: 'Password is required',
                 minLength: {
                   value: 6,
                   message: 'Password must be at least 6 characters'
                 }
-              })}
-              prefix={<LockOutlined />} 
-              placeholder="Password"
-              status={errors.password ? 'error' : undefined}
+              }}
+              render={({ field, fieldState }) => (
+                <>
+                  <Input.Password
+                    {...field}
+                    prefix={<LockOutlined />}
+                    placeholder="Password"
+                    status={fieldState.error ? 'error' : undefined}
+                  />
+                  {fieldState.error && (
+                    <Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text>
+                  )}
+                </>
+              )}
             />
-            {errors.password && (
-              <Text type="danger" style={{ fontSize: 12 }}>{errors.password.message}</Text>
-            )}
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <Checkbox {...register('remember')}>Remember me</Checkbox>
+            <Controller
+              name="remember"
+              control={control}
+              render={({ field }) => (
+                <Checkbox {...field} checked={field.value}>Remember me</Checkbox>
+              )}
+            />
           </div>
 
           <Button 
