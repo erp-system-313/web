@@ -1,6 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "./contexts/AuthContext";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { MainLayout } from "./components/Layout";
 import { EmployeesList } from "./pages/hr/EmployeesList/EmployeesList";
 import { EmployeeDetails } from "./pages/hr/EmployeeDetails/EmployeeDetails";
 import AttendancePage from "./pages/hr/Attendance/Attendance";
@@ -36,20 +35,12 @@ import SupplierDetailsPage from "./pages/purchasing/SupplierDetailsPage";
 import PurchaseOrderListPage from "./pages/purchasing/PurchaseOrderListPage";
 import CreatePurchaseOrderPage from "./pages/purchasing/CreatePurchaseOrderPage";
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const authContext = useContext(AuthContext);
-
-  if (!authContext || authContext.isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!authContext.isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
+const ProtectedLayout = () => {
+  return (
+    <MainLayout>
+      <Outlet />
+    </MainLayout>
+  );
 };
 
 export const AppRoutes = () => {
@@ -59,298 +50,55 @@ export const AppRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
 
       {/* Protected routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
+      <Route element={<ProtectedLayout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
-      {/* HR routes */}
-      <Route
-        path="/hr/employees"
-        element={
-          <ProtectedRoute>
-            <EmployeesList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/hr/employees/:id"
-        element={
-          <ProtectedRoute>
-            <EmployeeDetails />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/hr/attendance"
-        element={
-          <ProtectedRoute>
-            <AttendancePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/hr/leave"
-        element={
-          <ProtectedRoute>
-            <LeaveRequestsPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* HR routes */}
+        <Route path="/hr/employees" element={<EmployeesList />} />
+        <Route path="/hr/employees/:id" element={<EmployeeDetails />} />
+        <Route path="/hr/attendance" element={<AttendancePage />} />
+        <Route path="/hr/leave" element={<LeaveRequestsPage />} />
 
-      {/* Admin routes */}
-      <Route
-        path="/admin/users"
-        element={
-          <ProtectedRoute>
-            <UsersListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/settings"
-        element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/audit-logs"
-        element={
-          <ProtectedRoute>
-            <AuditLogsPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Admin routes */}
+        <Route path="/admin/users" element={<UsersListPage />} />
+        <Route path="/admin/settings" element={<SettingsPage />} />
+        <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
 
-      {/* Finance routes */}
-      <Route
-        path="/finance/invoices"
-        element={
-          <ProtectedRoute>
-            <InvoicesList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/finance/invoices/new"
-        element={
-          <ProtectedRoute>
-            <InvoiceForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/finance/invoices/:id"
-        element={
-          <ProtectedRoute>
-            <InvoiceDetails />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/finance/invoices/:id/edit"
-        element={
-          <ProtectedRoute>
-            <InvoiceForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/finance/journal"
-        element={
-          <ProtectedRoute>
-            <JournalEntries />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/finance/journal/new"
-        element={
-          <ProtectedRoute>
-            <JournalEntryForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/finance/accounts"
-        element={
-          <ProtectedRoute>
-            <ChartOfAccounts />
-          </ProtectedRoute>
-        }
-      />
+        {/* Finance routes */}
+        <Route path="/finance/invoices" element={<InvoicesList />} />
+        <Route path="/finance/invoices/new" element={<InvoiceForm />} />
+        <Route path="/finance/invoices/:id" element={<InvoiceDetails />} />
+        <Route path="/finance/invoices/:id/edit" element={<InvoiceForm />} />
+        <Route path="/finance/journal" element={<JournalEntries />} />
+        <Route path="/finance/journal/new" element={<JournalEntryForm />} />
+        <Route path="/finance/accounts" element={<ChartOfAccounts />} />
 
-      {/* Sales routes */}
-      <Route
-        path="/sales/orders"
-        element={
-          <ProtectedRoute>
-            <SalesOrdersList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/orders/new"
-        element={
-          <ProtectedRoute>
-            <SalesOrderForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/orders/:id"
-        element={
-          <ProtectedRoute>
-            <SalesOrderDetails />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/orders/:id/edit"
-        element={
-          <ProtectedRoute>
-            <SalesOrderForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/customers"
-        element={
-          <ProtectedRoute>
-            <CustomersList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/customers/:id"
-        element={
-          <ProtectedRoute>
-            <CustomerDetails />
-          </ProtectedRoute>
-        }
-      />
+        {/* Sales routes */}
+        <Route path="/sales/orders" element={<SalesOrdersList />} />
+        <Route path="/sales/orders/new" element={<SalesOrderForm />} />
+        <Route path="/sales/orders/:id" element={<SalesOrderDetails />} />
+        <Route path="/sales/orders/:id/edit" element={<SalesOrderForm />} />
+        <Route path="/sales/customers" element={<CustomersList />} />
+        <Route path="/sales/customers/:id" element={<CustomerDetails />} />
 
-      {/* Inventory routes */}
-      <Route
-        path="/inventory/products"
-        element={
-          <ProtectedRoute>
-            <ProductListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/inventory/products/new"
-        element={
-          <ProtectedRoute>
-            <CreateProductPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/inventory/products/:id"
-        element={
-          <ProtectedRoute>
-            <ProductDetailsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/inventory/products/:id/edit"
-        element={
-          <ProtectedRoute>
-            <EditProductPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/inventory/categories"
-        element={
-          <ProtectedRoute>
-            <CategoryListPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Inventory routes */}
+        <Route path="/inventory/products" element={<ProductListPage />} />
+        <Route path="/inventory/products/new" element={<CreateProductPage />} />
+        <Route path="/inventory/products/:id" element={<ProductDetailsPage />} />
+        <Route path="/inventory/products/:id/edit" element={<EditProductPage />} />
+        <Route path="/inventory/categories" element={<CategoryListPage />} />
 
-      {/* Purchasing routes */}
-      <Route
-        path="/purchasing/suppliers"
-        element={
-          <ProtectedRoute>
-            <SupplierListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/purchasing/suppliers/new"
-        element={
-          <ProtectedRoute>
-            <SupplierListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/purchasing/suppliers/:id"
-        element={
-          <ProtectedRoute>
-            <SupplierDetailsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/purchasing/suppliers/:id/edit"
-        element={
-          <ProtectedRoute>
-            <SupplierDetailsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/purchasing/orders"
-        element={
-          <ProtectedRoute>
-            <PurchaseOrderListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/purchasing/orders/new"
-        element={
-          <ProtectedRoute>
-            <CreatePurchaseOrderPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/purchasing/orders/:id"
-        element={
-          <ProtectedRoute>
-            <PurchaseOrderListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/purchasing/orders/:id/edit"
-        element={
-          <ProtectedRoute>
-            <PurchaseOrderListPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Purchasing routes */}
+        <Route path="/purchasing/suppliers" element={<SupplierListPage />} />
+        <Route path="/purchasing/suppliers/new" element={<SupplierListPage />} />
+        <Route path="/purchasing/suppliers/:id" element={<SupplierDetailsPage />} />
+        <Route path="/purchasing/suppliers/:id/edit" element={<SupplierDetailsPage />} />
+        <Route path="/purchasing/orders" element={<PurchaseOrderListPage />} />
+        <Route path="/purchasing/orders/new" element={<CreatePurchaseOrderPage />} />
+        <Route path="/purchasing/orders/:id" element={<PurchaseOrderListPage />} />
+        <Route path="/purchasing/orders/:id/edit" element={<PurchaseOrderListPage />} />
+      </Route>
 
       {/* Default redirects */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

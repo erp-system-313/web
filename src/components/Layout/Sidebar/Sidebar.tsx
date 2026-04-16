@@ -45,7 +45,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       key: "inventory",
       icon: <InboxOutlined />,
       label: "Inventory",
-      onClick: () => navigate("/inventory/products"),
       children: [
         {
           key: "products",
@@ -63,7 +62,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       key: "sales",
       icon: <DollarOutlined />,
       label: "Sales",
-      onClick: () => navigate("/sales/orders"),
       children: [
         {
           key: "sales-orders",
@@ -81,7 +79,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       key: "purchasing",
       icon: <ShoppingCartOutlined />,
       label: "Purchasing",
-      onClick: () => navigate("/purchasing/suppliers"),
       children: [
         {
           key: "suppliers",
@@ -99,7 +96,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       key: "finance",
       icon: <FileTextOutlined />,
       label: "Finance",
-      onClick: () => navigate("/finance/invoices"),
       children: [
         {
           key: "invoices",
@@ -122,7 +118,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       key: "hr",
       icon: <TeamOutlined />,
       label: "HR",
-      onClick: () => navigate("/hr/attendance"),
       children: [
         {
           key: "employees",
@@ -145,7 +140,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       key: "admin",
       icon: <SettingOutlined />,
       label: "Admin",
-      onClick: () => navigate("/admin/users"),
       children: [
         {
           key: "users",
@@ -248,6 +242,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           role="button"
           tabIndex={0}
           onKeyDown={(e) => e.key === "Enter" && logout?.()}
+          style={{ display: collapsed ? 'none' : 'flex' }}
         >
           <LogoutOutlined />
           {!collapsed && <span>Logout</span>}
