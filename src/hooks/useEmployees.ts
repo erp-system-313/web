@@ -13,10 +13,10 @@ export const useEmployees = (filters?: EmployeeFilters) => {
     setError(null);
     try {
       const response = await hrService.employees.getAll(filters);
-      setData(response.items);
-      setTotal(response.total);
+      setData(response.content);
+      setTotal(response.totalElements);
     } catch (err) {
-      setError('Failed to fetch employees');
+      setError(err instanceof Error ? err.message : 'Failed to fetch employees');
     } finally {
       setLoading(false);
     }

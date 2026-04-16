@@ -13,10 +13,10 @@ export const useAttendance = (filters?: AttendanceFilters) => {
     setError(null);
     try {
       const response = await hrService.attendance.getAll(filters);
-      setData(response.items);
-      setTotal(response.total);
+      setData(response.content);
+      setTotal(response.totalElements);
     } catch (err) {
-      setError('Failed to fetch attendance');
+      setError(err instanceof Error ? err.message : 'Failed to fetch attendance');
     } finally {
       setLoading(false);
     }

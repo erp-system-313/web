@@ -13,10 +13,10 @@ export const useLeaveRequests = (filters?: LeaveRequestFilters) => {
     setError(null);
     try {
       const response = await hrService.leave.getAll(filters);
-      setData(response.items);
-      setTotal(response.total);
+      setData(response.content);
+      setTotal(response.totalElements);
     } catch (err) {
-      setError('Failed to fetch leave requests');
+      setError(err instanceof Error ? err.message : 'Failed to fetch leave requests');
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export const useLeaveBalances = () => {
       const response = await hrService.leave.getBalances();
       setData(response);
     } catch (err) {
-      setError('Failed to fetch leave balances');
+      setError(err instanceof Error ? err.message : 'Failed to fetch leave balances');
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export const useCreateLeaveRequest = () => {
       const result = await hrService.leave.create(data);
       return result;
     } catch (err) {
-      setError('Failed to create leave request');
+      setError(err instanceof Error ? err.message : 'Failed to create leave request');
       throw err;
     } finally {
       setLoading(false);
@@ -86,7 +86,7 @@ export const useApproveLeaveRequest = () => {
       const result = await hrService.leave.approve(id);
       return result;
     } catch (err) {
-      setError('Failed to approve leave request');
+      setError(err instanceof Error ? err.message : 'Failed to approve leave request');
       throw err;
     } finally {
       setLoading(false);
@@ -107,7 +107,7 @@ export const useRejectLeaveRequest = () => {
       const result = await hrService.leave.reject(id);
       return result;
     } catch (err) {
-      setError('Failed to reject leave request');
+      setError(err instanceof Error ? err.message : 'Failed to reject leave request');
       throw err;
     } finally {
       setLoading(false);
