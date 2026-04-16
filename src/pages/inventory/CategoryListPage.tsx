@@ -1,102 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Modal, Input, Select, Card, Tree, message, Space, Popconfirm } from 'antd';
+import { Button, Modal, Input, Select, Card, Tree, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import type { Category, CreateCategoryDto } from '../../types/category.types';
+import { useCategories } from '../../hooks/useCategories';
 import styles from './CategoryListPage.module.css';
-
-interface UseCategoriesReturn {
-  categories: Category[];
-  loading: boolean;
-  fetchCategories: () => Promise<void>;
-  createCategory: (data: CreateCategoryDto) => Promise<void>;
-  updateCategory: (id: string, data: CreateCategoryDto) => Promise<void>;
-  deleteCategory: (id: string) => Promise<void>;
-}
-
-const useCategories = (): UseCategoriesReturn => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const mockCategories: Category[] = [
-    {
-      id: '1',
-      name: 'Electronics',
-      description: 'Electronic devices and accessories',
-      parentId: null,
-      productCount: 45,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z',
-    },
-    {
-      id: '2',
-      name: 'Office Supplies',
-      description: 'Stationery and office equipment',
-      parentId: null,
-      productCount: 120,
-      createdAt: '2024-01-16T10:00:00Z',
-      updatedAt: '2024-01-16T10:00:00Z',
-    },
-    {
-      id: '3',
-      name: 'Computers',
-      description: 'Laptops and desktops',
-      parentId: '1',
-      productCount: 25,
-      createdAt: '2024-01-17T10:00:00Z',
-      updatedAt: '2024-01-17T10:00:00Z',
-    },
-    {
-      id: '4',
-      name: 'Accessories',
-      description: 'Electronic accessories',
-      parentId: '1',
-      productCount: 20,
-      createdAt: '2024-01-18T10:00:00Z',
-      updatedAt: '2024-01-18T10:00:00Z',
-    },
-  ];
-
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setCategories(mockCategories);
-    setLoading(false);
-  }, []);
-
-  const createCategory = async (data: CreateCategoryDto) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const newCategory: Category = {
-      id: String(Date.now()),
-      ...data,
-      productCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setCategories(prev => [...prev, newCategory]);
-    message.success('Category created successfully');
-  };
-
-  const updateCategory = async (id: string, data: CreateCategoryDto) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setCategories(prev => prev.map(cat => 
-      cat.id === id 
-        ? { ...cat, ...data, updatedAt: new Date().toISOString() }
-        : cat
-    ));
-    message.success('Category updated successfully');
-  };
-
-  const deleteCategory = async (id: string) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setCategories(prev => prev.filter(cat => cat.id !== id));
-    message.success('Category deleted successfully');
-  };
-
-  return { categories, loading, fetchCategories, createCategory, updateCategory, deleteCategory };
-};
 
 const schema = yup.object({
   name: yup.string().required('Category name is required'),
@@ -114,11 +24,7 @@ export const CategoryListPage: React.FC = () => {
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormData>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      name: '',
-      description: '',
-      parentId: null,
-    },
+    defaultValues: { name: '', description: '', parentId: null },
   });
 
   const loadCategories = useCallback(async () => {
@@ -130,12 +36,7 @@ export const CategoryListPage: React.FC = () => {
   }, [loadCategories]);
 
   const onSubmit = async (data: CategoryFormData) => {
-    const categoryData: CreateCategoryDto = {
-      name: data.name,
-      description: data.description || '',
-      parentId: data.parentId || null,
-    };
-
+    const categoryData: CreateCategoryDto = { name: data.name, description: data.description || '', parentId: data.parentId || null };
     if (editingCategory) {
       await updateCategory(editingCategory.id, categoryData);
     } else {
@@ -152,11 +53,7 @@ export const CategoryListPage: React.FC = () => {
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
-    reset({
-      name: category.name,
-      description: category.description,
-      parentId: category.parentId,
-    });
+    reset({ name: category.name, description: category.description, parentId: category.parentId });
     setIsModalOpen(true);
   };
 
@@ -165,121 +62,71 @@ export const CategoryListPage: React.FC = () => {
   };
 
   const buildTreeData = () => {
-    return categories
-      .filter(cat => !cat.parentId)
-      .map(cat => ({
-        key: cat.id,
+    return categories.filter(cat => !cat.parentId).map(cat => ({
+      key: cat.id,
+      title: (
+        <Space>
+          <span>{cat.name}</span>
+          <span style={{ color: '#999', fontSize: 12 }}>({cat.productCount} products)</span>
+          <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(cat)} />
+          <Popconfirm title="Delete this category?" onConfirm={() => handleDelete(cat.id)} okText="Delete" okType="danger">
+            <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space>
+      ),
+      children: categories.filter(child => child.parentId === cat.id).map(child => ({
+        key: child.id,
         title: (
           <Space>
-            <span>{cat.name}</span>
-            <span style={{ color: '#999', fontSize: 12 }}>({cat.productCount} products)</span>
-            <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(cat)} />
-            <Popconfirm
-              title="Delete this category?"
-              description="Products will be uncategorized."
-              onConfirm={() => handleDelete(cat.id)}
-              okText="Delete"
-              okType="danger"
-            >
+            <span>{child.name}</span>
+            <span style={{ color: '#999', fontSize: 12 }}>({child.productCount} products)</span>
+            <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(child)} />
+            <Popconfirm title="Delete this category?" onConfirm={() => handleDelete(child.id)} okText="Delete" okType="danger">
               <Button type="text" size="small" danger icon={<DeleteOutlined />} />
             </Popconfirm>
           </Space>
         ),
-        children: categories
-          .filter(child => child.parentId === cat.id)
-          .map(child => ({
-            key: child.id,
-            title: (
-              <Space>
-                <span>{child.name}</span>
-                <span style={{ color: '#999', fontSize: 12 }}>({child.productCount} products)</span>
-                <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(child)} />
-                <Popconfirm
-                  title="Delete this category?"
-                  description="Products will be uncategorized."
-                  onConfirm={() => handleDelete(child.id)}
-                  okText="Delete"
-                  okType="danger"
-                >
-                  <Button type="text" size="small" danger icon={<DeleteOutlined />} />
-                </Popconfirm>
-              </Space>
-            ),
-          })),
-      }));
+      })),
+    }));
   };
 
-  const parentCategoryOptions = categories
-    .filter(cat => cat.id !== editingCategory?.id)
-    .map(cat => ({ value: cat.id, label: cat.name }));
+  const parentCategoryOptions = categories.filter(cat => cat.id !== editingCategory?.id).map(cat => ({ value: cat.id, label: cat.name }));
 
   return (
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Categories</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>
-          Add Category
-        </Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>Add Category</Button>
       </div>
 
       <Card>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 48 }}>Loading categories...</div>
         ) : categories.length === 0 ? (
-          <div className={styles.emptyState}>
-            No categories found. Click "Add Category" to create one.
-          </div>
+          <div className={styles.emptyState}>No categories found. Click "Add Category" to create one.</div>
         ) : (
-          <Tree
-            showLine
-            defaultExpandAll
-            treeData={buildTreeData()}
-          />
+          <Tree showLine defaultExpandAll treeData={buildTreeData()} />
         )}
       </Card>
 
-      <Modal
-        title={editingCategory ? 'Edit Category' : 'Add Category'}
-        open={isModalOpen}
-        onCancel={handleCloseModal}
-        footer={null}
-      >
+      <Modal title={editingCategory ? 'Edit Category' : 'Add Category'} open={isModalOpen} onCancel={handleCloseModal} footer={null}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Category Name *</label>
-            <Input
-              {...register('name')}
-              status={errors.name ? 'error' : undefined}
-            />
-            {errors.name && (
-              <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errors.name.message}</span>
-            )}
+            <Input {...register('name')} status={errors.name ? 'error' : undefined} />
+            {errors.name && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errors.name.message}</span>}
           </div>
-
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Description</label>
-            <Input.TextArea
-              {...register('description')}
-              rows={3}
-            />
+            <Input.TextArea {...register('description')} rows={3} />
           </div>
-
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Parent Category</label>
-            <Select
-              {...register('parentId')}
-              placeholder="None (Top Level)"
-              allowClear
-              style={{ width: '100%' }}
-              options={parentCategoryOptions}
-            />
+            <Select {...register('parentId')} placeholder="None (Top Level)" allowClear style={{ width: '100%' }} options={parentCategoryOptions} />
           </div>
-
           <div className={styles.formActions}>
             <Button onClick={handleCloseModal}>Cancel</Button>
-            <Button type="primary" htmlType="submit">
-              {editingCategory ? 'Update Category' : 'Save Category'}
-            </Button>
+            <Button type="primary" htmlType="submit">{editingCategory ? 'Update Category' : 'Save Category'}</Button>
           </div>
         </form>
       </Modal>

@@ -11,8 +11,20 @@
   font-weight: 600;
 }
 
-.categoryCard {
+.formItem {
   margin-bottom: 16px;
+}
+
+.formActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  color: #999;
 }
 
 .categoryItem {
@@ -21,10 +33,6 @@
   align-items: center;
   padding: 12px;
   border-bottom: 1px solid #f0f0f0;
-}
-
-.categoryItem:last-child {
-  border-bottom: none;
 }
 
 .categoryInfo {
@@ -47,20 +55,4 @@
 .categoryActions {
   display: flex;
   gap: 8px;
-}
-
-.emptyState {
-  text-align: center;
-  padding: 48px 24px;
-  color: #999;
-}
-
-.formItem {
-  margin-bottom: 16px;
-}
-
-.formActions {
-  display: flex;
-  gap: 8px;
-  margin-top: 24px;
 }

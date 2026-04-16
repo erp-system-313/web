@@ -1,0 +1,68 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.filterBar {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.viewToggle {
+  margin-left: auto;
+}
+
+.supplierGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.supplierCard {
+  height: 100%;
+}
+
+.supplierInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.supplierName {
+  font-weight: 500;
+  margin: 0;
+}
+
+.supplierContact {
+  color: #666;
+  font-size: 14px;
+}
+
+.rating {
+  color: #faad14;
+}
+
+.tableActions {
+  display: flex;
+  gap: 8px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  color: #999;
+}

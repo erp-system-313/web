@@ -11,27 +11,20 @@
   font-weight: 600;
 }
 
-.formCard {
+.filterBar {
   margin-bottom: 24px;
-}
-
-.formItem {
-  margin-bottom: 16px;
-}
-
-.formRow {
   display: flex;
   gap: 16px;
-  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
-.formCol {
-  flex: 1;
-}
-
-.actions {
+.tableActions {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
-  margin-top: 24px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  color: #999;
 }

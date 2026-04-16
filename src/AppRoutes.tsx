@@ -19,11 +19,22 @@ import {
   JournalEntryForm,
   ChartOfAccounts,
 } from "./pages/finance";
+import {
+  SalesOrdersList,
+  SalesOrderForm,
+  SalesOrderDetails,
+  CustomersList,
+  CustomerDetails,
+} from "./pages/sales";
 import ProductListPage from "./pages/inventory/ProductListPage";
 import ProductDetailsPage from "./pages/inventory/ProductDetailsPage";
 import EditProductPage from "./pages/inventory/EditProductPage";
 import CategoryListPage from "./pages/inventory/CategoryListPage";
 import CreateProductPage from "./pages/inventory/CreateProductPage";
+import SupplierListPage from "./pages/purchasing/SupplierListPage";
+import SupplierDetailsPage from "./pages/purchasing/SupplierDetailsPage";
+import PurchaseOrderListPage from "./pages/purchasing/PurchaseOrderListPage";
+import CreatePurchaseOrderPage from "./pages/purchasing/CreatePurchaseOrderPage";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -183,6 +194,56 @@ export const AppRoutes = () => {
         }
       />
 
+      {/* Sales routes */}
+      <Route
+        path="/sales/orders"
+        element={
+          <ProtectedRoute>
+            <SalesOrdersList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/orders/new"
+        element={
+          <ProtectedRoute>
+            <SalesOrderForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/orders/:id"
+        element={
+          <ProtectedRoute>
+            <SalesOrderDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/orders/:id/edit"
+        element={
+          <ProtectedRoute>
+            <SalesOrderForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/customers"
+        element={
+          <ProtectedRoute>
+            <CustomersList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/customers/:id"
+        element={
+          <ProtectedRoute>
+            <CustomerDetails />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Inventory routes */}
       <Route
         path="/inventory/products"
@@ -221,6 +282,72 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <CategoryListPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Purchasing routes */}
+      <Route
+        path="/purchasing/suppliers"
+        element={
+          <ProtectedRoute>
+            <SupplierListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchasing/suppliers/new"
+        element={
+          <ProtectedRoute>
+            <SupplierListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchasing/suppliers/:id"
+        element={
+          <ProtectedRoute>
+            <SupplierDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchasing/suppliers/:id/edit"
+        element={
+          <ProtectedRoute>
+            <SupplierDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchasing/orders"
+        element={
+          <ProtectedRoute>
+            <PurchaseOrderListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchasing/orders/new"
+        element={
+          <ProtectedRoute>
+            <CreatePurchaseOrderPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchasing/orders/:id"
+        element={
+          <ProtectedRoute>
+            <PurchaseOrderListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchasing/orders/:id/edit"
+        element={
+          <ProtectedRoute>
+            <PurchaseOrderListPage />
           </ProtectedRoute>
         }
       />

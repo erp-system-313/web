@@ -1,0 +1,87 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.formCard {
+  margin-bottom: 24px;
+}
+
+.formSection {
+  margin-bottom: 16px;
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.supplierInfo {
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.supplierInfo p {
+  margin: 0 0 4px 0;
+}
+
+.itemsTable {
+  margin: 0;
+}
+
+.orderSummary {
+  position: sticky;
+  top: 24px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.summaryTotal {
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.itemCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.itemName {
+  font-weight: 500;
+}
+
+.itemSku {
+  color: #999;
+  font-size: 12px;
+}
