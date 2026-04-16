@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Tabs, Table, Tag, Space, Progress, Statistic, Row, Col, message, Modal, Rate } from 'antd';
 import { EditOutlined, DeleteOutlined, ShoppingCartOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import type { Supplier } from '../../types/supplier.types';
 import type { PurchaseOrder, PurchaseOrderStatus } from '../../types/purchaseOrder.types';
 import { useSuppliers } from '../../hooks/useSuppliers';
 import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';

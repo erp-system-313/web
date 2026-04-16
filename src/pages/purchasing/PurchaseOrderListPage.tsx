@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Select, Table, Tag, Space, Input, Modal } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-import type { PurchaseOrder, PurchaseOrderStatus, PurchaseOrderFilters } from '../../types/purchaseOrder.types';
+import type { PurchaseOrder, PurchaseOrderStatus } from '../../types/purchaseOrder.types';
 import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
 import styles from './PurchaseOrderListPage.module.css';
 

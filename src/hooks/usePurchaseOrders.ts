@@ -10,6 +10,7 @@ interface UsePurchaseOrdersReturn {
   fetchOrders: (filters: PurchaseOrderFilters, page: number) => Promise<void>;
   getOrder: (id: string) => Promise<PurchaseOrder | null>;
   createOrder: (data: CreatePurchaseOrderDto) => Promise<PurchaseOrder>;
+  createPurchaseOrder: (data: CreatePurchaseOrderDto) => Promise<void>;
   updateOrder: (id: string, data: Partial<CreatePurchaseOrderDto>) => Promise<PurchaseOrder>;
   deleteOrder: (id: string) => Promise<void>;
 }
@@ -52,6 +53,10 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     }
   }, []);
 
+  const createPurchaseOrder = useCallback(async (data: CreatePurchaseOrderDto): Promise<void> => {
+    await createOrder(data);
+  }, [createOrder]);
+
   const updateOrder = useCallback(async (id: string, data: Partial<CreatePurchaseOrderDto>): Promise<PurchaseOrder> => {
     try {
       const order = await purchasingService.updatePurchaseOrder(id, data);
@@ -82,6 +87,7 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     fetchOrders,
     getOrder,
     createOrder,
+    createPurchaseOrder,
     updateOrder,
     deleteOrder,
   };

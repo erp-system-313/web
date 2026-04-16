@@ -212,7 +212,7 @@ export const purchasingService = {
     return { ...supplier, ...data, updatedAt: new Date().toISOString() };
   },
 
-  async deleteSupplier(id: string): Promise<void> {
+  async deleteSupplier(_id: string): Promise<void> {
     await delay(300);
   },
 
@@ -273,7 +273,7 @@ export const purchasingService = {
     return { ...order, ...data, updatedAt: new Date().toISOString() };
   },
 
-  async deletePurchaseOrder(id: string): Promise<void> {
+  async deletePurchaseOrder(_id: string): Promise<void> {
     await delay(300);
   },
 };

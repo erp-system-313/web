@@ -5,8 +5,7 @@ import { PlusOutlined, DeleteOutlined, SaveOutlined, SendOutlined } from '@ant-d
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import type { CreatePurchaseOrderDto, PurchaseOrderItem } from '../../types/purchaseOrder.types';
-import type { Supplier } from '../../types/supplier.types';
+import type { PurchaseOrderItem } from '../../types/purchaseOrder.types';
 import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
 import { useSuppliers } from '../../hooks/useSuppliers';
 import styles from './CreatePurchaseOrderPage.module.css';
@@ -61,7 +60,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   const selectedSupplier = suppliers.find(s => s.id === selectedSupplierId);
 
   useEffect(() => {
-    fetchSuppliers();
+    fetchSuppliers({}, 1);
   }, [fetchSuppliers]);
 
   const addItem = () => {

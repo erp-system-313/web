@@ -1,8 +1,6 @@
 import type { Product, CreateProductDto, ProductFilters } from '../types/product.types';
 import type { Category, CreateCategoryDto } from '../types/category.types';
 
-const API_BASE = '/api';
-
 const mockProducts: Product[] = [
   {
     id: '1',
@@ -114,7 +112,7 @@ export const inventoryService = {
     return { ...product, ...data, updatedAt: new Date().toISOString() };
   },
 
-  async deleteProduct(id: string): Promise<void> {
+  async deleteProduct(_id: string): Promise<void> {
     await delay(300);
   },
 
@@ -147,7 +145,7 @@ export const inventoryService = {
     return { ...category, ...data, updatedAt: new Date().toISOString() };
   },
 
-  async deleteCategory(id: string): Promise<void> {
+  async deleteCategory(_id: string): Promise<void> {
     await delay(300);
   },
 };
