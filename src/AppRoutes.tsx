@@ -19,13 +19,6 @@ import {
   JournalEntryForm,
   ChartOfAccounts,
 } from "./pages/finance";
-import {
-  SalesOrdersList,
-  SalesOrderForm,
-  SalesOrderDetails,
-  CustomersList,
-  CustomerDetails,
-} from "./pages/sales";
 import ProductListPage from "./pages/inventory/ProductListPage";
 import ProductDetailsPage from "./pages/inventory/ProductDetailsPage";
 import EditProductPage from "./pages/inventory/EditProductPage";
@@ -186,56 +179,6 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <ChartOfAccounts />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Sales routes */}
-      <Route
-        path="/sales/orders"
-        element={
-          <ProtectedRoute>
-            <SalesOrdersList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/orders/new"
-        element={
-          <ProtectedRoute>
-            <SalesOrderForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/orders/:id"
-        element={
-          <ProtectedRoute>
-            <SalesOrderDetails />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/orders/:id/edit"
-        element={
-          <ProtectedRoute>
-            <SalesOrderForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/customers"
-        element={
-          <ProtectedRoute>
-            <CustomersList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/customers/:id"
-        element={
-          <ProtectedRoute>
-            <CustomerDetails />
           </ProtectedRoute>
         }
       />
