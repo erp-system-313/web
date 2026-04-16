@@ -1,59 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Modal, Input, Select, Card, Tree, message, Space, Popconfirm } from 'antd';
+import { Button, Modal, Input, Select, Card, Tree, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import type { Category, CreateCategoryDto } from '../../types/category.types';
+import { useCategories } from '../../hooks/useCategories';
 import styles from './CategoryListPage.module.css';
-
-interface CategoryData {
-  categories: Category[];
-  loading: boolean;
-  fetchCategories: () => Promise<void>;
-  createCategory: (data: CreateCategoryDto) => Promise<void>;
-  updateCategory: (id: string, data: CreateCategoryDto) => Promise<void>;
-  deleteCategory: (id: string) => Promise<void>;
-}
-
-const useCategories = (): CategoryData => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const mockCategories: Category[] = [
-    { id: '1', name: 'Electronics', description: 'Electronic devices', parentId: null, productCount: 45, createdAt: '2024-01-15T10:00:00Z', updatedAt: '2024-01-15T10:00:00Z' },
-    { id: '2', name: 'Office Supplies', description: 'Stationery', parentId: null, productCount: 120, createdAt: '2024-01-16T10:00:00Z', updatedAt: '2024-01-16T10:00:00Z' },
-    { id: '3', name: 'Computers', description: 'Laptops and desktops', parentId: '1', productCount: 25, createdAt: '2024-01-17T10:00:00Z', updatedAt: '2024-01-17T10:00:00Z' },
-  ];
-
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setCategories(mockCategories);
-    setLoading(false);
-  }, []);
-
-  const createCategory = async (data: CreateCategoryDto) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const newCategory: Category = { id: String(Date.now()), ...data, productCount: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-    setCategories(prev => [...prev, newCategory]);
-    message.success('Category created successfully');
-  };
-
-  const updateCategory = async (id: string, data: CreateCategoryDto) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setCategories(prev => prev.map(cat => cat.id === id ? { ...cat, ...data, updatedAt: new Date().toISOString() } : cat));
-    message.success('Category updated successfully');
-  };
-
-  const deleteCategory = async (id: string) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setCategories(prev => prev.filter(cat => cat.id !== id));
-    message.success('Category deleted successfully');
-  };
-
-  return { categories, loading, fetchCategories, createCategory, updateCategory, deleteCategory };
-};
 
 const schema = yup.object({
   name: yup.string().required('Category name is required'),
