@@ -190,7 +190,7 @@ export const AppRoutes = () => {
         }
       />
 
-      {/* Inventory routes */}
+      {/* Sales routes */}
       <Route
         path="/sales/orders"
         element={
