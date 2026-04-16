@@ -1,102 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Select, Table, Tag, Space, Input, Modal, message } from 'antd';
+import { Button, Card, Select, Table, Tag, Space, Input, Modal } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import type { Product, ProductFilters, StockStatus } from '../../types/product.types';
+import { useProducts } from '../../hooks/useProducts';
 import { formatCurrency } from '../../utils/formatters';
 import styles from './ProductListPage.module.css';
-
-interface ProductData {
-  products: Product[];
-  loading: boolean;
-  fetchProducts: (filters: ProductFilters, page: number) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
-}
-
-const useProducts = (): ProductData => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const mockProducts: Product[] = [
-    {
-      id: '1',
-      name: 'Wireless Mouse',
-      sku: 'WM-001',
-      description: 'Ergonomic wireless mouse',
-      categoryId: 'electronics',
-      categoryName: 'Electronics',
-      unitPrice: 29.99,
-      costPrice: 15.00,
-      stockQuantity: 150,
-      reorderPoint: 20,
-      isActive: true,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z',
-    },
-    {
-      id: '2',
-      name: 'USB-C Cable',
-      sku: 'USB-C-01',
-      description: 'High-speed USB-C cable 6ft',
-      categoryId: 'electronics',
-      categoryName: 'Electronics',
-      unitPrice: 12.99,
-      costPrice: 5.00,
-      stockQuantity: 8,
-      reorderPoint: 15,
-      isActive: true,
-      createdAt: '2024-01-16T10:00:00Z',
-      updatedAt: '2024-01-16T10:00:00Z',
-    },
-    {
-      id: '3',
-      name: 'Notebook A5',
-      sku: 'NB-A5-01',
-      description: 'Lined notebook with 200 pages',
-      categoryId: 'office',
-      categoryName: 'Office Supplies',
-      unitPrice: 8.99,
-      costPrice: 3.00,
-      stockQuantity: 0,
-      reorderPoint: 25,
-      isActive: true,
-      createdAt: '2024-01-17T10:00:00Z',
-      updatedAt: '2024-01-17T10:00:00Z',
-    },
-  ];
-
-  const fetchProducts = useCallback(async (filters: ProductFilters, _page: number) => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    let filtered = [...mockProducts];
-    
-    if (filters.categoryId) {
-      filtered = filtered.filter(p => p.categoryId === filters.categoryId);
-    }
-    if (filters.search) {
-      const search = filters.search.toLowerCase();
-      filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search));
-    }
-    if (filters.stockStatus) {
-      filtered = filtered.filter(p => {
-        if (filters.stockStatus === 'out_of_stock') return p.stockQuantity === 0;
-        if (filters.stockStatus === 'low_stock') return p.stockQuantity > 0 && p.stockQuantity <= p.reorderPoint;
-        return p.stockQuantity > p.reorderPoint;
-      });
-    }
-
-    setProducts(filtered);
-    setLoading(false);
-  }, []);
-
-  const deleteProduct = async (id: string) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setProducts(prev => prev.filter(p => p.id !== id));
-    message.success('Product deleted successfully');
-  };
-
-  return { products, loading, fetchProducts, deleteProduct };
-};
 
 const categories = [
   { value: 'electronics', label: 'Electronics' },
