@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  width: 100%;
 }
 
 .logo {
@@ -17,6 +18,12 @@
   background: transparent;
   border-right: none;
   overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.menu :global(.ant-menu) {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .menu :global(.ant-menu-item) {
@@ -24,14 +31,21 @@
   border-radius: 8px;
   height: 40px;
   line-height: 40px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .menu :global(.ant-menu-item:hover) {
   background: rgba(255, 255, 255, 0.08);
+  color: #fff !important;
+}
+
+.menu :global(.ant-menu-item:hover .anticon) {
+  color: #fff !important;
 }
 
 .menu :global(.ant-menu-item-selected) {
   background: #1890ff !important;
+  color: #fff !important;
 }
 
 .menu :global(.ant-menu-submenu-title) {
@@ -39,19 +53,47 @@
   border-radius: 8px;
   height: 40px;
   line-height: 40px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .menu :global(.ant-menu-submenu-title:hover) {
   background: rgba(255, 255, 255, 0.08);
+  color: #fff !important;
+}
+
+.menu :global(.ant-menu-submenu-title:hover .anticon) {
+  color: #fff !important;
 }
 
 .menu :global(.ant-menu-sub) {
   background: transparent !important;
 }
 
+.menu :global(.ant-menu-sub .ant-menu-item) {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.menu :global(.ant-menu-sub .ant-menu-item:hover) {
+  color: #fff !important;
+}
+
+.menu :global(.ant-menu-item .anticon),
+.menu :global(.ant-menu-submenu-title .anticon) {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.menu :global(.ant-menu-item-selected .anticon),
+.menu :global(.ant-menu-item-selected) {
+  color: #fff !important;
+}
+
 .menu :global(.ant-menu-inline .ant-menu-item),
 .menu :global(.ant-menu-inline .ant-menu-submenu-title) {
   width: calc(100% - 16px);
+}
+
+.menu :global(.ant-menu-submenu-arrow) {
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .footer {
@@ -111,17 +153,6 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.collapsed .logoutButton {
-  justify-content: center;
-  padding: 12px 0;
-}
-
 .collapsed .logoutButton span {
   display: none;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
 }
