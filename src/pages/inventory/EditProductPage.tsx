@@ -107,7 +107,7 @@ export const EditProductPage: React.FC = () => {
   });
 
   const [basicData, setBasicData] = useState<BasicInfoData | null>(null);
-  const [, setPricingData] = useState<PricingData | null>(null);
+  const [pricingData, setPricingData] = useState<PricingData | null>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -148,9 +148,17 @@ export const EditProductPage: React.FC = () => {
   };
 
   const handleInventorySubmit = async () => {
-    getInventoryValues();
+    const inventoryData = getInventoryValues();
     setIsSubmitting(true);
     try {
+      const updatedProduct = {
+        ...basicData,
+        unitPrice: pricingData?.unitPrice,
+        costPrice: pricingData?.costPrice,
+        stockQuantity: inventoryData.stockQuantity,
+        reorderPoint: inventoryData.reorderPoint,
+      };
+      console.log('Updating product:', updatedProduct);
       await new Promise(resolve => setTimeout(resolve, 500));
       message.success('Product updated successfully');
       navigate(`/inventory/products/${id}`);
