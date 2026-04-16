@@ -59,6 +59,42 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.avatar {
+  background: #1890ff;
+  flex-shrink: 0;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.userName {
+  color: #fff;
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userRole {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
 .logoutButton {
   display: flex;
   align-items: center;

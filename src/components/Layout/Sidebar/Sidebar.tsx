@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { Menu } from "antd";
+import { Menu, Avatar } from "antd";
 import type { MenuProps } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -231,6 +231,17 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
         inlineCollapsed={collapsed}
       />
       <div className={styles.footer}>
+        {!collapsed && authContext?.user && (
+          <div className={styles.userInfo}>
+            <Avatar className={styles.avatar}>
+              {authContext.user.name?.charAt(0)}
+            </Avatar>
+            <div className={styles.userDetails}>
+              <span className={styles.userName}>{authContext.user.name}</span>
+              <span className={styles.userRole}>{authContext.user.role}</span>
+            </div>
+          </div>
+        )}
         <div
           className={styles.logoutButton}
           onClick={() => logout?.()}
