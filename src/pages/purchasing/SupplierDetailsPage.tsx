@@ -1,104 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Tabs, Table, Tag, Space, Progress, Statistic, Row, Col, message, Modal } from 'antd';
+import { Button, Card, Tabs, Table, Tag, Space, Progress, Statistic, Row, Col, message, Modal, Rate } from 'antd';
 import { EditOutlined, DeleteOutlined, ShoppingCartOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import type { Supplier } from '../../types/supplier.types';
 import type { PurchaseOrder, PurchaseOrderStatus } from '../../types/purchaseOrder.types';
+import { useSuppliers } from '../../hooks/useSuppliers';
+import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
 import styles from './SupplierDetailsPage.module.css';
-
-interface UseSupplierReturn {
-  supplier: Supplier | null;
-  loading: boolean;
-  fetchSupplier: (id: string) => Promise<void>;
-}
-
-const useSupplier = (): UseSupplierReturn => {
-  const [supplier, setSupplier] = useState<Supplier | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const fetchSupplier = async (id: string) => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const mockSupplier: Supplier = {
-      id,
-      name: 'TechSupply Co.',
-      contactPerson: 'John Smith',
-      email: 'john@techsupply.com',
-      phone: '+1 555-0101',
-      address: '123 Tech Street, Suite 100',
-      city: 'San Francisco',
-      country: 'USA',
-      paymentTerms: 'Net 30',
-      rating: 5,
-      totalOrders: 45,
-      onTimeDelivery: 98,
-      isActive: true,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z',
-    };
-    
-    setSupplier(mockSupplier);
-    setLoading(false);
-  };
-
-  return { supplier, loading, fetchSupplier };
-};
-
-interface UsePurchaseOrdersReturn {
-  orders: PurchaseOrder[];
-  fetchOrders: (filters: { supplierId: string }) => Promise<void>;
-}
-
-const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
-  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
-
-  const mockOrders: PurchaseOrder[] = [
-    {
-      id: '1',
-      poNumber: 'PO-2024-001',
-      supplierId: '1',
-      supplierName: 'TechSupply Co.',
-      orderDate: '2024-01-15T10:00:00Z',
-      deliveryDate: '2024-01-25T10:00:00Z',
-      status: 'delivered',
-      paymentTerms: 'Net 30',
-      notes: '',
-      items: [],
-      subtotal: 1500.00,
-      taxAmount: 150.00,
-      shippingCost: 50.00,
-      totalAmount: 1700.00,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z',
-    },
-    {
-      id: '2',
-      poNumber: 'PO-2024-002',
-      supplierId: '1',
-      supplierName: 'TechSupply Co.',
-      orderDate: '2024-01-16T10:00:00Z',
-      deliveryDate: '2024-01-30T10:00:00Z',
-      status: 'shipped',
-      paymentTerms: 'Net 30',
-      notes: '',
-      items: [],
-      subtotal: 2500.00,
-      taxAmount: 250.00,
-      shippingCost: 75.00,
-      totalAmount: 2825.00,
-      createdAt: '2024-01-16T10:00:00Z',
-      updatedAt: '2024-01-16T10:00:00Z',
-    },
-  ];
-
-  const fetchOrders = async (filters: { supplierId: string }) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setOrders(mockOrders.filter(o => o.supplierId === filters.supplierId));
-  };
-
-  return { orders, fetchOrders };
-};
 
 const getStatusTag = (status: PurchaseOrderStatus) => {
   const colors: Record<PurchaseOrderStatus, string> = {
@@ -115,16 +23,18 @@ const getStatusTag = (status: PurchaseOrderStatus) => {
 export const SupplierDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { supplier, loading: supplierLoading, fetchSupplier } = useSupplier();
-  const { orders, fetchOrders } = usePurchaseOrders();
+  const { suppliers, loading: supplierLoading, fetchSuppliers, deleteSupplier } = useSuppliers();
+  const { orders, loading: ordersLoading, fetchOrders } = usePurchaseOrders();
   const [activeTab, setActiveTab] = useState('purchaseOrders');
+
+  const supplier = suppliers.find(s => s.id === id);
 
   const loadData = useCallback(async () => {
     if (id) {
-      await fetchSupplier(id);
-      await fetchOrders({ supplierId: id });
+      await fetchSuppliers({ name: '' }, 1);
+      await fetchOrders({ supplierId: id }, 1);
     }
-  }, [id, fetchSupplier, fetchOrders]);
+  }, [id, fetchSuppliers, fetchOrders]);
 
   useEffect(() => {
     loadData();
@@ -145,8 +55,10 @@ export const SupplierDetailsPage: React.FC = () => {
       content: 'Are you sure you want to delete this supplier?',
       okText: 'Delete',
       okType: 'danger',
-      onOk: () => {
-        message.success('Supplier deleted successfully');
+      onOk: async () => {
+        if (id) {
+          await deleteSupplier(id);
+        }
         navigate('/purchasing/suppliers');
       },
     });
@@ -212,6 +124,7 @@ export const SupplierDetailsPage: React.FC = () => {
             dataSource={orders}
             rowKey="id"
             pagination={false}
+            loading={ordersLoading}
           />
         </div>
       ),
@@ -293,7 +206,7 @@ export const SupplierDetailsPage: React.FC = () => {
           </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Rating:</span>{' '}
-            <span className={styles.rating}>{'★'.repeat(supplier.rating)}</span>
+            <Rate disabled value={supplier.rating} />
           </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Total Orders:</span> {supplier.totalOrders}
