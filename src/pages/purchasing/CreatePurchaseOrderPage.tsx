@@ -7,6 +7,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import type { CreatePurchaseOrderDto, PurchaseOrderItem } from '../../types/purchaseOrder.types';
 import type { Supplier } from '../../types/supplier.types';
+import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
+import { useSuppliers } from '../../hooks/useSuppliers';
 import styles from './CreatePurchaseOrderPage.module.css';
 
 const schema = yup.object({
@@ -18,88 +20,6 @@ const schema = yup.object({
 });
 
 type FormData = yup.InferType<typeof schema>;
-
-interface UsePurchaseOrdersReturn {
-  createPurchaseOrder: (data: CreatePurchaseOrderDto) => Promise<void>;
-}
-
-const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
-  const createPurchaseOrder = async (_data: CreatePurchaseOrderDto) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message.success('Purchase order created successfully');
-  };
-  return { createPurchaseOrder };
-};
-
-interface UseSuppliersReturn {
-  suppliers: Supplier[];
-  fetchSuppliers: () => Promise<void>;
-}
-
-const useSuppliers = (): UseSuppliersReturn => {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-
-  const mockSuppliers: Supplier[] = [
-    {
-      id: '1',
-      name: 'TechSupply Co.',
-      contactPerson: 'John Smith',
-      email: 'john@techsupply.com',
-      phone: '+1 555-0101',
-      address: '123 Tech Street',
-      city: 'San Francisco',
-      country: 'USA',
-      paymentTerms: 'Net 30',
-      rating: 5,
-      totalOrders: 45,
-      onTimeDelivery: 98,
-      isActive: true,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z',
-    },
-    {
-      id: '2',
-      name: 'Global Parts Ltd.',
-      contactPerson: 'Sarah Johnson',
-      email: 'sarah@globalparts.com',
-      phone: '+1 555-0102',
-      address: '456 Industrial Ave',
-      city: 'New York',
-      country: 'USA',
-      paymentTerms: 'Net 60',
-      rating: 4,
-      totalOrders: 32,
-      onTimeDelivery: 92,
-      isActive: true,
-      createdAt: '2024-01-16T10:00:00Z',
-      updatedAt: '2024-01-16T10:00:00Z',
-    },
-    {
-      id: '3',
-      name: 'Quality Electronics',
-      contactPerson: 'Mike Chen',
-      email: 'mike@qualityelec.com',
-      phone: '+1 555-0103',
-      address: '789 Circuit Road',
-      city: 'Los Angeles',
-      country: 'USA',
-      paymentTerms: 'Net 30',
-      rating: 5,
-      totalOrders: 67,
-      onTimeDelivery: 95,
-      isActive: true,
-      createdAt: '2024-01-17T10:00:00Z',
-      updatedAt: '2024-01-17T10:00:00Z',
-    },
-  ];
-
-  const fetchSuppliers = async () => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setSuppliers(mockSuppliers);
-  };
-
-  return { suppliers, fetchSuppliers };
-};
 
 const paymentTermsOptions = [
   { value: 'Net 30', label: 'Net 30' },
