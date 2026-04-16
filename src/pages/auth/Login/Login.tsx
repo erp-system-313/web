@@ -22,7 +22,6 @@ export const LoginPage: React.FC = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
   } = useForm<LoginFormData>({
     defaultValues: {
       email: '',
