@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Tabs, Input, InputNumber, Select, message } from 'antd';
+import { Button, Card, Tabs, Input, InputNumber, Select } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import type { CreateProductDto } from '../../types/product.types';
+import { useProducts } from '../../hooks/useProducts';
 import styles from './CreateProductPage.module.css';
 
 const basicInfoSchema = yup.object({
@@ -32,14 +32,6 @@ const categories = [
   { value: 'electronics', label: 'Electronics' },
   { value: 'office', label: 'Office Supplies' },
 ];
-
-const useProducts = () => {
-  const createProduct = async (_data: CreateProductDto) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message.success('Product created successfully');
-  };
-  return { createProduct };
-};
 
 export const CreateProductPage: React.FC = () => {
   const navigate = useNavigate();
@@ -96,7 +88,7 @@ export const CreateProductPage: React.FC = () => {
         navigate('/inventory/products');
       }
     } catch {
-      message.error('Failed to create product');
+      // Error handled by hook
     } finally {
       setIsSubmitting(false);
     }
