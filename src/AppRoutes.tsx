@@ -27,6 +27,8 @@ import {
   CustomerDetails,
 } from "./pages/sales";
 import ProductListPage from "./pages/inventory/ProductListPage";
+import ProductDetailsPage from "./pages/inventory/ProductDetailsPage";
+import EditProductPage from "./pages/inventory/EditProductPage";
 import CategoryListPage from "./pages/inventory/CategoryListPage";
 import CreateProductPage from "./pages/inventory/CreateProductPage";
 
@@ -259,7 +261,7 @@ export const AppRoutes = () => {
         path="/inventory/products/:id"
         element={
           <ProtectedRoute>
-            <ProductListPage />
+            <ProductDetailsPage />
           </ProtectedRoute>
         }
       />
@@ -267,7 +269,7 @@ export const AppRoutes = () => {
         path="/inventory/products/:id/edit"
         element={
           <ProtectedRoute>
-            <ProductListPage />
+            <EditProductPage />
           </ProtectedRoute>
         }
       />

@@ -1,0 +1,49 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  margin-top: 0;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #999;
+}
+
+.notFound {
+  text-align: center;
+  padding: 48px;
+}
+
+.notFound h2 {
+  margin-bottom: 16px;
+}
+
+.marginPercent {
+  margin-left: 8px;
+  color: #52c41a;
+}
+
+.lowStock {
+  color: #ff4d4f;
+  font-weight: 500;
+}
