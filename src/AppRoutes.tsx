@@ -1,5 +1,5 @@
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { MainLayout } from "./components/Layout";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { MainLayout } from "./components/Layout/MainLayout";
 import { EmployeesList } from "./pages/hr/EmployeesList/EmployeesList";
 import { EmployeeDetails } from "./pages/hr/EmployeeDetails/EmployeeDetails";
 import AttendancePage from "./pages/hr/Attendance/Attendance";
@@ -35,14 +35,6 @@ import SupplierDetailsPage from "./pages/purchasing/SupplierDetailsPage";
 import PurchaseOrderListPage from "./pages/purchasing/PurchaseOrderListPage";
 import CreatePurchaseOrderPage from "./pages/purchasing/CreatePurchaseOrderPage";
 
-const ProtectedLayout = () => {
-  return (
-    <MainLayout>
-      <Outlet />
-    </MainLayout>
-  );
-};
-
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -50,7 +42,7 @@ export const AppRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
 
       {/* Protected routes */}
-      <Route element={<ProtectedLayout />}>
+      <Route element={<MainLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 
@@ -85,19 +77,43 @@ export const AppRoutes = () => {
         {/* Inventory routes */}
         <Route path="/inventory/products" element={<ProductListPage />} />
         <Route path="/inventory/products/new" element={<CreateProductPage />} />
-        <Route path="/inventory/products/:id" element={<ProductDetailsPage />} />
-        <Route path="/inventory/products/:id/edit" element={<EditProductPage />} />
+        <Route
+          path="/inventory/products/:id"
+          element={<ProductDetailsPage />}
+        />
+        <Route
+          path="/inventory/products/:id/edit"
+          element={<EditProductPage />}
+        />
         <Route path="/inventory/categories" element={<CategoryListPage />} />
 
         {/* Purchasing routes */}
         <Route path="/purchasing/suppliers" element={<SupplierListPage />} />
-        <Route path="/purchasing/suppliers/new" element={<SupplierListPage />} />
-        <Route path="/purchasing/suppliers/:id" element={<SupplierDetailsPage />} />
-        <Route path="/purchasing/suppliers/:id/edit" element={<SupplierDetailsPage />} />
+        <Route
+          path="/purchasing/suppliers/new"
+          element={<SupplierListPage />}
+        />
+        <Route
+          path="/purchasing/suppliers/:id"
+          element={<SupplierDetailsPage />}
+        />
+        <Route
+          path="/purchasing/suppliers/:id/edit"
+          element={<SupplierDetailsPage />}
+        />
         <Route path="/purchasing/orders" element={<PurchaseOrderListPage />} />
-        <Route path="/purchasing/orders/new" element={<CreatePurchaseOrderPage />} />
-        <Route path="/purchasing/orders/:id" element={<PurchaseOrderListPage />} />
-        <Route path="/purchasing/orders/:id/edit" element={<PurchaseOrderListPage />} />
+        <Route
+          path="/purchasing/orders/new"
+          element={<CreatePurchaseOrderPage />}
+        />
+        <Route
+          path="/purchasing/orders/:id"
+          element={<PurchaseOrderListPage />}
+        />
+        <Route
+          path="/purchasing/orders/:id/edit"
+          element={<PurchaseOrderListPage />}
+        />
       </Route>
 
       {/* Default redirects */}
