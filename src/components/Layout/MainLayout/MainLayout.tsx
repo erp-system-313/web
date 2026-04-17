@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { Layout, Button, Dropdown, Avatar, theme } from "antd";
+import { Layout, Button, Dropdown, Avatar } from "antd";
 import type { MenuProps } from "antd";
 import {
   MenuFoldOutlined,
@@ -15,10 +15,12 @@ import styles from "./MainLayout.module.css";
 
 const { Header, Sider, Content } = Layout;
 
-export const MainLayout: React.FC = () => {
+interface MainLayoutProps {
+  children?: React.ReactNode;
+}
+
+export const MainLayout: React.FC<MainLayoutProps> = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [mobile, setMobile] = useState(false);
-  const { token } = theme.useToken();
   const navigate = useNavigate();
   const authContext = useContext(AuthContext);
 
@@ -26,9 +28,7 @@ export const MainLayout: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      const isMobile = window.innerWidth < 768;
-      setMobile(isMobile);
-      if (isMobile) {
+      if (window.innerWidth < 768) {
         setCollapsed(true);
       }
     };

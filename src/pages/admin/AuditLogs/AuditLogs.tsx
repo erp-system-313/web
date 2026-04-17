@@ -26,7 +26,7 @@ export const AuditLogsPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { data: logs, loading, total, refetch } = useAuditLogs({
+  const { data: logs, loading, total } = useAuditLogs({
     page: page - 1,
     size: pageSize,
     action: actionFilter,

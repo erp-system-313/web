@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { settingsService, CompanySettings } from '../services/settingsService';
+import { settingsService } from '../services/settingsService';
+import type { CompanySettings } from '../services/settingsService';
 
 export const useSettings = () => {
   const [data, setData] = useState<CompanySettings | null>(null);

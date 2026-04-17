@@ -41,7 +41,7 @@ export const SettingsPage: React.FC = () => {
         <Form
           form={form}
           layout="vertical"
-          initialValues={settings}
+          initialValues={settings || undefined}
           onFinish={handleSave}
         >
           <Form.Item label="Company Name" name="companyName">

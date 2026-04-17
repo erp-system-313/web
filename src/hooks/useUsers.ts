@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { usersService, User, CreateUserDto, UpdateUserDto } from '../services/usersService';
+import { usersService } from '../services/usersService';
+import type { User, CreateUserDto, UpdateUserDto } from '../services/usersService';
 
 export const useUsers = (params?: { page?: number; size?: number; search?: string }) => {
   const [data, setData] = useState<User[]>([]);

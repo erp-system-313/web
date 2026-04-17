@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const api = axios.create({
   baseURL: '/api/v1',
@@ -22,9 +22,7 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
+  (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('erp_token');
@@ -36,14 +34,16 @@ api.interceptors.response.use(
 );
 
 export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public code: string,
-    message: string,
-    public fieldErrors?: Array<{ field: string; message: string }>
-  ) {
-    super(message);
+  status: number;
+  code: string;
+  fieldErrors?: Array<{ field: string; message: string }>;
+
+  constructor(status: number, code: string, msg: string, fieldErrors?: Array<{ field: string; message: string }>) {
+    super(msg);
     this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+    this.fieldErrors = fieldErrors;
   }
 }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { auditLogsService, AuditLog } from '../services/auditLogsService';
+import { auditLogsService } from '../services/auditLogsService';
+import type { AuditLog } from '../services/auditLogsService';
 
 export const useAuditLogs = (params?: {
   page?: number;

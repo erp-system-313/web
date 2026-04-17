@@ -1,14 +1,12 @@
 import { Card, Row, Col, Typography, List, Avatar, Spin } from 'antd';
-import { UserOutlined, CalendarOutlined, FileTextOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import { UserOutlined, CalendarOutlined, FileTextOutlined, WarningOutlined } from '@ant-design/icons';
 import { useContext } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { AuthContext } from '../../../contexts/AuthContext';
 import { useDashboardStats } from '../../../hooks/useDashboardStats';
 import styles from './Dashboard.module.css';
 
 const { Title, Text } = Typography;
-
-const COLORS = ['#1890ff', '#52c41a', '#faad14', '#f5222d'];
 
 export const Dashboard: React.FC = () => {
   const authContext = useContext(AuthContext);
