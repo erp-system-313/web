@@ -151,6 +151,8 @@ export interface InvoiceFilters {
   customerId?: number;
   dateFrom?: string;
   dateTo?: string;
+  page?: number;
+  size?: number;
 }
 
 export interface JournalFilters {
@@ -159,10 +161,15 @@ export interface JournalFilters {
   journalType?: JournalType;
   dateFrom?: string;
   dateTo?: string;
+  page?: number;
+  size?: number;
 }
 
 export interface AccountFilters {
   search?: string;
   type?: AccountType;
   isActive?: boolean;
+  parentId?: number;
+  page?: number;
+  size?: number;
 }
