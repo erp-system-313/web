@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { hrService } from '../services/hrService';
-import type { Employee, EmployeeFilters } from '../types/hr';
+import { hrService, type Employee, type CreateEmployeeRequest, type UpdateEmployeeRequest } from '../services/hrService';
+
+interface EmployeeFilters {
+  search?: string;
+  department?: string;
+  status?: string;
+}
 
 export const useEmployees = (filters?: EmployeeFilters) => {
   const [data, setData] = useState<Employee[]>([]);
@@ -13,10 +18,10 @@ export const useEmployees = (filters?: EmployeeFilters) => {
     setError(null);
     try {
       const response = await hrService.employees.getAll(filters);
-      setData(response.items);
-      setTotal(response.total);
+      setData(response.content);
+      setTotal(response.totalElements);
     } catch (err) {
-      setError('Failed to fetch employees');
+      setError(err instanceof Error ? err.message : 'Failed to fetch employees');
     } finally {
       setLoading(false);
     }
@@ -26,5 +31,31 @@ export const useEmployees = (filters?: EmployeeFilters) => {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  return { data, loading, error, total, refetch: fetchEmployees };
+  const createEmployee = useCallback(async (employee: CreateEmployeeRequest) => {
+    const newEmployee = await hrService.employees.create(employee);
+    await fetchEmployees();
+    return newEmployee;
+  }, [fetchEmployees]);
+
+  const updateEmployee = useCallback(async (id: number, employee: UpdateEmployeeRequest) => {
+    const updated = await hrService.employees.update(id, employee);
+    await fetchEmployees();
+    return updated;
+  }, [fetchEmployees]);
+
+  const deleteEmployee = useCallback(async (id: number) => {
+    await hrService.employees.delete(id);
+    await fetchEmployees();
+  }, [fetchEmployees]);
+
+  return { 
+    data, 
+    loading, 
+    error, 
+    total, 
+    refetch: fetchEmployees,
+    createEmployee,
+    updateEmployee,
+    deleteEmployee
+  };
 };

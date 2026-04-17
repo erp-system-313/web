@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Table, Card, Typography, Input, Select, DatePicker } from 'antd';
+import { Table, Card, Typography, Input, Select, DatePicker, Tag, Spin } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { useAuditLogs } from '../../../hooks/useAuditLogs';
 import styles from './AuditLogs.module.css';
 
 const { Title } = Typography;
@@ -9,9 +10,12 @@ const { RangePicker } = DatePicker;
 
 interface AuditLog {
   id: number;
-  user: string;
+  userId: number;
+  userName: string;
   action: string;
-  module: string;
+  entity: string;
+  entityId: number;
+  details: string;
   ipAddress: string;
   timestamp: string;
 }
@@ -19,24 +23,13 @@ interface AuditLog {
 export const AuditLogsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState<string | undefined>();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const mockLogs: AuditLog[] = [
-    { id: 1, user: 'Admin User', action: 'CREATE', module: 'Employees', ipAddress: '192.168.1.1', timestamp: '2026-04-15 09:30:00' },
-    { id: 2, user: 'Manager User', action: 'UPDATE', module: 'Leave Requests', ipAddress: '192.168.1.2', timestamp: '2026-04-15 10:15:00' },
-    { id: 3, user: 'Staff User', action: 'LOGIN', module: 'Auth', ipAddress: '192.168.1.3', timestamp: '2026-04-15 08:00:00' },
-    { id: 4, user: 'Admin User', action: 'DELETE', module: 'Products', ipAddress: '192.168.1.1', timestamp: '2026-04-14 14:20:00' },
-    { id: 5, user: 'Manager User', action: 'APPROVE', module: 'Purchase Orders', ipAddress: '192.168.1.2', timestamp: '2026-04-14 16:45:00' },
-    { id: 6, user: 'Staff User', action: 'VIEW', module: 'Dashboard', ipAddress: '192.168.1.3', timestamp: '2026-04-14 09:00:00' },
-    { id: 7, user: 'Admin User', action: 'UPDATE', module: 'Settings', ipAddress: '192.168.1.1', timestamp: '2026-04-13 11:30:00' },
-    { id: 8, user: 'Manager User', action: 'CREATE', module: 'Sales Orders', ipAddress: '192.168.1.2', timestamp: '2026-04-13 13:00:00' },
-  ];
-
-  const filteredLogs = mockLogs.filter(log => {
-    const matchesSearch = !search || 
-      log.user.toLowerCase().includes(search.toLowerCase()) ||
-      log.module.toLowerCase().includes(search.toLowerCase());
-    const matchesAction = !actionFilter || log.action === actionFilter;
-    return matchesSearch && matchesAction;
+  const { data: logs, loading, total } = useAuditLogs({
+    page: page - 1,
+    size: pageSize,
+    action: actionFilter,
   });
 
   const columns: ColumnsType<AuditLog> = [
@@ -44,26 +37,27 @@ export const AuditLogsPage: React.FC = () => {
       title: 'Timestamp',
       dataIndex: 'timestamp',
       key: 'timestamp',
-      sorter: (a, b) => a.timestamp.localeCompare(b.timestamp),
+      sorter: (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      render: (date) => new Date(date).toLocaleString(),
     },
     {
       title: 'User',
-      dataIndex: 'user',
-      key: 'user',
+      dataIndex: 'userName',
+      key: 'userName',
     },
     {
       title: 'Action',
       dataIndex: 'action',
       key: 'action',
       render: (action) => {
-        const color = action === 'CREATE' ? 'green' : action === 'UPDATE' ? 'blue' : action === 'DELETE' ? 'red' : 'default';
-        return <span style={{ color, fontWeight: 500 }}>{action}</span>;
+        const color = action === 'CREATE' ? 'green' : action === 'UPDATE' ? 'blue' : action === 'DELETE' ? 'red' : action === 'LOGIN' ? 'purple' : 'default';
+        return <Tag color={color}>{action}</Tag>;
       },
     },
     {
-      title: 'Module',
-      dataIndex: 'module',
-      key: 'module',
+      title: 'Entity',
+      dataIndex: 'entity',
+      key: 'entity',
     },
     {
       title: 'IP Address',
@@ -79,7 +73,7 @@ export const AuditLogsPage: React.FC = () => {
 
         <div className={styles.filters}>
           <Input
-            placeholder="Search user or module..."
+            placeholder="Search..."
             prefix={<SearchOutlined />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -102,12 +96,27 @@ export const AuditLogsPage: React.FC = () => {
           <RangePicker />
         </div>
 
-        <Table
-          dataSource={filteredLogs}
-          columns={columns}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-        />
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <Spin />
+          </div>
+        ) : (
+          <Table
+            dataSource={logs}
+            columns={columns}
+            rowKey="id"
+            pagination={{
+              current: page,
+              pageSize: pageSize,
+              total: total,
+              onChange: (p, ps) => {
+                setPage(p);
+                setPageSize(ps);
+              },
+              showTotal: (total) => `Total ${total} logs`
+            }}
+          />
+        )}
       </Card>
     </div>
   );

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Table, Card, Typography, Button, Space, Tag, Input } from 'antd';
+import { Table, Card, Typography, Button, Space, Tag, Input, Modal, Form, message, Spin } from 'antd';
 import { UserOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '../../../hooks/useUsers';
 import styles from './Users.module.css';
 
 const { Title } = Typography;
@@ -11,25 +12,54 @@ interface User {
   name: string;
   email: string;
   role: string;
-  status: string;
   createdAt: string;
 }
 
 export const UsersListPage: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [form] = Form.useForm();
 
-  const mockUsers: User[] = [
-    { id: 1, name: 'Admin User', email: 'admin@company.com', role: 'ADMIN', status: 'ACTIVE', createdAt: '2024-01-01' },
-    { id: 2, name: 'Manager User', email: 'manager@company.com', role: 'MANAGER', status: 'ACTIVE', createdAt: '2024-02-15' },
-    { id: 3, name: 'Staff User', email: 'staff@company.com', role: 'STAFF', status: 'ACTIVE', createdAt: '2024-03-10' },
-    { id: 4, name: 'John Doe', email: 'john@company.com', role: 'STAFF', status: 'INACTIVE', createdAt: '2024-01-20' },
-    { id: 5, name: 'Jane Smith', email: 'jane@company.com', role: 'MANAGER', status: 'ACTIVE', createdAt: '2024-02-01' },
-  ];
+  const { data: users, loading, total, refetch } = useUsers({ search });
+  const { create, loading: creating } = useCreateUser();
+  const { update, loading: updating } = useUpdateUser();
+  const { remove, loading: deleting } = useDeleteUser();
 
-  const filteredUsers = mockUsers.filter(user => 
-    user.name.toLowerCase().includes(search.toLowerCase()) ||
-    user.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      if (editingUser) {
+        await update(editingUser.id, values);
+        message.success('User updated successfully');
+      } else {
+        await create(values);
+        message.success('User created successfully');
+      }
+      setIsModalOpen(false);
+      form.resetFields();
+      setEditingUser(null);
+      refetch();
+    } catch (error) {
+      message.error('Failed to save user');
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    Modal.confirm({
+      title: 'Delete User',
+      content: 'Are you sure you want to delete this user?',
+      onOk: async () => {
+        try {
+          await remove(id);
+          message.success('User deleted successfully');
+          refetch();
+        } catch (error) {
+          message.error('Failed to delete user');
+        }
+      },
+    });
+  };
 
   const columns: ColumnsType<User> = [
     {
@@ -53,25 +83,32 @@ export const UsersListPage: React.FC = () => {
       },
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag>
-      ),
-    },
-    {
       title: 'Created',
       dataIndex: 'createdAt',
       key: 'createdAt',
+      render: (date) => new Date(date).toLocaleDateString(),
     },
     {
       title: 'Actions',
       key: 'actions',
-      render: () => (
+      render: (_, record) => (
         <Space>
-          <Button type="text" icon={<EditOutlined />} />
-          <Button type="text" danger icon={<DeleteOutlined />} />
+          <Button 
+            type="text" 
+            icon={<EditOutlined />} 
+            onClick={() => {
+              setEditingUser(record);
+              form.setFieldsValue(record);
+              setIsModalOpen(true);
+            }}
+          />
+          <Button 
+            type="text" 
+            danger 
+            icon={<DeleteOutlined />} 
+            onClick={() => handleDelete(record.id)}
+            loading={deleting}
+          />
         </Space>
       ),
     },
@@ -82,7 +119,15 @@ export const UsersListPage: React.FC = () => {
       <Card>
         <div className={styles.header}>
           <Title level={3}>User Management</Title>
-          <Button type="primary" icon={<PlusOutlined />}>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setEditingUser(null);
+              form.resetFields();
+              setIsModalOpen(true);
+            }}
+          >
             Add User
           </Button>
         </div>
@@ -95,13 +140,74 @@ export const UsersListPage: React.FC = () => {
           style={{ marginBottom: 16 }}
         />
 
-        <Table
-          dataSource={filteredUsers}
-          columns={columns}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-        />
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <Spin />
+          </div>
+        ) : (
+          <Table
+            dataSource={users}
+            columns={columns}
+            rowKey="id"
+            pagination={{ 
+              pageSize: 10,
+              total,
+              showTotal: (total) => `Total ${total} users`
+            }}
+          />
+        )}
       </Card>
+
+      <Modal
+        title={editingUser ? 'Edit User' : 'Add User'}
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={() => {
+          setIsModalOpen(false);
+          form.resetFields();
+          setEditingUser(null);
+        }}
+        confirmLoading={creating || updating}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: 'Please enter name' }]}
+          >
+            <Input placeholder="Enter name" />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[
+              { required: true, message: 'Please enter email' },
+              { type: 'email', message: 'Please enter valid email' }
+            ]}
+          >
+            <Input placeholder="Enter email" />
+          </Form.Item>
+          {!editingUser && (
+            <Form.Item
+              name="password"
+              label="Password"
+              rules={[
+                { required: true, message: 'Please enter password' },
+                { min: 6, message: 'Password must be at least 6 characters' }
+              ]}
+            >
+              <Input.Password placeholder="Enter password" />
+            </Form.Item>
+          )}
+          <Form.Item
+            name="role"
+            label="Role"
+            rules={[{ required: true, message: 'Please select role' }]}
+          >
+            <Input placeholder="Enter role (ADMIN, MANAGER, STAFF)" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

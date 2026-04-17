@@ -15,7 +15,11 @@ import styles from "./MainLayout.module.css";
 
 const { Header, Sider, Content } = Layout;
 
-export const MainLayout: React.FC = () => {
+interface MainLayoutProps {
+  children?: React.ReactNode;
+}
+
+export const MainLayout: React.FC<MainLayoutProps> = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const authContext = useContext(AuthContext);
@@ -24,8 +28,12 @@ export const MainLayout: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
+<<<<<<< integration/hr-admin
+      if (window.innerWidth < 768) {
+=======
       const isMobile = window.innerWidth < 768;
       if (isMobile) {
+>>>>>>> main
         setCollapsed(true);
       }
     };

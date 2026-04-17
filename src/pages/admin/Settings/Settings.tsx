@@ -1,45 +1,77 @@
-import { useState } from 'react';
-import { Card, Form, Input, Button, Typography, Tabs, message, Select, InputNumber } from 'antd';
+import { Card, Form, Input, Button, Typography, Tabs, message, Spin } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
+import { useSettings, useUpdateSettings } from '../../../hooks/useSettings';
 import styles from './Settings.module.css';
 
 const { Title } = Typography;
-const { Option } = Select;
 
 export const SettingsPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm();
+  const { data: settings, loading, refetch } = useSettings();
+  const { update, loading: updating } = useUpdateSettings();
 
-  const onFinish = () => {
-    setLoading(true);
-    setTimeout(() => {
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+      await update(values);
       message.success('Settings saved successfully');
-      setLoading(false);
-    }, 500);
+      refetch();
+    } catch (error) {
+      message.error('Failed to save settings');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <Card>
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <Spin />
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const tabItems = [
     {
       key: 'general',
       label: 'General',
       children: (
-        <Form layout="vertical" onFinish={onFinish}>
-          <Form.Item label="Company Name" name="companyName" initialValue="ERP System Inc.">
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={settings || undefined}
+          onFinish={handleSave}
+        >
+          <Form.Item label="Company Name" name="companyName">
             <Input />
           </Form.Item>
-          <Form.Item label="Tax ID" name="taxId" initialValue="12-3456789">
+          <Form.Item label="Company Email" name="companyEmail">
+            <Input type="email" />
+          </Form.Item>
+          <Form.Item label="Company Phone" name="companyPhone">
             <Input />
           </Form.Item>
-          <Form.Item label="Currency" name="currency" initialValue="USD">
-            <Select>
-              <Option value="USD">USD - US Dollar</Option>
-              <Option value="EUR">EUR - Euro</Option>
-              <Option value="GBP">GBP - British Pound</Option>
-            </Select>
+          <Form.Item label="Company Address" name="companyAddress">
+            <Input.TextArea rows={3} />
           </Form.Item>
-          <Form.Item label="Fiscal Year Start" name="fiscalYearStart" initialValue="01-01">
-            <Input placeholder="MM-DD" />
+          <Form.Item label="Tax Number" name="taxNumber">
+            <Input />
           </Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
+          <Form.Item label="Currency" name="currency">
+            <Input placeholder="USD" />
+          </Form.Item>
+          <Form.Item label="Fiscal Year Start (month)" name="fiscalYearStart">
+            <Input type="number" min={1} max={12} placeholder="1-12" />
+          </Form.Item>
+          <Form.Item label="Timezone" name="timezone">
+            <Input placeholder="UTC" />
+          </Form.Item>
+          <Form.Item label="Date Format" name="dateFormat">
+            <Input placeholder="YYYY-MM-DD" />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={updating} icon={<SaveOutlined />}>
             Save Changes
           </Button>
         </Form>
@@ -49,28 +81,8 @@ export const SettingsPage: React.FC = () => {
       key: 'notifications',
       label: 'Notifications',
       children: (
-        <Form layout="vertical" onFinish={onFinish}>
-          <Form.Item label="Email Notifications" name="emailNotifications" initialValue={true} valuePropName="checked">
-            <Select>
-              <Option value={true}>Enabled</Option>
-              <Option value={false}>Disabled</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item label="Leave Request Alerts" name="leaveAlerts" initialValue={true} valuePropName="checked">
-            <Select>
-              <Option value={true}>Enabled</Option>
-              <Option value={false}>Disabled</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item label="Order Notifications" name="orderNotifications" initialValue={true} valuePropName="checked">
-            <Select>
-              <Option value={true}>Enabled</Option>
-              <Option value={false}>Disabled</Option>
-            </Select>
-          </Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
-            Save Changes
-          </Button>
+        <Form layout="vertical">
+          <p style={{ color: '#8c8c8c' }}>Notification settings coming soon...</p>
         </Form>
       ),
     },
@@ -78,22 +90,8 @@ export const SettingsPage: React.FC = () => {
       key: 'hr',
       label: 'HR Settings',
       children: (
-        <Form layout="vertical" onFinish={onFinish}>
-          <Form.Item label="Default Leave Days Per Year" name="leaveDays" initialValue={21}>
-            <InputNumber min={0} max={50} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item label="Work Hours Per Day" name="workHours" initialValue={8}>
-            <InputNumber min={1} max={12} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item label="Work Week Start" name="weekStart" initialValue="MONDAY">
-            <Select>
-              <Option value="MONDAY">Monday</Option>
-              <Option value="SUNDAY">Sunday</Option>
-            </Select>
-          </Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
-            Save Changes
-          </Button>
+        <Form layout="vertical">
+          <p style={{ color: '#8c8c8c' }}>HR settings coming soon...</p>
         </Form>
       ),
     },
