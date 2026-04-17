@@ -8,69 +8,126 @@ import type {
   UpdateSalesOrderDto,
   PaginatedResponse,
 } from "../types/sales";
-import {
-  mockCustomers,
-  mockSalesOrders,
-  mockCustomerContacts,
-  addSalesOrder,
-  updateSalesOrder as updateMockSalesOrder,
-  deleteSalesOrder as deleteMockSalesOrder,
-} from "../mocks/salesMockData";
-import { mockProducts } from "../mocks/productsMockData";
+import { apiClient } from "../api/client";
+import { endpoints } from "../api/endpoints";
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+  timestamp?: string;
+}
+
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
 
 export const salesService = {
   customers: {
     getAll: async (
       filters?: CustomerFilters,
     ): Promise<PaginatedResponse<Customer>> => {
-      await delay(300);
-      let items = [...mockCustomers];
+      try {
+        const params = new URLSearchParams();
+        params.append("page", (filters?.page || 0).toString());
+        params.append("size", (filters?.size || 20).toString());
 
-      if (filters?.search) {
-        const search = filters.search.toLowerCase();
-        items = items.filter(
-          (c) =>
-            c.name.toLowerCase().includes(search) ||
-            c.email?.toLowerCase().includes(search) ||
-            c.phone?.includes(search),
-        );
+        if (filters?.search) {
+          params.append("search", filters.search);
+        }
+        if (filters?.isActive !== undefined) {
+          params.append("isActive", filters.isActive.toString());
+        }
+
+        const response = await apiClient.get<
+          ApiResponse<PageResponse<Customer>>
+        >(endpoints.customers.list, { params });
+
+        const pageData = response.data.data;
+        return {
+          items: pageData.content,
+          total: pageData.totalElements,
+          page: pageData.number,
+          pageSize: pageData.size,
+        };
+      } catch (error) {
+        console.error("Failed to fetch customers:", error);
+        return { items: [], total: 0, page: 0, pageSize: 20 };
       }
-
-      if (filters?.isActive !== undefined) {
-        items = items.filter((c) => c.isActive === filters.isActive);
-      }
-
-      if (filters?.creditLimitMin !== undefined) {
-        items = items.filter((c) => c.creditLimit >= filters.creditLimitMin!);
-      }
-
-      if (filters?.creditLimitMax !== undefined) {
-        items = items.filter((c) => c.creditLimit <= filters.creditLimitMax!);
-      }
-
-      return {
-        items,
-        total: items.length,
-        page: 1,
-        pageSize: 10,
-      };
     },
 
     getById: async (id: number): Promise<Customer | null> => {
-      await delay(200);
-      return mockCustomers.find((c) => c.id === id) || null;
+      try {
+        const response = await apiClient.get<ApiResponse<Customer>>(
+          endpoints.customers.getById(id),
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to fetch customer ${id}:`, error);
+        return null;
+      }
     },
 
     getContacts: async (customerId: number): Promise<CustomerContact[]> => {
-      await delay(200);
-      return mockCustomerContacts.filter((c) => c.customerId === customerId);
+      try {
+        const response = await apiClient.get<ApiResponse<CustomerContact[]>>(
+          endpoints.customers.getOrders(customerId),
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(
+          `Failed to fetch contacts for customer ${customerId}:`,
+          error,
+        );
+        return [];
+      }
     },
 
     getSalesHistory: async (customerId: number): Promise<SalesOrder[]> => {
-      await delay(300);
-      return mockSalesOrders.filter((o) => o.customerId === customerId);
+      try {
+        const response = await apiClient.get<ApiResponse<SalesOrder[]>>(
+          endpoints.customers.getOrders(customerId),
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(
+          `Failed to fetch sales history for customer ${customerId}:`,
+          error,
+        );
+        return [];
+      }
+    },
+
+    create: async (data: Partial<Customer>): Promise<Customer> => {
+      const response = await apiClient.post<ApiResponse<Customer>>(
+        endpoints.customers.create,
+        data,
+      );
+      return response.data.data;
+    },
+
+    update: async (id: number, data: Partial<Customer>): Promise<Customer> => {
+      const response = await apiClient.put<ApiResponse<Customer>>(
+        endpoints.customers.update(id),
+        data,
+      );
+      return response.data.data;
+    },
+
+    delete: async (id: number): Promise<boolean> => {
+      try {
+        await apiClient.delete(endpoints.customers.delete(id));
+        return true;
+      } catch (error) {
+        console.error(`Failed to delete customer ${id}:`, error);
+        return false;
+      }
     },
   },
 
@@ -78,111 +135,138 @@ export const salesService = {
     getAll: async (
       filters?: SalesOrderFilters,
     ): Promise<PaginatedResponse<SalesOrder>> => {
-      await delay(300);
-      let items = [...mockSalesOrders];
+      try {
+        const params = new URLSearchParams();
+        params.append("page", (filters?.page || 0).toString());
+        params.append("size", (filters?.size || 20).toString());
 
-      if (filters?.search) {
-        const search = filters.search.toLowerCase();
-        items = items.filter(
-          (o) =>
-            o.orderNumber.toLowerCase().includes(search) ||
-            o.customerName?.toLowerCase().includes(search),
-        );
+        if (filters?.search) {
+          params.append("search", filters.search);
+        }
+        if (filters?.status) {
+          params.append("status", filters.status);
+        }
+        if (filters?.customerId) {
+          params.append("customerId", filters.customerId.toString());
+        }
+        if (filters?.dateFrom) {
+          const dateFromVal = String(filters.dateFrom);
+          params.append("dateFrom", dateFromVal);
+        }
+        if (filters?.dateTo) {
+          const dateToVal = String(filters.dateTo);
+          params.append("dateTo", dateToVal);
+        }
+
+        const response = await apiClient.get<
+          ApiResponse<PageResponse<SalesOrder>>
+        >(endpoints.salesOrders.list, { params });
+
+        const pageData = response.data.data;
+        return {
+          items: pageData.content,
+          total: pageData.totalElements,
+          page: pageData.number,
+          pageSize: pageData.size,
+        };
+      } catch (error) {
+        console.error("Failed to fetch sales orders:", error);
+        return { items: [], total: 0, page: 0, pageSize: 20 };
       }
-
-      if (filters?.status) {
-        items = items.filter((o) => o.status === filters.status);
-      }
-
-      if (filters?.customerId) {
-        items = items.filter((o) => o.customerId === filters.customerId);
-      }
-
-      if (filters?.dateFrom) {
-        items = items.filter((o) => o.orderDate >= filters.dateFrom!);
-      }
-
-      if (filters?.dateTo) {
-        items = items.filter((o) => o.orderDate <= filters.dateTo!);
-      }
-
-      return {
-        items,
-        total: items.length,
-        page: 1,
-        pageSize: 10,
-      };
     },
 
     getById: async (id: number): Promise<SalesOrder | null> => {
-      await delay(200);
-      return mockSalesOrders.find((o) => o.id === id) || null;
+      try {
+        const response = await apiClient.get<ApiResponse<SalesOrder>>(
+          endpoints.salesOrders.getById(id),
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to fetch sales order ${id}:`, error);
+        return null;
+      }
     },
 
     create: async (data: CreateSalesOrderDto): Promise<SalesOrder> => {
-      await delay(400);
-      const customer = mockCustomers.find((c) => c.id === data.customerId);
-      const subtotal = data.lines.reduce(
-        (sum, line) => sum + line.unitPrice * line.quantity,
-        0,
+      const response = await apiClient.post<ApiResponse<SalesOrder>>(
+        endpoints.salesOrders.create,
+        data,
       );
-      const taxAmount = subtotal * 0.1;
-
-      const newOrder = addSalesOrder({
-        customerId: data.customerId,
-        customerName: customer?.name,
-        orderDate: data.orderDate,
-        requiredDate: data.requiredDate,
-        status: data.status,
-        notes: data.notes,
-        shippingAddress: data.shippingAddress,
-        paymentTerms: data.paymentTerms,
-        subtotal,
-        taxAmount,
-        totalAmount: subtotal + taxAmount,
-        createdBy: 1,
-        lines: data.lines.map((line, idx) => ({
-          id: Date.now() + idx,
-          orderId: 0,
-          productId: line.productId,
-          quantity: line.quantity,
-          unitPrice: line.unitPrice,
-          lineTotal: line.unitPrice * line.quantity,
-        })),
-      });
-
-      return newOrder;
+      return response.data.data;
     },
 
     update: async (
       id: number,
       data: UpdateSalesOrderDto,
     ): Promise<SalesOrder | null> => {
-      await delay(400);
-      return updateMockSalesOrder(id, data as Partial<SalesOrder>);
+      try {
+        const response = await apiClient.put<ApiResponse<SalesOrder>>(
+          endpoints.salesOrders.update(id),
+          data,
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to update sales order ${id}:`, error);
+        return null;
+      }
     },
 
     delete: async (id: number): Promise<boolean> => {
-      await delay(300);
-      return deleteMockSalesOrder(id);
+      try {
+        await apiClient.delete(endpoints.salesOrders.delete(id));
+        return true;
+      } catch (error) {
+        console.error(`Failed to delete sales order ${id}:`, error);
+        return false;
+      }
+    },
+
+    confirm: async (id: number): Promise<SalesOrder> => {
+      const response = await apiClient.put<ApiResponse<SalesOrder>>(
+        endpoints.salesOrders.confirm(id),
+      );
+      return response.data.data;
+    },
+
+    ship: async (id: number): Promise<SalesOrder> => {
+      const response = await apiClient.put<ApiResponse<SalesOrder>>(
+        endpoints.salesOrders.ship(id),
+      );
+      return response.data.data;
+    },
+
+    cancel: async (id: number): Promise<SalesOrder> => {
+      const response = await apiClient.put<ApiResponse<SalesOrder>>(
+        endpoints.salesOrders.cancel(id),
+      );
+      return response.data.data;
     },
   },
 
   products: {
-    search: async (query: string): Promise<typeof mockProducts> => {
-      await delay(200);
-      if (!query) return mockProducts;
+    search: async (query: string): Promise<Customer[]> => {
+      try {
+        const params = new URLSearchParams();
+        params.append("search", query);
 
-      const q = query.toLowerCase();
-      return mockProducts.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q),
-      );
+        const response = await apiClient.get<
+          ApiResponse<PageResponse<Customer>>
+        >(endpoints.products.list, { params });
+        return response.data.data.content;
+      } catch (error) {
+        console.error("Failed to search products:", error);
+        return [];
+      }
     },
 
     getById: async (id: number) => {
-      await delay(100);
-      return mockProducts.find((p) => p.id === id) || null;
+      try {
+        const response = await apiClient.get(endpoints.products.getById(id));
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to fetch product ${id}:`, error);
+        return null;
+      }
     },
   },
 };
