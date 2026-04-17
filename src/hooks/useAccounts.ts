@@ -12,7 +12,7 @@ export const useAccounts = () => {
     setError(null);
     try {
       const accounts = await financeService.accounts.getAll();
-      setData(accounts);
+      setData(accounts.items);
     } catch {
       setError("Failed to fetch accounts");
     } finally {

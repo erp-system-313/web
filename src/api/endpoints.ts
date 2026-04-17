@@ -55,6 +55,7 @@ export const endpoints = {
   invoices: {
     list: "/v1/invoices",
     getById: (id: number) => `/v1/invoices/${id}`,
+    getPdf: (id: number) => `/v1/invoices/${id}/pdf`,
     create: "/v1/invoices",
     update: (id: number) => `/v1/invoices/${id}`,
     delete: (id: number) => `/v1/invoices/${id}`,

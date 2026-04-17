@@ -5,154 +5,265 @@ import type {
   JournalEntry,
   InvoiceFilters,
   JournalFilters,
+  AccountFilters,
   CreateInvoiceDto,
   RecordPaymentDto,
   CreateJournalEntryDto,
   CreateAccountDto,
 } from "../types/finance";
-import {
-  mockInvoices,
-  addInvoice,
-  updateInvoice as updateMockInvoice,
-  recordPayment as recordMockPayment,
-} from "../mocks/invoicesMockData";
-import {
-  mockAccounts,
-  addAccount,
-  updateAccount as updateMockAccount,
-} from "../mocks/accountsMockData";
-import {
-  mockJournalEntries,
-  addJournalEntry,
-  updateJournalEntry as updateMockJournalEntry,
-  postJournalEntry as postMockJournalEntry,
-} from "../mocks/journalMockData";
+import { apiClient } from "../api/client";
+import { endpoints } from "../api/endpoints";
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+  timestamp?: string;
+}
+
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
 
 export const financeService = {
   invoices: {
     getAll: async (
       filters?: InvoiceFilters,
     ): Promise<{ items: Invoice[]; total: number }> => {
-      await delay(300);
-      let items = [...mockInvoices];
+      try {
+        const params = new URLSearchParams();
+        params.append("page", (filters?.page || 0).toString());
+        params.append("size", (filters?.size || 20).toString());
 
-      if (filters?.search) {
-        const search = filters.search.toLowerCase();
-        items = items.filter(
-          (i) =>
-            i.invoiceNumber.toLowerCase().includes(search) ||
-            i.customerName?.toLowerCase().includes(search),
-        );
+        if (filters?.search) {
+          params.append("search", filters.search);
+        }
+        if (filters?.status) {
+          params.append("status", filters.status);
+        }
+        if (filters?.customerId) {
+          params.append("customerId", filters.customerId.toString());
+        }
+        if (filters?.dateFrom) {
+          params.append("dateFrom", filters.dateFrom);
+        }
+        if (filters?.dateTo) {
+          params.append("dateTo", filters.dateTo);
+        }
+
+        const response = await apiClient.get<
+          ApiResponse<PageResponse<Invoice>>
+        >(endpoints.invoices.list, { params });
+
+        const pageData = response.data.data;
+        return {
+          items: pageData.content,
+          total: pageData.totalElements,
+        };
+      } catch (error) {
+        console.error("Failed to fetch invoices:", error);
+        return { items: [], total: 0 };
       }
-
-      if (filters?.status) {
-        items = items.filter((i) => i.status === filters.status);
-      }
-
-      if (filters?.customerId) {
-        items = items.filter((i) => i.customerId === filters.customerId);
-      }
-
-      return { items, total: items.length };
     },
 
     getById: async (id: number): Promise<Invoice | null> => {
-      await delay(200);
-      return mockInvoices.find((i) => i.id === id) || null;
+      try {
+        const response = await apiClient.get<ApiResponse<Invoice>>(
+          endpoints.invoices.getById(id),
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to fetch invoice ${id}:`, error);
+        return null;
+      }
     },
 
     create: async (data: CreateInvoiceDto): Promise<Invoice> => {
-      await delay(400);
-      const subtotal = data.lines.reduce(
-        (sum, line) => sum + line.unitPrice * line.quantity,
-        0,
+      const response = await apiClient.post<ApiResponse<Invoice>>(
+        endpoints.invoices.create,
+        data,
       );
-      const taxAmount = data.lines.reduce(
-        (sum, line) =>
-          sum + line.unitPrice * line.quantity * (line.taxRate || 0.1),
-        0,
-      );
-
-      return addInvoice({
-        customerId: data.customerId,
-        salesOrderId: data.salesOrderId,
-        invoiceDate: data.invoiceDate,
-        dueDate: data.dueDate,
-        status: data.status,
-        subtotal,
-        taxAmount,
-        total: subtotal + taxAmount,
-        paidAmount: 0,
-        balanceDue: subtotal + taxAmount,
-        lines: data.lines.map((line, idx) => ({
-          id: Date.now() + idx,
-          invoiceId: 0,
-          productId: line.productId,
-          description: line.description,
-          quantity: line.quantity,
-          unitPrice: line.unitPrice,
-          lineTotal: line.unitPrice * line.quantity,
-          glAccountId: line.glAccountId,
-          taxCode: line.taxCode,
-          taxRate: line.taxRate,
-        })),
-      });
+      return response.data.data;
     },
 
     update: async (
       id: number,
       data: Partial<CreateInvoiceDto>,
     ): Promise<Invoice | null> => {
-      await delay(400);
-      return updateMockInvoice(id, data as unknown as Partial<Invoice>);
+      try {
+        const response = await apiClient.put<ApiResponse<Invoice>>(
+          endpoints.invoices.update(id),
+          data,
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to update invoice ${id}:`, error);
+        return null;
+      }
+    },
+
+    delete: async (id: number): Promise<boolean> => {
+      try {
+        await apiClient.delete(endpoints.invoices.delete(id));
+        return true;
+      } catch (error) {
+        console.error(`Failed to delete invoice ${id}:`, error);
+        return false;
+      }
     },
 
     recordPayment: async (data: RecordPaymentDto): Promise<Payment> => {
-      await delay(300);
-      return recordMockPayment(data);
+      const response = await apiClient.post<ApiResponse<Payment>>(
+        endpoints.invoices.addPayment(data.invoiceId),
+        {
+          amount: data.amount,
+          paymentDate: data.paymentDate,
+          method: data.method,
+          reference: data.reference,
+        },
+      );
+      return response.data.data;
+    },
+
+    send: async (id: number): Promise<Invoice> => {
+      const response = await apiClient.put<ApiResponse<Invoice>>(
+        endpoints.invoices.send(id),
+      );
+      return response.data.data;
+    },
+
+    cancel: async (id: number): Promise<Invoice> => {
+      const response = await apiClient.put<ApiResponse<Invoice>>(
+        endpoints.invoices.cancel(id),
+      );
+      return response.data.data;
+    },
+
+    getPdf: async (id: number): Promise<string> => {
+      try {
+        const response = await apiClient.get<ApiResponse<string>>(
+          endpoints.invoices.getPdf(id),
+        );
+        return response.data.data || "PDF generation not available";
+      } catch (error) {
+        console.error(`Failed to get PDF for invoice ${id}:`, error);
+        return "PDF generation not available";
+      }
     },
   },
 
   payments: {
     getByInvoice: async (invoiceId: number): Promise<Payment[]> => {
-      await delay(200);
-      return mockInvoices.find((i) => i.id === invoiceId)?.payments || [];
+      try {
+        const response = await apiClient.get<ApiResponse<Payment[]>>(
+          `${endpoints.invoices.getById(invoiceId)}/payments`,
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(
+          `Failed to fetch payments for invoice ${invoiceId}:`,
+          error,
+        );
+        return [];
+      }
     },
   },
 
   accounts: {
-    getAll: async (): Promise<Account[]> => {
-      await delay(200);
-      return mockAccounts;
+    getAll: async (
+      filters?: AccountFilters,
+    ): Promise<{ items: Account[]; total: number }> => {
+      try {
+        const params = new URLSearchParams();
+        params.append("page", (filters?.page || 0).toString());
+        params.append("size", (filters?.size || 100).toString());
+
+        if (filters?.type) {
+          params.append("type", filters.type);
+        }
+        if (filters?.parentId) {
+          params.append("parentId", filters.parentId.toString());
+        }
+
+        const response = await apiClient.get<
+          ApiResponse<PageResponse<Account>>
+        >(endpoints.accounts.list, { params });
+
+        const pageData = response.data.data;
+        return {
+          items: pageData.content,
+          total: pageData.totalElements,
+        };
+      } catch (error) {
+        console.error("Failed to fetch accounts:", error);
+        return { items: [], total: 0 };
+      }
     },
 
     getById: async (id: number): Promise<Account | null> => {
-      await delay(100);
-      return mockAccounts.find((a) => a.id === id) || null;
+      try {
+        const response = await apiClient.get<ApiResponse<Account>>(
+          endpoints.accounts.getById(id),
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to fetch account ${id}:`, error);
+        return null;
+      }
     },
 
     getByType: async (type: string): Promise<Account[]> => {
-      await delay(200);
-      return mockAccounts.filter((a) => a.type === type);
+      try {
+        const params = new URLSearchParams();
+        params.append("type", type);
+        const response = await apiClient.get<
+          ApiResponse<PageResponse<Account>>
+        >(endpoints.accounts.list, { params });
+        return response.data.data.content;
+      } catch (error) {
+        console.error(`Failed to fetch accounts by type ${type}:`, error);
+        return [];
+      }
     },
 
     create: async (data: CreateAccountDto): Promise<Account> => {
-      await delay(300);
-      return addAccount({
-        ...data,
-        balance: 0,
-        isActive: true,
-      });
+      const response = await apiClient.post<ApiResponse<Account>>(
+        endpoints.accounts.create,
+        data,
+      );
+      return response.data.data;
     },
 
     update: async (
       id: number,
-      data: Partial<Account>,
+      data: Partial<CreateAccountDto>,
     ): Promise<Account | null> => {
-      await delay(300);
-      return updateMockAccount(id, data);
+      try {
+        const response = await apiClient.put<ApiResponse<Account>>(
+          endpoints.accounts.update(id),
+          data,
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to update account ${id}:`, error);
+        return null;
+      }
+    },
+
+    delete: async (id: number): Promise<boolean> => {
+      try {
+        await apiClient.delete(endpoints.accounts.delete(id));
+        return true;
+      } catch (error) {
+        console.error(`Failed to delete account ${id}:`, error);
+        return false;
+      }
     },
   },
 
@@ -160,90 +271,87 @@ export const financeService = {
     getAll: async (
       filters?: JournalFilters,
     ): Promise<{ items: JournalEntry[]; total: number }> => {
-      await delay(300);
-      let items = [...mockJournalEntries];
+      try {
+        const params = new URLSearchParams();
+        params.append("page", (filters?.page || 0).toString());
+        params.append("size", (filters?.size || 20).toString());
 
-      if (filters?.search) {
-        const search = filters.search.toLowerCase();
-        items = items.filter(
-          (e) =>
-            e.entryNumber.toLowerCase().includes(search) ||
-            e.description.toLowerCase().includes(search),
-        );
+        if (filters?.search) {
+          params.append("search", filters.search);
+        }
+        if (filters?.status) {
+          params.append("status", filters.status);
+        }
+        if (filters?.dateFrom) {
+          params.append("dateFrom", filters.dateFrom);
+        }
+        if (filters?.dateTo) {
+          params.append("dateTo", filters.dateTo);
+        }
+
+        const response = await apiClient.get<
+          ApiResponse<PageResponse<JournalEntry>>
+        >(endpoints.journal.list, { params });
+
+        const pageData = response.data.data;
+        return {
+          items: pageData.content,
+          total: pageData.totalElements,
+        };
+      } catch (error) {
+        console.error("Failed to fetch journal entries:", error);
+        return { items: [], total: 0 };
       }
-
-      if (filters?.status) {
-        items = items.filter((e) => e.status === filters.status);
-      }
-
-      if (filters?.journalType) {
-        items = items.filter((e) => e.journalType === filters.journalType);
-      }
-
-      return { items, total: items.length };
     },
 
     getById: async (id: number): Promise<JournalEntry | null> => {
-      await delay(200);
-      return mockJournalEntries.find((e) => e.id === id) || null;
+      try {
+        const response = await apiClient.get<ApiResponse<JournalEntry>>(
+          endpoints.journal.getById(id),
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to fetch journal entry ${id}:`, error);
+        return null;
+      }
     },
 
     create: async (data: CreateJournalEntryDto): Promise<JournalEntry> => {
-      await delay(400);
-      return addJournalEntry({
-        ...data,
-        status: "DRAFT",
-        createdBy: 1,
-        lines: data.lines.map((line, idx) => ({
-          id: Date.now() + idx,
-          entryId: 0,
-          accountId: line.accountId,
-          debit: line.debit,
-          credit: line.credit,
-          description: line.description,
-        })),
-      });
+      const response = await apiClient.post<ApiResponse<JournalEntry>>(
+        endpoints.journal.create,
+        data,
+      );
+      return response.data.data;
     },
 
     update: async (
       id: number,
       data: Partial<CreateJournalEntryDto>,
     ): Promise<JournalEntry | null> => {
-      await delay(400);
-      return updateMockJournalEntry(
-        id,
-        data as unknown as Partial<JournalEntry>,
+      try {
+        const response = await apiClient.put<ApiResponse<JournalEntry>>(
+          endpoints.journal.getById(id),
+          data,
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to update journal entry ${id}:`, error);
+        return null;
+      }
+    },
+
+    post: async (id: number): Promise<JournalEntry> => {
+      const response = await apiClient.post<ApiResponse<JournalEntry>>(
+        endpoints.journal.post(id),
       );
+      return response.data.data;
     },
 
-    post: async (id: number): Promise<JournalEntry | null> => {
-      await delay(300);
-      return postMockJournalEntry(id);
-    },
-
-    reverse: async (id: number): Promise<JournalEntry | null> => {
-      await delay(300);
-      const original = mockJournalEntries.find((e) => e.id === id);
-      if (!original || original.status !== "POSTED") return null;
-
-      return addJournalEntry({
-        date: new Date().toISOString().split("T")[0],
-        description: `Reversal of ${original.entryNumber}`,
-        reference: original.entryNumber,
-        journalType: original.journalType,
-        status: "POSTED",
-        createdBy: 1,
-        postedAt: new Date().toISOString(),
-        lines:
-          original.lines?.map((line, idx) => ({
-            id: Date.now() + idx,
-            entryId: 0,
-            accountId: line.accountId,
-            debit: line.credit,
-            credit: line.debit,
-            description: line.description,
-          })) || [],
-      });
+    reverse: async (id: number): Promise<JournalEntry> => {
+      const response = await apiClient.put<ApiResponse<JournalEntry>>(
+        endpoints.journal.reverse(id),
+      );
+      return response.data.data;
     },
   },
 };
