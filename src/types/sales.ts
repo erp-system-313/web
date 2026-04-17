@@ -91,6 +91,8 @@ export interface SalesOrderFilters {
   customerId?: number;
   dateFrom?: string;
   dateTo?: string;
+  page?: number;
+  size?: number;
 }
 
 export interface CustomerFilters {
@@ -98,6 +100,8 @@ export interface CustomerFilters {
   isActive?: boolean;
   creditLimitMin?: number;
   creditLimitMax?: number;
+  page?: number;
+  size?: number;
 }
 
 export interface PaginatedResponse<T> {
