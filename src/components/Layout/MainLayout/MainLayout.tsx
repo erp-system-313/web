@@ -28,12 +28,8 @@ export const MainLayout: React.FC<MainLayoutProps> = () => {
 
   useEffect(() => {
     const handleResize = () => {
-<<<<<<< integration/hr-admin
-      if (window.innerWidth < 768) {
-=======
       const isMobile = window.innerWidth < 768;
       if (isMobile) {
->>>>>>> main
         setCollapsed(true);
       }
     };
