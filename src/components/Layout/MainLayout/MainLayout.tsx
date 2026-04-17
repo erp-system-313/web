@@ -28,7 +28,12 @@ export const MainLayout: React.FC<MainLayoutProps> = () => {
 
   useEffect(() => {
     const handleResize = () => {
+<<<<<<< integration/hr-admin
       if (window.innerWidth < 768) {
+=======
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+>>>>>>> main
         setCollapsed(true);
       }
     };
@@ -99,7 +104,10 @@ export const MainLayout: React.FC<MainLayoutProps> = () => {
       >
         <Sidebar collapsed={collapsed} />
       </Sider>
-      <Layout className={styles.layoutContent} style={{ marginLeft: siderWidth }}>
+      <Layout
+        className={styles.layoutContent}
+        style={{ marginLeft: siderWidth }}
+      >
         <Header className={styles.header}>
           <div className={styles.headerLeft}>
             <Button
@@ -117,10 +125,7 @@ export const MainLayout: React.FC<MainLayoutProps> = () => {
             />
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <div className={styles.userDropdown}>
-                <Avatar
-                  icon={<UserOutlined />}
-                  className={styles.avatar}
-                >
+                <Avatar icon={<UserOutlined />} className={styles.avatar}>
                   {user?.name?.charAt(0)}
                 </Avatar>
                 <div className={styles.userInfo}>
