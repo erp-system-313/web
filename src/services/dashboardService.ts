@@ -1,4 +1,4 @@
-import api from './apiClient';
+import api, { handleApiError } from './apiClient';
 
 export interface DashboardStats {
   totalSales: number;
@@ -14,8 +14,12 @@ export interface DashboardStats {
 
 export const dashboardService = {
   getStats: async (): Promise<DashboardStats> => {
-    const response = await api.get('/dashboard/stats');
-    return response.data.data;
+    try {
+      const response = await api.get('/dashboard/stats');
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
   },
 };
 

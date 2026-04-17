@@ -1,3 +1,5 @@
+import api, { handleApiError } from './apiClient';
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -22,90 +24,87 @@ export interface LoginResponse {
   };
 }
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Mock users for testing
-const mockUsers: Array<{ email: string; password: string; user: AuthUser }> = [
-  {
-    email: "admin@company.com",
-    password: "admin123",
-    user: {
-      id: 1,
-      email: "admin@company.com",
-      name: "Admin User",
-      role: "ADMIN",
-    },
-  },
-  {
-    email: "manager@company.com",
-    password: "manager123",
-    user: {
-      id: 2,
-      email: "manager@company.com",
-      name: "Manager User",
-      role: "MANAGER",
-    },
-  },
-  {
-    email: "staff@company.com",
-    password: "staff123",
-    user: {
-      id: 3,
-      email: "staff@company.com",
-      name: "Staff User",
-      role: "STAFF",
-    },
-  },
-];
-
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    await delay(500);
-
-    const user = mockUsers.find(
-      (u) =>
-        u.email === credentials.email && u.password === credentials.password,
-    );
-
-    if (user) {
+    try {
+      const response = await api.post('/auth/login', credentials);
+      const data = response.data;
+      
+      if (data.success && data.data) {
+        return {
+          success: true,
+          data: {
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken,
+            user: {
+              id: data.data.user.id,
+              email: data.data.user.email,
+              name: data.data.user.firstName + ' ' + data.data.user.lastName,
+              role: data.data.user.role,
+            },
+          },
+        };
+      }
+      
       return {
-        success: true,
-        data: {
-          accessToken: `mock-jwt-token-${Date.now()}`,
-          refreshToken: `mock-refresh-token-${Date.now()}`,
-          user: user.user,
+        success: false,
+        error: {
+          message: data.error?.message || 'Login failed',
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: handleApiError(error),
         },
       };
     }
-
-    return {
-      success: false,
-      error: {
-        message: "Invalid email or password",
-      },
-    };
   },
 
   logout: async (): Promise<void> => {
-    await delay(200);
-    return;
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      // Ignore logout errors
+    }
   },
 
   refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
-    await delay(300);
-    return {
-      success: true,
-      data: {
-        accessToken: `mock-jwt-token-${Date.now()}`,
-        refreshToken: refreshToken,
-        user: {
-          id: 1,
-          email: "admin@company.com",
-          name: "Admin User",
-          role: "ADMIN",
+    try {
+      const response = await api.post('/auth/refresh', { refreshToken });
+      const data = response.data;
+      
+      if (data.success && data.data) {
+        return {
+          success: true,
+          data: {
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken,
+            user: {
+              id: data.data.user.id,
+              email: data.data.user.email,
+              name: data.data.user.firstName + ' ' + data.data.user.lastName,
+              role: data.data.user.role,
+            },
+          },
+        };
+      }
+      
+      return {
+        success: false,
+        error: {
+          message: 'Token refresh failed',
         },
-      },
-    };
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: handleApiError(error),
+        },
+      };
+    }
   },
 
   getCurrentUser: (): AuthUser | null => {
