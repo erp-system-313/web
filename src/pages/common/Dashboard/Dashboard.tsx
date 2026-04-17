@@ -93,7 +93,7 @@ export const Dashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={stats?.salesTrend || []}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Line type="monotone" dataKey="amount" stroke="#1890ff" strokeWidth={2} />
@@ -108,9 +108,9 @@ export const Dashboard: React.FC = () => {
               <BarChart data={stats?.topProducts || []} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={100} />
+                <YAxis dataKey="productName" type="category" width={100} />
                 <Tooltip />
-                <Bar dataKey="sales" fill="#1890ff" />
+                <Bar dataKey="quantitySold" fill="#1890ff" />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -127,8 +127,8 @@ export const Dashboard: React.FC = () => {
                 <List.Item>
                   <List.Item.Meta
                     avatar={<Avatar icon={<FileTextOutlined />} size="small" />}
-                    title={`Order #${item.id} - ${item.customer}`}
-                    description={`${item.status} - $${item.total.toFixed(2)} - ${item.date}`}
+                    title={`Order #${item.orderNumber} - ${item.customerName || 'N/A'}`}
+                    description={`${item.status} - $${item.totalAmount} - ${item.orderDate}`}
                   />
                 </List.Item>
               )}
