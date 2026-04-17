@@ -1,6 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
-import { hrService } from '../services/hrService';
-import type { LeaveRequest, LeaveRequestFilters, CreateLeaveRequestDto, LeaveBalance } from '../types/hr';
+import { hrService, type LeaveRequest, type LeaveBalance } from '../services/hrService';
+
+interface LeaveRequestFilters {
+  employeeId?: number;
+  status?: string;
+  type?: string;
+}
+
+interface CreateLeaveRequestDto {
+  employeeId: number;
+  type: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+}
 
 export const useLeaveRequests = (filters?: LeaveRequestFilters) => {
   const [data, setData] = useState<LeaveRequest[]>([]);

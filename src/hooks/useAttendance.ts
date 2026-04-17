@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { hrService } from '../services/hrService';
-import type { Attendance, AttendanceFilters } from '../types/hr';
+import { hrService, type Attendance } from '../services/hrService';
+
+interface AttendanceFilters {
+  employeeId?: number;
+  startDate?: string;
+  endDate?: string;
+}
 
 export const useAttendance = (filters?: AttendanceFilters) => {
   const [data, setData] = useState<Attendance[]>([]);
