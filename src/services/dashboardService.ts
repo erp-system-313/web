@@ -24,7 +24,20 @@ interface BackendStats {
   recentOrders: Array<{ orderId: number; orderNumber: string; customerName: string; totalAmount: number; status: string; orderDate: string }>;
 }
 
-const mapBackendToFrontend = (backend: BackendStats): DashboardStats => {
+const mapBackendToFrontend = (backend: BackendStats | null | undefined): DashboardStats => {
+  if (!backend) {
+    return {
+      totalSales: 0,
+      totalPurchases: 0,
+      pendingOrders: 0,
+      pendingInvoices: 0,
+      lowStockProducts: 0,
+      totalEmployees: 0,
+      salesTrend: [],
+      topProducts: [],
+      recentOrders: [],
+    };
+  }
   return {
     totalSales: Number(backend.totalSales) || 0,
     totalPurchases: Number(backend.totalPurchases) || 0,
@@ -42,8 +55,10 @@ export const dashboardService = {
   getStats: async (): Promise<DashboardStats> => {
     try {
       const response = await api.get('/dashboard/stats');
-      return mapBackendToFrontend(response.data.data);
+      console.log('Dashboard API response:', response.data);
+      return mapBackendToFrontend(response.data?.data);
     } catch (error) {
+      console.error('Dashboard API error:', error);
       throw new Error(handleApiError(error));
     }
   },
