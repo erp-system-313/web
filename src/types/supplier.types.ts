@@ -20,6 +20,8 @@ export interface SupplierFilters {
   name?: string;
   city?: string;
   rating?: number;
+  search?: string;
+  isActive?: boolean;
 }
 
 export interface CreateSupplierDto {
