@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Table, Card, Typography, Button, Space, Modal, Form, Input, message, Spin } from 'antd';
+import { Table, Card, Typography, Button, Space, Modal, Form, Input, DatePicker, message, Spin } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { useEmployees } from '../../../hooks';
 import type { Employee } from '../../../services/hrService';
+import dayjs from 'dayjs';
 import styles from './EmployeesList.module.css';
 
 const { Title } = Typography;
@@ -19,7 +20,13 @@ export const EmployeesList: React.FC = () => {
     try {
       const values = await form.validateFields();
       setCreating(true);
-      await createEmployee(values);
+      
+      const employeeData = {
+        ...values,
+        hireDate: values.hireDate ? values.hireDate.format('YYYY-MM-DD') : undefined,
+      };
+      
+      await createEmployee(employeeData);
       message.success('Employee created successfully');
       setIsModalOpen(false);
       form.resetFields();
@@ -176,6 +183,13 @@ export const EmployeesList: React.FC = () => {
             label="Phone"
           >
             <Input placeholder="Enter phone number" />
+          </Form.Item>
+          <Form.Item
+            name="hireDate"
+            label="Hire Date"
+            rules={[{ required: true, message: 'Please select hire date' }]}
+          >
+            <DatePicker style={{ width: '100%' }} placeholder="Select hire date" />
           </Form.Item>
         </Form>
       </Modal>
