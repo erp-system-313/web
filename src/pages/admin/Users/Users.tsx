@@ -171,11 +171,18 @@ export const UsersListPage: React.FC = () => {
       >
         <Form form={form} layout="vertical">
           <Form.Item
-            name="name"
-            label="Name"
-            rules={[{ required: true, message: 'Please enter name' }]}
+            name="firstName"
+            label="First Name"
+            rules={[{ required: true, message: 'Please enter first name' }]}
           >
-            <Input placeholder="Enter name" />
+            <Input placeholder="Enter first name" />
+          </Form.Item>
+          <Form.Item
+            name="lastName"
+            label="Last Name"
+            rules={[{ required: true, message: 'Please enter last name' }]}
+          >
+            <Input placeholder="Enter last name" />
           </Form.Item>
           <Form.Item
             name="email"
@@ -193,18 +200,18 @@ export const UsersListPage: React.FC = () => {
               label="Password"
               rules={[
                 { required: true, message: 'Please enter password' },
-                { min: 6, message: 'Password must be at least 6 characters' }
+                { min: 8, message: 'Password must be at least 8 characters' }
               ]}
             >
               <Input.Password placeholder="Enter password" />
             </Form.Item>
           )}
           <Form.Item
-            name="role"
-            label="Role"
-            rules={[{ required: true, message: 'Please select role' }]}
+            name="roleId"
+            label="Role ID"
+            rules={[{ required: true, message: 'Please enter role ID' }]}
           >
-            <Input placeholder="Enter role (ADMIN, MANAGER, STAFF)" />
+            <Input type="number" placeholder="Enter role ID (1=ADMIN, 2=MANAGER, 3=STAFF)" />
           </Form.Item>
         </Form>
       </Modal>
