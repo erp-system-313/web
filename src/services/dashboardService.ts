@@ -55,10 +55,8 @@ export const dashboardService = {
   getStats: async (): Promise<DashboardStats> => {
     try {
       const response = await api.get('/dashboard/stats');
-      console.log('Dashboard API response:', response.data);
       return mapBackendToFrontend(response.data?.data);
     } catch (error) {
-      console.error('Dashboard API error:', error);
       throw new Error(handleApiError(error));
     }
   },

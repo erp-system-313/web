@@ -50,7 +50,6 @@ export class ApiError extends Error {
 export const handleApiError = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
     const apiError = error.response?.data;
-    console.error('API Error Response:', apiError);
     if (apiError?.error?.message) {
       return apiError.error.message;
     }
