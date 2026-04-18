@@ -21,6 +21,9 @@ export const endpoints = {
     list: "/v1/products",
     getById: (id: number) => `/v1/products/${id}`,
     lowStock: "/v1/products/low-stock",
+    create: "/v1/products",
+    update: (id: number) => `/v1/products/${id}`,
+    delete: (id: number) => `/v1/products/${id}`,
   },
   inventory: {
     list: "/v1/products",
