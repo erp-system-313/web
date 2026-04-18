@@ -39,7 +39,7 @@ export const authService = {
             user: {
               id: data.data.user.id,
               email: data.data.user.email,
-              name: data.data.user.firstName + ' ' + data.data.user.lastName,
+              name: data.data.user.name || 'User',
               role: data.data.user.role,
             },
           },
@@ -84,7 +84,7 @@ export const authService = {
             user: {
               id: data.data.user.id,
               email: data.data.user.email,
-              name: data.data.user.firstName + ' ' + data.data.user.lastName,
+              name: data.data.user.name || 'User',
               role: data.data.user.role,
             },
           },

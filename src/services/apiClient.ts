@@ -53,6 +53,9 @@ export const handleApiError = (error: unknown): string => {
     if (apiError?.error?.message) {
       return apiError.error.message;
     }
+    if (apiError?.message) {
+      return apiError.message;
+    }
     if (error.response?.status === 401) {
       return 'Unauthorized. Please login again.';
     }
@@ -64,6 +67,9 @@ export const handleApiError = (error: unknown): string => {
     }
     if (error.response?.status === 500) {
       return 'Server error. Please try again later.';
+    }
+    if (error.response?.status === 0 || error.code === 'ECONNREFUSED') {
+      return 'Cannot connect to server. Is the backend running?';
     }
     return error.message || 'An error occurred';
   }

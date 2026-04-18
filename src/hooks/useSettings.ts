@@ -38,8 +38,9 @@ export const useUpdateSettings = () => {
       const result = await settingsService.update(data);
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update settings');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update settings';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }

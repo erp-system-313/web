@@ -135,14 +135,7 @@ export const LoginPage: React.FC = () => {
           </Button>
         </form>
 
-        <div className={styles.footer}>
-          <Text type="secondary">Demo accounts:</Text>
-          <div className={styles.demoAccounts}>
-            <Text>admin@company.com / admin123</Text>
-            <Text>manager@company.com / manager123</Text>
-            <Text>staff@company.com / staff123</Text>
-          </div>
-        </div>
+        
       </Card>
     </div>
   );

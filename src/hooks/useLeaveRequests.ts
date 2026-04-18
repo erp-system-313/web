@@ -26,10 +26,12 @@ export const useLeaveRequests = (filters?: LeaveRequestFilters) => {
     setError(null);
     try {
       const response = await hrService.leave.getAll(filters);
-      setData(response.content);
-      setTotal(response.totalElements);
+      setData(response.content || []);
+      setTotal(response.totalElements || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch leave requests');
+      setData([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
