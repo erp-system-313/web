@@ -67,15 +67,15 @@ export const InvoicesList: React.FC = () => {
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `$${(amount ?? 0).toFixed(2)}`,
     },
     {
       title: "Balance",
       dataIndex: "balance",
       key: "balance",
       render: (balance: number) => (
-        <span style={{ color: balance > 0 ? "#ff4d4f" : "#52c41a" }}>
-          ${balance.toFixed(2)}
+        <span style={{ color: (balance ?? 0) > 0 ? "#ff4d4f" : "#52c41a" }}>
+          ${(balance ?? 0).toFixed(2)}
         </span>
       ),
     },

@@ -64,7 +64,7 @@ export const InvoiceDetails: React.FC = () => {
   const paymentForm = useForm<PaymentFormValues>({
     resolver: yupResolver(recordPaymentSchema) as any,
     defaultValues: {
-      amount: invoice?.balance || 0,
+      amount: invoice?.balance ?? 0,
       paymentDate: new Date().toISOString().split("T")[0],
       method: "",
       reference: "",
@@ -93,7 +93,7 @@ export const InvoiceDetails: React.FC = () => {
 
   const openPaymentModal = () => {
     paymentForm.reset({
-      amount: invoice.balance,
+      amount: invoice.balance ?? 0,
       paymentDate: new Date().toISOString().split("T")[0],
       method: "",
       reference: "",
@@ -116,7 +116,7 @@ export const InvoiceDetails: React.FC = () => {
       dataIndex: "unitPrice",
       key: "unitPrice",
       align: "right" as const,
-      render: (v: number) => `$${v.toFixed(2)}`,
+      render: (v: number) => `$${(v ?? 0).toFixed(2)}`,
     },
     { title: "GL Account", dataIndex: "glAccountName", key: "glAccountName" },
     {
@@ -124,7 +124,7 @@ export const InvoiceDetails: React.FC = () => {
       dataIndex: "lineTotal",
       key: "lineTotal",
       align: "right" as const,
-      render: (v: number) => `$${v.toFixed(2)}`,
+      render: (v: number) => `$${(v ?? 0).toFixed(2)}`,
     },
   ];
 
@@ -139,7 +139,7 @@ export const InvoiceDetails: React.FC = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (v: number) => `$${v.toFixed(2)}`,
+      render: (v: number) => `$${(v ?? 0).toFixed(2)}`,
     },
     { title: "Method", dataIndex: "method", key: "method" },
     { title: "Reference", dataIndex: "reference", key: "reference" },
@@ -182,7 +182,7 @@ export const InvoiceDetails: React.FC = () => {
               type="primary"
               icon={<DollarOutlined />}
               onClick={openPaymentModal}
-              disabled={invoice.balance === 0}
+              disabled={(invoice.balance ?? 0) === 0}
             >
               Record Payment
             </Button>
@@ -199,7 +199,7 @@ export const InvoiceDetails: React.FC = () => {
                     <strong>Total Paid</strong>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={1}>
-                    <strong>${invoice.paidAmount.toFixed(2)}</strong>
+                    <strong>${(invoice.paidAmount ?? 0).toFixed(2)}</strong>
                   </Table.Summary.Cell>
                 </Table.Summary.Row>
               </Table.Summary>
@@ -234,40 +234,41 @@ export const InvoiceDetails: React.FC = () => {
               summary={() => (
                 <Table.Summary>
                   <Table.Summary.Row>
-                    <Table.Summary.Cell index={0} colSpan={4}>
+                    <Table.Summary.Cell index={0} colSpan={5}>
                       <strong>Subtotal</strong>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1} align="right">
-                      <strong>${invoice.subtotal.toFixed(2)}</strong>
+                    <Table.Summary.Cell index={5} align="right">
+                      <strong>${(invoice.subtotal ?? 0).toFixed(2)}</strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                   <Table.Summary.Row>
-                    <Table.Summary.Cell index={0} colSpan={4}>
+                    <Table.Summary.Cell index={0} colSpan={5}>
                       Tax (10%)
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1} align="right">
-                      ${invoice.taxAmount.toFixed(2)}
+                    <Table.Summary.Cell index={5} align="right">
+                      ${(invoice.taxAmount ?? 0).toFixed(2)}
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                   <Table.Summary.Row>
-                    <Table.Summary.Cell index={0} colSpan={4}>
+                    <Table.Summary.Cell index={0} colSpan={5}>
                       <strong>Total</strong>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1} align="right">
-                      <strong>${invoice.totalAmount.toFixed(2)}</strong>
+                    <Table.Summary.Cell index={5} align="right">
+                      <strong>${(invoice.totalAmount ?? 0).toFixed(2)}</strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                   <Table.Summary.Row>
-                    <Table.Summary.Cell index={0} colSpan={4}>
+                    <Table.Summary.Cell index={0} colSpan={5}>
                       <strong>Balance Due</strong>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1} align="right">
+                    <Table.Summary.Cell index={5} align="right">
                       <strong
                         style={{
-                          color: invoice.balance > 0 ? "#ff4d4f" : "#52c41a",
+                          color:
+                            (invoice.balance ?? 0) > 0 ? "#ff4d4f" : "#52c41a",
                         }}
                       >
-                        ${invoice.balance.toFixed(2)}
+                        ${(invoice.balance ?? 0).toFixed(2)}
                       </strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
@@ -290,7 +291,7 @@ export const InvoiceDetails: React.FC = () => {
                 onClick={() => navigate(`/finance/invoices/${invoice.id}/edit`)}
                 block
                 disabled={
-                  invoice.status === "PAID" || invoice.status === "CANCELLED"
+                  (invoice.balance ?? 0) === 0 || invoice.status === "CANCELLED"
                 }
               >
                 Edit Invoice
@@ -313,7 +314,7 @@ export const InvoiceDetails: React.FC = () => {
                 icon={<DollarOutlined />}
                 onClick={openPaymentModal}
                 block
-                disabled={invoice.balance === 0}
+                disabled={(invoice.balance ?? 0) === 0}
               >
                 Record Payment
               </Button>
