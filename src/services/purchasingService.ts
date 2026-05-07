@@ -22,9 +22,8 @@ export const purchasingService = {
       size: String(size),
     };
 
+    if (filters.status) params.status = filters.status;
     if (filters.search) params.search = filters.search;
-    if (filters.isActive !== undefined)
-      params.isActive = String(filters.isActive);
 
     const response = await api.get(`${endpoints.suppliers.list}`, { params });
     return {
@@ -33,8 +32,8 @@ export const purchasingService = {
     };
   },
 
-  async getSupplier(id: string): Promise<Supplier | null> {
-    const response = await api.get(endpoints.suppliers.getById(Number(id)));
+  async getSupplier(id: number): Promise<Supplier | null> {
+    const response = await api.get(endpoints.suppliers.getById(id));
     return response.data.data;
   },
 
@@ -44,18 +43,15 @@ export const purchasingService = {
   },
 
   async updateSupplier(
-    id: string,
+    id: number,
     data: Partial<CreateSupplierDto>,
   ): Promise<Supplier> {
-    const response = await api.put(
-      endpoints.suppliers.update(Number(id)),
-      data,
-    );
+    const response = await api.put(endpoints.suppliers.update(id), data);
     return response.data.data;
   },
 
-  async deleteSupplier(id: string): Promise<void> {
-    await api.delete(endpoints.suppliers.delete(Number(id)));
+  async deleteSupplier(id: number): Promise<void> {
+    await api.delete(endpoints.suppliers.delete(id));
   },
 
   async getPurchaseOrders(
@@ -68,7 +64,7 @@ export const purchasingService = {
     params.size = String(size);
 
     if (filters.status) params.status = filters.status;
-    if (filters.supplierId) params.supplierId = filters.supplierId;
+    if (filters.supplierId) params.supplierId = String(filters.supplierId);
     if (filters.search) params.search = filters.search;
 
     const response = await api.get(`${endpoints.purchaseOrders.list}`, {
@@ -80,10 +76,8 @@ export const purchasingService = {
     };
   },
 
-  async getPurchaseOrder(id: string): Promise<PurchaseOrder | null> {
-    const response = await api.get(
-      endpoints.purchaseOrders.getById(Number(id)),
-    );
+  async getPurchaseOrder(id: number): Promise<PurchaseOrder | null> {
+    const response = await api.get(endpoints.purchaseOrders.getById(id));
     return response.data.data;
   },
 
@@ -95,33 +89,29 @@ export const purchasingService = {
   },
 
   async updatePurchaseOrder(
-    id: string,
+    id: number,
     data: Partial<CreatePurchaseOrderDto>,
   ): Promise<PurchaseOrder> {
-    const response = await api.put(
-      endpoints.purchaseOrders.update(Number(id)),
-      data,
-    );
+    const response = await api.put(endpoints.purchaseOrders.update(id), data);
     return response.data.data;
   },
 
-  async deletePurchaseOrder(id: string): Promise<void> {
-    await api.delete(endpoints.purchaseOrders.delete(Number(id)));
+  async deletePurchaseOrder(id: number): Promise<void> {
+    await api.delete(endpoints.purchaseOrders.delete(id));
   },
 
   async receivePurchaseOrder(
-    id: string,
+    id: number,
     lines: { lineId: number; receivedQty: number }[],
   ): Promise<PurchaseOrder> {
-    const response = await api.put(
-      endpoints.purchaseOrders.receive(Number(id)),
-      { lines },
-    );
+    const response = await api.put(endpoints.purchaseOrders.receive(id), {
+      lines,
+    });
     return response.data.data;
   },
 
-  async cancelPurchaseOrder(id: string): Promise<PurchaseOrder> {
-    const response = await api.put(endpoints.purchaseOrders.cancel(Number(id)));
+  async cancelPurchaseOrder(id: number): Promise<PurchaseOrder> {
+    const response = await api.put(endpoints.purchaseOrders.cancel(id));
     return response.data.data;
   },
 };
