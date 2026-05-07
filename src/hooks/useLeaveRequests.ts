@@ -4,19 +4,12 @@ import {
   type LeaveRequest,
   type LeaveBalance,
 } from "../services/hrService";
+import type { CreateLeaveRequestDto } from "../types/hr";
 
 interface LeaveRequestFilters {
   employeeId?: number;
   status?: string;
   type?: string;
-}
-
-interface CreateLeaveRequestDto {
-  employeeId: number;
-  type: string;
-  startDate: string;
-  endDate: string;
-  reason: string;
 }
 
 export const useLeaveRequests = (filters?: LeaveRequestFilters) => {
@@ -60,7 +53,7 @@ export const useLeaveBalances = () => {
     setError(null);
     try {
       const response = await hrService.leave.getBalances();
-      setData(response ? [response] : []);
+      setData(response || []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch leave balances",

@@ -3,13 +3,21 @@ import { apiClient as api, handleApiError } from "../api/client";
 export interface AuditLog {
   id: number;
   userId: number;
-  userName: string;
+  userEmail: string;
   action: string;
-  entity: string;
+  entityType: string;
   entityId: number;
+  changes?: any;
   details: string;
   ipAddress: string;
-  timestamp: string;
+  createdAt: string;
+}
+
+export interface AuditLogFilters {
+  entityType?: string;
+  userId?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface AuditLogsResponse {
@@ -24,8 +32,8 @@ export const auditLogsService = {
   getAll: async (params?: {
     page?: number;
     size?: number;
+    entityType?: string;
     userId?: number;
-    action?: string;
     startDate?: string;
     endDate?: string;
   }): Promise<AuditLogsResponse> => {

@@ -1,6 +1,5 @@
 import type {
   Customer,
-  CustomerContact,
   SalesOrder,
   SalesOrderFilters,
   CustomerFilters,
@@ -71,21 +70,6 @@ export const salesService = {
       } catch (error) {
         console.error(`Failed to fetch customer ${id}:`, error);
         return null;
-      }
-    },
-
-    getContacts: async (customerId: number): Promise<CustomerContact[]> => {
-      try {
-        const response = await apiClient.get<ApiResponse<CustomerContact[]>>(
-          endpoints.customers.getOrders(customerId),
-        );
-        return response.data.data;
-      } catch (error) {
-        console.error(
-          `Failed to fetch contacts for customer ${customerId}:`,
-          error,
-        );
-        return [];
       }
     },
 

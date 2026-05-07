@@ -64,7 +64,7 @@ export const InvoiceDetails: React.FC = () => {
   const paymentForm = useForm<PaymentFormValues>({
     resolver: yupResolver(recordPaymentSchema) as any,
     defaultValues: {
-      amount: invoice?.balanceDue || 0,
+      amount: invoice?.balance || 0,
       paymentDate: new Date().toISOString().split("T")[0],
       method: "",
       reference: "",
@@ -93,7 +93,7 @@ export const InvoiceDetails: React.FC = () => {
 
   const openPaymentModal = () => {
     paymentForm.reset({
-      amount: invoice.balanceDue,
+      amount: invoice.balance,
       paymentDate: new Date().toISOString().split("T")[0],
       method: "",
       reference: "",
@@ -182,7 +182,7 @@ export const InvoiceDetails: React.FC = () => {
               type="primary"
               icon={<DollarOutlined />}
               onClick={openPaymentModal}
-              disabled={invoice.balanceDue === 0}
+              disabled={invoice.balance === 0}
             >
               Record Payment
             </Button>
@@ -254,7 +254,7 @@ export const InvoiceDetails: React.FC = () => {
                       <strong>Total</strong>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={1} align="right">
-                      <strong>${invoice.total.toFixed(2)}</strong>
+                      <strong>${invoice.totalAmount.toFixed(2)}</strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                   <Table.Summary.Row>
@@ -264,10 +264,10 @@ export const InvoiceDetails: React.FC = () => {
                     <Table.Summary.Cell index={1} align="right">
                       <strong
                         style={{
-                          color: invoice.balanceDue > 0 ? "#ff4d4f" : "#52c41a",
+                          color: invoice.balance > 0 ? "#ff4d4f" : "#52c41a",
                         }}
                       >
-                        ${invoice.balanceDue.toFixed(2)}
+                        ${invoice.balance.toFixed(2)}
                       </strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
@@ -313,7 +313,7 @@ export const InvoiceDetails: React.FC = () => {
                 icon={<DollarOutlined />}
                 onClick={openPaymentModal}
                 block
-                disabled={invoice.balanceDue === 0}
+                disabled={invoice.balance === 0}
               >
                 Record Payment
               </Button>
@@ -339,7 +339,7 @@ export const InvoiceDetails: React.FC = () => {
               {...paymentForm.register("amount")}
               prefix="$"
               min={0.01}
-              max={invoice.balanceDue}
+              max={invoice.balance}
               style={{ width: "100%" }}
               onChange={(value) => paymentForm.setValue("amount", value || 0)}
               value={paymentForm.watch("amount")}

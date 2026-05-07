@@ -1,8 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
-import { usersService } from '../services/usersService';
-import type { User, CreateUserDto, UpdateUserDto } from '../services/usersService';
+import { useState, useEffect, useCallback } from "react";
+import { usersService } from "../services/usersService";
+import type {
+  User,
+  CreateUserDto,
+  UpdateUserDto,
+} from "../services/usersService";
 
-export const useUsers = (params?: { page?: number; size?: number; search?: string }) => {
+export const useUsers = (params?: {
+  page?: number;
+  size?: number;
+  roleName?: string;
+  isActive?: boolean;
+}) => {
   const [data, setData] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,11 +25,11 @@ export const useUsers = (params?: { page?: number; size?: number; search?: strin
       setData(response.content);
       setTotal(response.totalElements);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch users');
+      setError(err instanceof Error ? err.message : "Failed to fetch users");
     } finally {
       setLoading(false);
     }
-  }, [params?.page, params?.size, params?.search]);
+  }, [params?.page, params?.size, params?.roleName, params?.isActive]);
 
   useEffect(() => {
     fetchUsers();
@@ -47,7 +56,7 @@ export const useUser = (id: number | null) => {
       const user = await usersService.getById(id);
       setData(user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch user');
+      setError(err instanceof Error ? err.message : "Failed to fetch user");
     } finally {
       setLoading(false);
     }
@@ -71,7 +80,7 @@ export const useCreateUser = () => {
       const result = await usersService.create(data);
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create user');
+      setError(err instanceof Error ? err.message : "Failed to create user");
       throw err;
     } finally {
       setLoading(false);
@@ -92,7 +101,7 @@ export const useUpdateUser = () => {
       const result = await usersService.update(id, data);
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update user');
+      setError(err instanceof Error ? err.message : "Failed to update user");
       throw err;
     } finally {
       setLoading(false);
@@ -112,7 +121,7 @@ export const useDeleteUser = () => {
     try {
       await usersService.delete(id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete user');
+      setError(err instanceof Error ? err.message : "Failed to delete user");
       throw err;
     } finally {
       setLoading(false);

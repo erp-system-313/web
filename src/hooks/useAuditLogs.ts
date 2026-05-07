@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
-import { auditLogsService } from '../services/auditLogsService';
-import type { AuditLog } from '../services/auditLogsService';
+import { useState, useEffect, useCallback } from "react";
+import { auditLogsService } from "../services/auditLogsService";
+import type { AuditLog } from "../services/auditLogsService";
 
 export const useAuditLogs = (params?: {
   page?: number;
   size?: number;
+  entityType?: string;
   userId?: number;
-  action?: string;
   startDate?: string;
   endDate?: string;
 }) => {
@@ -23,11 +23,20 @@ export const useAuditLogs = (params?: {
       setData(response.content);
       setTotal(response.totalElements);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch audit logs');
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch audit logs",
+      );
     } finally {
       setLoading(false);
     }
-  }, [params?.page, params?.size, params?.userId, params?.action, params?.startDate, params?.endDate]);
+  }, [
+    params?.page,
+    params?.size,
+    params?.userId,
+    params?.entityType,
+    params?.startDate,
+    params?.endDate,
+  ]);
 
   useEffect(() => {
     fetchLogs();

@@ -1,29 +1,42 @@
 import { apiClient as api, handleApiError } from "../api/client";
+import type {
+  EmployeeStatus,
+  AttendanceStatus,
+  LeaveType,
+  LeaveStatus,
+} from "../types/hr";
 
 export interface Employee {
   id: number;
+  employeeCode: string;
   firstName: string;
   lastName: string;
+  fullName: string;
   email: string;
+  phone?: string;
   department: string;
   position: string;
-  status: string;
-  phone?: string;
-  hireDate?: string;
+  hireDate: string;
+  terminationDate?: string;
   salary?: number;
+  status: EmployeeStatus;
   address?: string;
+  userId?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateEmployeeRequest {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
   department: string;
   position: string;
-  phone?: string;
   hireDate?: string;
   salary?: number;
   address?: string;
+  userId?: number;
 }
 
 export interface UpdateEmployeeRequest {
@@ -43,36 +56,40 @@ export interface Attendance {
   employeeId: number;
   employeeName: string;
   date: string;
-  clockIn: string;
-  clockOut?: string;
-  totalHours: number;
-  status: string;
+  checkIn?: string;
+  checkOut?: string;
+  status: AttendanceStatus;
+  notes?: string;
+  createdAt: string;
 }
 
 export interface LeaveRequest {
   id: number;
   employeeId: number;
   employeeName: string;
-  type: string;
   startDate: string;
   endDate: string;
-  days: number;
+  totalDays: number;
+  type: LeaveType;
+  status: LeaveStatus;
   reason: string;
-  status: string;
-  approvedBy?: string;
+  rejectionReason?: string;
+  approvedById?: number;
+  approvedByName?: string;
+  approvedAt?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface LeaveBalance {
+  id: number;
   employeeId: number;
-  annual: number;
-  sick: number;
-  personal: number;
-  used: {
-    annual: number;
-    sick: number;
-    personal: number;
-  };
+  employeeName: string;
+  type: LeaveType;
+  totalDays: number;
+  usedDays: number;
+  remainingDays: number;
+  year: number;
 }
 
 export const hrService = {
@@ -103,7 +120,7 @@ export const hrService = {
 
     create: async (data: CreateEmployeeRequest): Promise<Employee> => {
       try {
-        const response = await api.post("/employees", data);
+        const response = await api.post("/v1/employees", data);
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -181,7 +198,7 @@ export const hrService = {
       }
     },
 
-    getBalances: async (employeeId?: number): Promise<LeaveBalance> => {
+    getBalances: async (employeeId?: number): Promise<LeaveBalance[]> => {
       try {
         const response = await api.get("/v1/leave-balances", {
           params: { employeeId },
@@ -197,7 +214,7 @@ export const hrService = {
       type: string;
       startDate: string;
       endDate: string;
-      reason: string;
+      reason?: string;
     }): Promise<LeaveRequest> => {
       try {
         const response = await api.post("/v1/leave-requests", data);

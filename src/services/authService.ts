@@ -9,7 +9,7 @@ export interface AuthUser {
   id: number;
   email: string;
   name: string;
-  role: "ADMIN" | "MANAGER" | "STAFF" | "GUEST";
+  role: string;
 }
 
 export interface LoginResponse {

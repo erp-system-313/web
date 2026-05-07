@@ -24,9 +24,9 @@ export interface Invoice {
   status: InvoiceStatus;
   subtotal: number;
   taxAmount: number;
-  total: number;
+  totalAmount: number;
   paidAmount: number;
-  balanceDue: number;
+  balance: number;
   createdAt: string;
   updatedAt: string;
   lines?: InvoiceLine[];
@@ -52,6 +52,7 @@ export interface InvoiceLine {
 export interface Payment {
   id: number;
   invoiceId: number;
+  invoiceNumber?: string;
   amount: number;
   paymentDate: string;
   method: PaymentMethod;
@@ -66,6 +67,7 @@ export interface Account {
   name: string;
   type: AccountType;
   parentId?: number;
+  parentName?: string;
   balance: number;
   isActive: boolean;
   createdAt: string;
@@ -81,7 +83,8 @@ export interface JournalEntry {
   reference?: string;
   status: JournalEntryStatus;
   journalType: JournalType;
-  createdBy: number;
+  createdById: number;
+  createdByName?: string;
   createdAt: string;
   updatedAt: string;
   postedAt?: string;

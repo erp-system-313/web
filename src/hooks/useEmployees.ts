@@ -1,10 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { hrService, type Employee, type CreateEmployeeRequest, type UpdateEmployeeRequest } from '../services/hrService';
+import { useState, useEffect, useCallback } from "react";
+import {
+  hrService,
+  type CreateEmployeeRequest,
+  type UpdateEmployeeRequest,
+} from "../services/hrService";
+import type { Employee, EmployeeStatus } from "../types/hr";
 
 interface EmployeeFilters {
   search?: string;
   department?: string;
-  status?: string;
+  status?: EmployeeStatus;
 }
 
 export const useEmployees = (filters?: EmployeeFilters) => {
@@ -21,7 +26,9 @@ export const useEmployees = (filters?: EmployeeFilters) => {
       setData(response.content);
       setTotal(response.totalElements);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch employees');
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch employees",
+      );
     } finally {
       setLoading(false);
     }
@@ -31,31 +38,40 @@ export const useEmployees = (filters?: EmployeeFilters) => {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  const createEmployee = useCallback(async (employee: CreateEmployeeRequest) => {
-    const newEmployee = await hrService.employees.create(employee);
-    await fetchEmployees();
-    return newEmployee;
-  }, [fetchEmployees]);
+  const createEmployee = useCallback(
+    async (employee: CreateEmployeeRequest) => {
+      const newEmployee = await hrService.employees.create(employee);
+      await fetchEmployees();
+      return newEmployee;
+    },
+    [fetchEmployees],
+  );
 
-  const updateEmployee = useCallback(async (id: number, employee: UpdateEmployeeRequest) => {
-    const updated = await hrService.employees.update(id, employee);
-    await fetchEmployees();
-    return updated;
-  }, [fetchEmployees]);
+  const updateEmployee = useCallback(
+    async (id: number, employee: UpdateEmployeeRequest) => {
+      const updated = await hrService.employees.update(id, employee);
+      await fetchEmployees();
+      return updated;
+    },
+    [fetchEmployees],
+  );
 
-  const deleteEmployee = useCallback(async (id: number) => {
-    await hrService.employees.delete(id);
-    await fetchEmployees();
-  }, [fetchEmployees]);
+  const deleteEmployee = useCallback(
+    async (id: number) => {
+      await hrService.employees.delete(id);
+      await fetchEmployees();
+    },
+    [fetchEmployees],
+  );
 
-  return { 
-    data, 
-    loading, 
-    error, 
-    total, 
+  return {
+    data,
+    loading,
+    error,
+    total,
     refetch: fetchEmployees,
     createEmployee,
     updateEmployee,
-    deleteEmployee
+    deleteEmployee,
   };
 };

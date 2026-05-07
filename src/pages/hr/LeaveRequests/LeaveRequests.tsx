@@ -1,15 +1,30 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Card, Typography, Table, Button, Space, Tag, Modal, message } from 'antd';
-import { PlusOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { useLeaveRequests, useLeaveBalances, useCreateLeaveRequest, useApproveLeaveRequest, useRejectLeaveRequest } from '../../../hooks';
-import type { LeaveRequest, LeaveStatus, LeaveType } from '../../../types/hr';
-import styles from './LeaveRequests.module.css';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  Card,
+  Typography,
+  Table,
+  Button,
+  Space,
+  Tag,
+  Modal,
+  message,
+} from "antd";
+import { PlusOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import {
+  useLeaveRequests,
+  useLeaveBalances,
+  useCreateLeaveRequest,
+  useApproveLeaveRequest,
+  useRejectLeaveRequest,
+} from "../../../hooks";
+import type { LeaveRequest, LeaveStatus, LeaveType } from "../../../types/hr";
+import styles from "./LeaveRequests.module.css";
 
 const { Title, Text } = Typography;
 
 interface LeaveFormData {
-  leaveType: LeaveType;
+  type: LeaveType;
   startDate: string;
   endDate: string;
   reason: string;
@@ -21,7 +36,7 @@ export const LeaveRequests: React.FC = () => {
   const { create, loading: creating } = useCreateLeaveRequest();
   const { approve, loading: approving } = useApproveLeaveRequest();
   const { reject, loading: rejecting } = useRejectLeaveRequest();
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
@@ -34,88 +49,94 @@ export const LeaveRequests: React.FC = () => {
   const onSubmit = async (data: LeaveFormData) => {
     try {
       await create({
+        employeeId: 0,
         startDate: data.startDate,
         endDate: data.endDate,
-        type: data.leaveType,
+        type: data.type,
         reason: data.reason,
       });
-      message.success('Leave request submitted');
+      message.success("Leave request submitted");
       setIsModalOpen(false);
       reset();
       refetch();
     } catch {
-      message.error('Failed to submit leave request');
+      message.error("Failed to submit leave request");
     }
   };
 
   const handleApprove = async (id: number) => {
     try {
       await approve(id);
-      message.success('Leave request approved');
+      message.success("Leave request approved");
       refetch();
     } catch {
-      message.error('Failed to approve');
+      message.error("Failed to approve");
     }
   };
 
   const handleReject = async (id: number) => {
     try {
       await reject(id);
-      message.success('Leave request rejected');
+      message.success("Leave request rejected");
       refetch();
     } catch {
-      message.error('Failed to reject');
+      message.error("Failed to reject");
     }
   };
 
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
     },
     {
-      title: 'Employee ID',
-      dataIndex: 'employeeId',
-      key: 'employeeId',
+      title: "Employee ID",
+      dataIndex: "employeeId",
+      key: "employeeId",
     },
     {
-      title: 'Start Date',
-      dataIndex: 'startDate',
-      key: 'startDate',
+      title: "Start Date",
+      dataIndex: "startDate",
+      key: "startDate",
     },
     {
-      title: 'End Date',
-      dataIndex: 'endDate',
-      key: 'endDate',
+      title: "End Date",
+      dataIndex: "endDate",
+      key: "endDate",
     },
     {
-      title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
       render: (type: LeaveType) => <Tag color="blue">{type}</Tag>,
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
       render: (status: LeaveStatus) => {
-        const color = status === 'APPROVED' ? 'green' : status === 'REJECTED' ? 'red' : 'orange';
+        const color =
+          status === "APPROVED"
+            ? "green"
+            : status === "REJECTED"
+              ? "red"
+              : "orange";
         return <Tag color={color}>{status}</Tag>;
       },
     },
     {
-      title: 'Reason',
-      dataIndex: 'reason',
-      key: 'reason',
+      title: "Reason",
+      dataIndex: "reason",
+      key: "reason",
       ellipsis: true,
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       render: (_: unknown, record: LeaveRequest) => (
         <Space>
-          {record.status === 'PENDING' && (
+          {record.status === "PENDING" && (
             <>
               <Button
                 type="link"
@@ -146,7 +167,11 @@ export const LeaveRequests: React.FC = () => {
       <Card>
         <div className={styles.header}>
           <Title level={3}>Leave Requests</Title>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalOpen(true)}
+          >
             New Request
           </Button>
         </div>
@@ -156,9 +181,15 @@ export const LeaveRequests: React.FC = () => {
             <Title level={5}>Leave Balance</Title>
             <div className={styles.balanceCards}>
               {balances.map((balance) => (
-                <Card key={balance.type} size="small" className={styles.balanceCard}>
+                <Card
+                  key={balance.type}
+                  size="small"
+                  className={styles.balanceCard}
+                >
                   <div className={styles.balanceType}>{balance.type}</div>
-                  <div className={styles.balanceRemaining}>{balance.remainingDays} days</div>
+                  <div className={styles.balanceRemaining}>
+                    {balance.remainingDays} days
+                  </div>
                   <div className={styles.balanceUsed}>
                     Used: {balance.usedDays} / {balance.totalDays}
                   </div>
@@ -183,71 +214,97 @@ export const LeaveRequests: React.FC = () => {
         <Modal
           title="New Leave Request"
           open={isModalOpen}
-          onCancel={() => { setIsModalOpen(false); reset(); }}
+          onCancel={() => {
+            setIsModalOpen(false);
+            reset();
+          }}
           footer={null}
         >
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className={styles.formFields}>
               <div className={styles.field}>
                 <label>Leave Type *</label>
-                <select 
-                  {...register('leaveType', { required: 'Please select a leave type' })}
-                  style={{ width: '100%', padding: '8px', height: '40px' }}
+                <select
+                  {...register("type", {
+                    required: "Please select a leave type",
+                  })}
+                  style={{ width: "100%", padding: "8px", height: "40px" }}
                 >
                   <option value="">Select leave type</option>
                   <option value="ANNUAL">Annual Leave</option>
                   <option value="SICK">Sick Leave</option>
                   <option value="PERSONAL">Personal Leave</option>
                   <option value="UNPAID">Unpaid Leave</option>
+                  <option value="MATERNITY">Maternity Leave</option>
+                  <option value="PATERNITY">Paternity Leave</option>
                 </select>
-                {errors.leaveType && (
-                  <Text type="danger" style={{ fontSize: 12 }}>{errors.leaveType.message}</Text>
+                {errors.type && (
+                  <Text type="danger" style={{ fontSize: 12 }}>
+                    {errors.type.message}
+                  </Text>
                 )}
               </div>
-              
+
               <div className={styles.field}>
                 <label>Start Date *</label>
-                <input 
+                <input
                   type="date"
-                  {...register('startDate', { required: 'Start date is required' })}
-                  style={{ width: '100%', padding: '8px', height: '40px' }}
+                  {...register("startDate", {
+                    required: "Start date is required",
+                  })}
+                  style={{ width: "100%", padding: "8px", height: "40px" }}
                 />
                 {errors.startDate && (
-                  <Text type="danger" style={{ fontSize: 12 }}>{errors.startDate.message}</Text>
+                  <Text type="danger" style={{ fontSize: 12 }}>
+                    {errors.startDate.message}
+                  </Text>
                 )}
               </div>
-              
+
               <div className={styles.field}>
                 <label>End Date *</label>
-                <input 
+                <input
                   type="date"
-                  {...register('endDate', { required: 'End date is required' })}
-                  style={{ width: '100%', padding: '8px', height: '40px' }}
+                  {...register("endDate", { required: "End date is required" })}
+                  style={{ width: "100%", padding: "8px", height: "40px" }}
                 />
                 {errors.endDate && (
-                  <Text type="danger" style={{ fontSize: 12 }}>{errors.endDate.message}</Text>
+                  <Text type="danger" style={{ fontSize: 12 }}>
+                    {errors.endDate.message}
+                  </Text>
                 )}
               </div>
-              
+
               <div className={styles.field}>
                 <label>Reason *</label>
-                <textarea 
-                  {...register('reason', { 
-                    required: 'Reason is required',
-                    minLength: { value: 10, message: 'Please provide more details' }
+                <textarea
+                  {...register("reason", {
+                    required: "Reason is required",
+                    minLength: {
+                      value: 10,
+                      message: "Please provide more details",
+                    },
                   })}
                   rows={4}
                   placeholder="Enter reason for leave"
-                  style={{ width: '100%', padding: '8px' }}
+                  style={{ width: "100%", padding: "8px" }}
                 />
                 {errors.reason && (
-                  <Text type="danger" style={{ fontSize: 12 }}>{errors.reason.message}</Text>
+                  <Text type="danger" style={{ fontSize: 12 }}>
+                    {errors.reason.message}
+                  </Text>
                 )}
               </div>
             </div>
-            
-            <div style={{ marginTop: 16, textAlign: 'right' }}>
-              <Button onClick={() => { setIsModalOpen(false); reset(); }} style={{ marginRight: 8 }}>
+
+            <div style={{ marginTop: 16, textAlign: "right" }}>
+              <Button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  reset();
+                }}
+                style={{ marginRight: 8 }}
+              >
                 Cancel
               </Button>
               <Button type="primary" htmlType="submit" loading={creating}>

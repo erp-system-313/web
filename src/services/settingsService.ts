@@ -16,31 +16,24 @@ export const settingsService = {
   get: async (): Promise<CompanySettings> => {
     try {
       const response = await api.get("/v1/settings");
-      return response.data.data;
+      const data = response.data.data;
+      return {
+        ...data,
+        fiscalYearStart: parseInt(data.fiscalYearStart, 10) || 0,
+      };
     } catch (error) {
       throw new Error(handleApiError(error));
     }
   },
 
   update: async (data: Partial<CompanySettings>): Promise<CompanySettings> => {
-    const settingsMap: Record<string, string> = {
-      companyName: "companyName",
-      companyEmail: "companyEmail",
-      companyPhone: "companyPhone",
-      companyAddress: "companyAddress",
-      taxNumber: "taxNumber",
-      fiscalYearStart: "fiscalYearStart",
-      currency: "currency",
-      timezone: "timezone",
-      dateFormat: "dateFormat",
-    };
-
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined && value !== null && value !== "") {
         try {
-          const settingKey = settingsMap[key] || key;
-          const settingValue = String(value);
-          await api.put("/v1/settings", { settingKey, settingValue });
+          await api.put("/v1/settings", {
+            settingKey: key,
+            settingValue: String(value),
+          });
         } catch (error) {
           throw new Error(handleApiError(error));
         }

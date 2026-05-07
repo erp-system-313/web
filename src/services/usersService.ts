@@ -3,24 +3,38 @@ import { apiClient as api, handleApiError } from "../api/client";
 export interface User {
   id: number;
   email: string;
-  name: string;
-  role: "ADMIN" | "MANAGER" | "STAFF" | "GUEST";
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  roleName: string;
+  roleId: number;
+  employeeId?: number;
+  isActive: boolean;
+  lastLoginAt?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface CreateUserDto {
+  firstName: string;
+  lastName: string;
   email: string;
+  roleId: number;
   password: string;
-  name: string;
-  role: "ADMIN" | "MANAGER" | "STAFF" | "GUEST";
+  employeeId?: number;
 }
 
 export interface UpdateUserDto {
+  firstName?: string;
+  lastName?: string;
   email?: string;
-  name?: string;
-  role?: "ADMIN" | "MANAGER" | "STAFF" | "GUEST";
-  password?: string;
+  roleId?: number;
+  isActive?: boolean;
+  employeeId?: number;
+}
+
+export interface UserFilters {
+  roleName?: string;
+  isActive?: boolean;
 }
 
 export interface UsersResponse {
@@ -35,7 +49,8 @@ export const usersService = {
   getAll: async (params?: {
     page?: number;
     size?: number;
-    search?: string;
+    roleName?: string;
+    isActive?: boolean;
   }): Promise<UsersResponse> => {
     try {
       const response = await api.get("/v1/users", { params });

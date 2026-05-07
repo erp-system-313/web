@@ -462,7 +462,9 @@ export const ChartOfAccounts: React.FC = () => {
                     <div className={styles.detailGroup}>
                       <label>Parent Account</label>
                       <span className={styles.detailValue}>
-                        {selectedAccountData.parentId || "None (Root)"}
+                        {selectedAccountData.parentName ||
+                          selectedAccountData.parentId ||
+                          "None (Root)"}
                       </span>
                     </div>
                   </Col>

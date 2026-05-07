@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Card, Typography, Table, Button, Space, Tag, message } from 'antd';
-import { ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { useAttendance, useClockIn, useClockOut } from '../../../hooks';
-import styles from './Attendance.module.css';
+import { useState } from "react";
+import { Card, Typography, Table, Button, Space, Tag, message } from "antd";
+import { ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { useAttendance, useClockIn, useClockOut } from "../../../hooks";
+import styles from "./Attendance.module.css";
 
 const { Title } = Typography;
 
@@ -16,10 +16,10 @@ export const AttendancePage: React.FC = () => {
     try {
       await clockIn();
       setTodayCheckedIn(true);
-      message.success('Clocked in successfully');
+      message.success("Clocked in successfully");
       refetch();
     } catch {
-      message.error('Failed to clock in');
+      message.error("Failed to clock in");
     }
   };
 
@@ -27,42 +27,49 @@ export const AttendancePage: React.FC = () => {
     try {
       await clockOut();
       setTodayCheckedIn(false);
-      message.success('Clocked out successfully');
+      message.success("Clocked out successfully");
       refetch();
     } catch {
-      message.error('Failed to clock out');
+      message.error("Failed to clock out");
     }
   };
 
   const columns = [
     {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
     },
     {
-      title: 'Employee ID',
-      dataIndex: 'employeeId',
-      key: 'employeeId',
+      title: "Employee ID",
+      dataIndex: "employeeId",
+      key: "employeeId",
     },
     {
-      title: 'Check In',
-      dataIndex: 'checkIn',
-      key: 'checkIn',
-      render: (checkIn: string) => checkIn || '-',
+      title: "Check In",
+      dataIndex: "checkIn",
+      key: "checkIn",
+      render: (checkIn: string) => checkIn || "-",
     },
     {
-      title: 'Check Out',
-      dataIndex: 'checkOut',
-      key: 'checkOut',
-      render: (checkOut: string) => checkOut || '-',
+      title: "Check Out",
+      dataIndex: "checkOut",
+      key: "checkOut",
+      render: (checkOut: string) => checkOut || "-",
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
       render: (status: string) => {
-        const color = status === 'PRESENT' ? 'green' : status === 'LATE' ? 'orange' : 'red';
+        const color =
+          status === "PRESENT"
+            ? "green"
+            : status === "LATE"
+              ? "orange"
+              : status === "HALF_DAY"
+                ? "purple"
+                : "red";
         return <Tag color={color}>{status}</Tag>;
       },
     },
