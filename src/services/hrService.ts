@@ -1,4 +1,4 @@
-import api, { handleApiError } from './apiClient';
+import { apiClient as api, handleApiError } from "../api/client";
 
 export interface Employee {
   id: number;
@@ -77,9 +77,15 @@ export interface LeaveBalance {
 
 export const hrService = {
   employees: {
-    getAll: async (params?: { page?: number; size?: number; search?: string; department?: string; status?: string }) => {
+    getAll: async (params?: {
+      page?: number;
+      size?: number;
+      search?: string;
+      department?: string;
+      status?: string;
+    }) => {
       try {
-        const response = await api.get('/employees', { params });
+        const response = await api.get("/v1/employees", { params });
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -88,7 +94,7 @@ export const hrService = {
 
     getById: async (id: number): Promise<Employee> => {
       try {
-        const response = await api.get(`/employees/${id}`);
+        const response = await api.get(`/v1/employees/${id}`);
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -97,16 +103,19 @@ export const hrService = {
 
     create: async (data: CreateEmployeeRequest): Promise<Employee> => {
       try {
-        const response = await api.post('/employees', data);
+        const response = await api.post("/employees", data);
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
       }
     },
 
-    update: async (id: number, data: UpdateEmployeeRequest): Promise<Employee> => {
+    update: async (
+      id: number,
+      data: UpdateEmployeeRequest,
+    ): Promise<Employee> => {
       try {
-        const response = await api.put(`/employees/${id}`, data);
+        const response = await api.put(`/v1/employees/${id}`, data);
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -115,7 +124,7 @@ export const hrService = {
 
     delete: async (id: number): Promise<void> => {
       try {
-        await api.delete(`/employees/${id}`);
+        await api.delete(`/v1/employees/${id}`);
       } catch (error) {
         throw new Error(handleApiError(error));
       }
@@ -123,9 +132,15 @@ export const hrService = {
   },
 
   attendance: {
-    getAll: async (params?: { page?: number; size?: number; employeeId?: number; startDate?: string; endDate?: string }) => {
+    getAll: async (params?: {
+      page?: number;
+      size?: number;
+      employeeId?: number;
+      startDate?: string;
+      endDate?: string;
+    }) => {
       try {
-        const response = await api.get('/attendance', { params });
+        const response = await api.get("/v1/attendance", { params });
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -134,7 +149,7 @@ export const hrService = {
 
     clockIn: async (): Promise<Attendance> => {
       try {
-        const response = await api.post('/attendance/clock-in');
+        const response = await api.post("/v1/attendance/clock-in");
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -143,7 +158,7 @@ export const hrService = {
 
     clockOut: async (): Promise<Attendance> => {
       try {
-        const response = await api.post('/attendance/clock-out');
+        const response = await api.post("/v1/attendance/clock-out");
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -152,9 +167,14 @@ export const hrService = {
   },
 
   leave: {
-    getAll: async (params?: { page?: number; size?: number; employeeId?: number; status?: string }) => {
+    getAll: async (params?: {
+      page?: number;
+      size?: number;
+      employeeId?: number;
+      status?: string;
+    }) => {
       try {
-        const response = await api.get('/leave-requests', { params });
+        const response = await api.get("/v1/leave-requests", { params });
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -163,16 +183,24 @@ export const hrService = {
 
     getBalances: async (employeeId?: number): Promise<LeaveBalance> => {
       try {
-        const response = await api.get('/leave-balances', { params: { employeeId } });
+        const response = await api.get("/v1/leave-balances", {
+          params: { employeeId },
+        });
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
       }
     },
 
-    create: async (data: { employeeId: number; type: string; startDate: string; endDate: string; reason: string }): Promise<LeaveRequest> => {
+    create: async (data: {
+      employeeId: number;
+      type: string;
+      startDate: string;
+      endDate: string;
+      reason: string;
+    }): Promise<LeaveRequest> => {
       try {
-        const response = await api.post('/leave-requests', data);
+        const response = await api.post("/v1/leave-requests", data);
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -181,7 +209,7 @@ export const hrService = {
 
     approve: async (id: number): Promise<LeaveRequest> => {
       try {
-        const response = await api.put(`/leave-requests/${id}/approve`);
+        const response = await api.put(`/v1/leave-requests/${id}/approve`);
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
@@ -190,7 +218,7 @@ export const hrService = {
 
     reject: async (id: number): Promise<LeaveRequest> => {
       try {
-        const response = await api.put(`/leave-requests/${id}/reject`);
+        const response = await api.put(`/v1/leave-requests/${id}/reject`);
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
