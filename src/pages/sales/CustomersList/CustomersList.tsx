@@ -72,13 +72,13 @@ export const CustomersList: React.FC = () => {
       title: "Credit Limit",
       dataIndex: "creditLimit",
       key: "creditLimit",
-      render: (limit: number) => `$${limit.toLocaleString()}`,
+      render: (limit: number) => `$${(limit ?? 0).toLocaleString()}`,
     },
     {
       title: "Payment Terms",
       dataIndex: "paymentTerms",
       key: "paymentTerms",
-      render: (terms: string) => terms.replace("_", " "),
+      render: (terms: string) => (terms ?? "NET_30").replace("_", " "),
     },
     {
       title: "Status",
