@@ -210,7 +210,8 @@ export const Dashboard: React.FC = () => {
                       Order #{item.orderNumber} - {item.customerName || "N/A"}
                     </div>
                     <div style={{ color: "#8c8c8c", fontSize: 13 }}>
-                      {item.status} - ${item.totalAmount} - {item.orderDate}
+                      {item.status} - ${item.totalAmount ?? 0} -{" "}
+                      {item.orderDate}
                     </div>
                   </div>
                 </div>
