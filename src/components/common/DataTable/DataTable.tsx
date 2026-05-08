@@ -47,7 +47,7 @@ export function DataTable<T extends { id: number }>({
     : undefined;
 
   return (
-    <Card className={styles.card} bordered={false}>
+    <Card className={styles.card} variant="borderless">
       {(onSearch || onRefresh || actions) && (
         <div className={styles.toolbar}>
           <Space>
