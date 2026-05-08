@@ -11,6 +11,23 @@ export const apiClient: AxiosInstance = axios.create({
   },
 });
 
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token!);
+    }
+  });
+  failedQueue = [];
+};
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token =
@@ -28,8 +45,60 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem("erp_refresh_token");
+
+      if (!refreshToken) {
+        isRefreshing = false;
+        localStorage.removeItem("erp_token");
+        localStorage.removeItem("erp_refresh_token");
+        localStorage.removeItem("erp_user");
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
+      try {
+        const response = await axios.post("/api/v1/auth/refresh", {
+          refreshToken,
+        });
+        const data = response.data;
+
+        if (data.success && data.data) {
+          const newToken = data.data.accessToken;
+          localStorage.setItem("erp_token", newToken);
+          localStorage.setItem(
+            "erp_refresh_token",
+            data.data.refreshToken || refreshToken,
+          );
+          processQueue(null, newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return apiClient(originalRequest);
+        }
+      } catch {
+        // refresh failed
+      }
+
+      processQueue(error, null);
+      isRefreshing = false;
       localStorage.removeItem("erp_token");
+      localStorage.removeItem("erp_refresh_token");
       localStorage.removeItem("erp_user");
       localStorage.removeItem("token");
       window.location.href = "/login";

@@ -100,7 +100,7 @@ export const SupplierListPage: React.FC = () => {
       title: "Total Purchased",
       dataIndex: "totalPurchased",
       key: "totalPurchased",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `$${(amount ?? 0).toFixed(2)}`,
     },
     {
       title: "Actions",

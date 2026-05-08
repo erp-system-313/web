@@ -182,7 +182,7 @@ export const ChartOfAccounts: React.FC = () => {
             <span className={styles.accountCode}>{account.code}</span>
             <span className={styles.accountName}>{account.name}</span>
             <span className={styles.accountBalance}>
-              ${account.balance.toFixed(2)}
+              ${(account.balance ?? 0).toFixed(2)}
             </span>
           </div>
         ),
@@ -236,7 +236,9 @@ export const ChartOfAccounts: React.FC = () => {
       width: 140,
       align: "right",
       render: (balance: number) => (
-        <span style={{ fontFamily: "monospace" }}>${balance.toFixed(2)}</span>
+        <span style={{ fontFamily: "monospace" }}>
+          ${(balance ?? 0).toFixed(2)}
+        </span>
       ),
     },
     {
@@ -288,7 +290,7 @@ export const ChartOfAccounts: React.FC = () => {
               value={typeSummary.ASSET}
               precision={2}
               prefix={<WalletOutlined />}
-              valueStyle={{ color: "#1677ff" }}
+              styles={{ content: { color: "#1677ff" } }}
             />
           </Card>
         </Col>
@@ -299,7 +301,7 @@ export const ChartOfAccounts: React.FC = () => {
               value={typeSummary.LIABILITY}
               precision={2}
               prefix={<BankOutlined />}
-              valueStyle={{ color: "#ff4d4f" }}
+              styles={{ content: { color: "#ff4d4f" } }}
             />
           </Card>
         </Col>
@@ -310,7 +312,7 @@ export const ChartOfAccounts: React.FC = () => {
               value={typeSummary.EQUITY}
               precision={2}
               prefix={<FileTextOutlined />}
-              valueStyle={{ color: "#722ed1" }}
+              styles={{ content: { color: "#722ed1" } }}
             />
           </Card>
         </Col>
@@ -321,7 +323,7 @@ export const ChartOfAccounts: React.FC = () => {
               value={typeSummary.INCOME}
               precision={2}
               prefix={<DollarOutlined />}
-              valueStyle={{ color: "#52c41a" }}
+              styles={{ content: { color: "#52c41a" } }}
             />
           </Card>
         </Col>
@@ -332,7 +334,7 @@ export const ChartOfAccounts: React.FC = () => {
               value={typeSummary.EXPENSE}
               precision={2}
               prefix={<ShoppingOutlined />}
-              valueStyle={{ color: "#fa8c16" }}
+              styles={{ content: { color: "#fa8c16" } }}
             />
           </Card>
         </Col>
@@ -454,7 +456,7 @@ export const ChartOfAccounts: React.FC = () => {
                     <div className={styles.detailGroup}>
                       <label>Current Balance</label>
                       <span className={styles.balanceValue}>
-                        ${selectedAccountData.balance.toFixed(2)}
+                        ${(selectedAccountData.balance ?? 0).toFixed(2)}
                       </span>
                     </div>
                   </Col>
