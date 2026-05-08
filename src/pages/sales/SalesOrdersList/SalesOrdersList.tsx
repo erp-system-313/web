@@ -84,7 +84,7 @@ export const SalesOrdersList: React.FC = () => {
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `$${(amount ?? 0).toFixed(2)}`,
     },
     {
       title: "Actions",

@@ -73,7 +73,7 @@ export const CustomerDetails: React.FC = () => {
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `$${(amount ?? 0).toFixed(2)}`,
     },
     {
       title: "Actions",
@@ -111,10 +111,10 @@ export const CustomerDetails: React.FC = () => {
             {customer.address || "-"}
           </Descriptions.Item>
           <Descriptions.Item label="Credit Limit">
-            ${customer.creditLimit.toLocaleString()}
+            ${(customer.creditLimit ?? 0).toLocaleString()}
           </Descriptions.Item>
           <Descriptions.Item label="Payment Terms">
-            {customer.paymentTerms.replace("_", " ")}
+            {(customer.paymentTerms ?? "NET_30").replace("_", " ")}
           </Descriptions.Item>
         </Descriptions>
       ),

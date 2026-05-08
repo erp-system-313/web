@@ -112,7 +112,7 @@ export const SupplierDetailsPage: React.FC = () => {
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `$${(amount ?? 0).toFixed(2)}`,
     },
     {
       title: "Actions",
@@ -253,7 +253,7 @@ export const SupplierDetailsPage: React.FC = () => {
           </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Total Purchased:</span> $
-            {supplier.totalPurchased.toFixed(2)}
+            {(supplier.totalPurchased ?? 0).toFixed(2)}
           </div>
         </Card>
       </div>
