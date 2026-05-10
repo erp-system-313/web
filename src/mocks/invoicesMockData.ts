@@ -51,9 +51,9 @@ export const mockInvoices: Invoice[] = [
     status: "PAID",
     subtotal: 459.9,
     taxAmount: 45.99,
-    total: 505.89,
+    totalAmount: 505.89,
     paidAmount: 505.89,
-    balanceDue: 0,
+    balance: 0,
     createdAt: "2024-03-15T10:30:00Z",
     updatedAt: "2024-03-18T10:00:00Z",
     lines: [
@@ -113,9 +113,9 @@ export const mockInvoices: Invoice[] = [
     status: "PAID",
     subtotal: 1234.56,
     taxAmount: 123.46,
-    total: 1358.02,
+    totalAmount: 1358.02,
     paidAmount: 1358.02,
-    balanceDue: 0,
+    balance: 0,
     createdAt: "2024-03-10T09:00:00Z",
     updatedAt: "2024-03-25T09:30:00Z",
     lines: [
@@ -175,9 +175,9 @@ export const mockInvoices: Invoice[] = [
     status: "SENT",
     subtotal: 2500.0,
     taxAmount: 250.0,
-    total: 2750.0,
+    totalAmount: 2750.0,
     paidAmount: 0,
-    balanceDue: 2750.0,
+    balance: 2750.0,
     createdAt: "2024-03-05T11:00:00Z",
     updatedAt: "2024-03-06T08:00:00Z",
     lines: [
@@ -222,9 +222,9 @@ export const mockInvoices: Invoice[] = [
     status: "PAID",
     subtotal: 899.9,
     taxAmount: 89.99,
-    total: 989.89,
+    totalAmount: 989.89,
     paidAmount: 989.89,
-    balanceDue: 0,
+    balance: 0,
     createdAt: "2024-02-28T14:30:00Z",
     updatedAt: "2024-03-05T11:00:00Z",
     lines: [
@@ -255,9 +255,9 @@ export const mockInvoices: Invoice[] = [
     status: "OVERDUE",
     subtotal: 1749.85,
     taxAmount: 174.99,
-    total: 1924.84,
+    totalAmount: 1924.84,
     paidAmount: 0,
-    balanceDue: 1924.84,
+    balance: 1924.84,
     createdAt: "2024-02-15T13:00:00Z",
     updatedAt: "2024-02-15T13:00:00Z",
     lines: [
@@ -287,9 +287,9 @@ export const mockInvoices: Invoice[] = [
     status: "OVERDUE",
     subtotal: 179.96,
     taxAmount: 18.0,
-    total: 197.96,
+    totalAmount: 197.96,
     paidAmount: 0,
-    balanceDue: 197.96,
+    balance: 197.96,
     createdAt: "2024-02-10T16:00:00Z",
     updatedAt: "2024-02-10T16:00:00Z",
     lines: [
@@ -347,9 +347,9 @@ export const mockInvoices: Invoice[] = [
     status: "OVERDUE",
     subtotal: 5199.6,
     taxAmount: 519.96,
-    total: 5719.56,
+    totalAmount: 5719.56,
     paidAmount: 0,
-    balanceDue: 5719.56,
+    balance: 5719.56,
     createdAt: "2024-02-01T09:30:00Z",
     updatedAt: "2024-02-01T09:30:00Z",
     lines: [
@@ -407,9 +407,9 @@ export const mockInvoices: Invoice[] = [
     status: "DRAFT",
     subtotal: 3899.7,
     taxAmount: 389.97,
-    total: 4289.67,
+    totalAmount: 4289.67,
     paidAmount: 0,
-    balanceDue: 4289.67,
+    balance: 4289.67,
     createdAt: "2024-01-25T11:00:00Z",
     updatedAt: "2024-01-25T11:00:00Z",
     lines: [
@@ -503,10 +503,10 @@ export const recordPayment = (
   const invoice = mockInvoices.find((i) => i.id === payment.invoiceId);
   if (invoice) {
     invoice.paidAmount += payment.amount;
-    invoice.balanceDue = invoice.total - invoice.paidAmount;
-    if (invoice.balanceDue <= 0) {
+    invoice.balance = invoice.totalAmount - invoice.paidAmount;
+    if (invoice.balance <= 0) {
       invoice.status = "PAID";
-      invoice.balanceDue = 0;
+      invoice.balance = 0;
     }
     invoice.updatedAt = new Date().toISOString();
     if (!invoice.payments) invoice.payments = [];

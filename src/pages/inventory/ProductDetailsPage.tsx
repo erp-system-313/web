@@ -1,67 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Descriptions, Tag, Space, message, Modal } from 'antd';
-import { ArrowLeftOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import type { Product } from '../../types/product.types';
-import { formatCurrency } from '../../utils/formatters';
-import styles from './ProductDetailsPage.module.css';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button, Card, Descriptions, Tag, Space, message, Modal } from "antd";
+import {
+  ArrowLeftOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
+import type { Product } from "../../types/product.types";
+import { formatCurrency } from "../../utils/formatters";
+import styles from "./ProductDetailsPage.module.css";
 
 const mockProducts: Product[] = [
   {
-    id: '1',
-    name: 'Wireless Mouse',
-    sku: 'WM-001',
-    description: 'Ergonomic wireless mouse with USB receiver',
-    categoryId: 'electronics',
-    categoryName: 'Electronics',
+    id: "1",
+    name: "Wireless Mouse",
+    sku: "WM-001",
+    description: "Ergonomic wireless mouse with USB receiver",
+    categoryId: "electronics",
+    categoryName: "Electronics",
     unitPrice: 29.99,
-    costPrice: 15.00,
+    costPrice: 15.0,
     stockQuantity: 150,
     reorderPoint: 20,
     isActive: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: "2024-01-15T10:00:00Z",
+    updatedAt: "2024-01-15T10:00:00Z",
   },
   {
-    id: '2',
-    name: 'USB-C Cable',
-    sku: 'USB-C-01',
-    description: 'High-speed USB-C charging cable 6ft',
-    categoryId: 'electronics',
-    categoryName: 'Electronics',
+    id: "2",
+    name: "USB-C Cable",
+    sku: "USB-C-01",
+    description: "High-speed USB-C charging cable 6ft",
+    categoryId: "electronics",
+    categoryName: "Electronics",
     unitPrice: 12.99,
-    costPrice: 5.00,
+    costPrice: 5.0,
     stockQuantity: 8,
     reorderPoint: 15,
     isActive: true,
-    createdAt: '2024-01-16T10:00:00Z',
-    updatedAt: '2024-01-16T10:00:00Z',
+    createdAt: "2024-01-16T10:00:00Z",
+    updatedAt: "2024-01-16T10:00:00Z",
   },
   {
-    id: '3',
-    name: 'Notebook A5',
-    sku: 'NB-A5-01',
-    description: 'Lined notebook with 200 pages',
-    categoryId: 'office',
-    categoryName: 'Office Supplies',
+    id: "3",
+    name: "Notebook A5",
+    sku: "NB-A5-01",
+    description: "Lined notebook with 200 pages",
+    categoryId: "office",
+    categoryName: "Office Supplies",
     unitPrice: 8.99,
-    costPrice: 3.00,
+    costPrice: 3.0,
     stockQuantity: 0,
     reorderPoint: 25,
     isActive: true,
-    createdAt: '2024-01-17T10:00:00Z',
-    updatedAt: '2024-01-17T10:00:00Z',
+    createdAt: "2024-01-17T10:00:00Z",
+    updatedAt: "2024-01-17T10:00:00Z",
   },
 ];
 
 const getStockStatus = (product: Product) => {
   if (product.stockQuantity === 0) {
-    return { color: 'error', text: 'Out of Stock' };
+    return { color: "error", text: "Out of Stock" };
   }
   if (product.stockQuantity <= product.reorderPoint) {
-    return { color: 'warning', text: 'Low Stock' };
+    return { color: "warning", text: "Low Stock" };
   }
-  return { color: 'success', text: 'In Stock' };
+  return { color: "success", text: "In Stock" };
 };
 
 export const ProductDetailsPage: React.FC = () => {
@@ -73,8 +77,8 @@ export const ProductDetailsPage: React.FC = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const found = mockProducts.find(p => p.id === id);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const found = mockProducts.find((p) => p.id === id);
       setProduct(found || null);
       setLoading(false);
     };
@@ -82,7 +86,7 @@ export const ProductDetailsPage: React.FC = () => {
   }, [id]);
 
   const handleBack = () => {
-    navigate('/inventory/products');
+    navigate("/inventory/products");
   };
 
   const handleEdit = () => {
@@ -91,14 +95,14 @@ export const ProductDetailsPage: React.FC = () => {
 
   const handleDelete = () => {
     Modal.confirm({
-      title: 'Delete Product',
-      content: 'Are you sure you want to delete this product?',
-      okText: 'Delete',
-      okType: 'danger',
+      title: "Delete Product",
+      content: "Are you sure you want to delete this product?",
+      okText: "Delete",
+      okType: "danger",
       onOk: async () => {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        message.success('Product deleted successfully');
-        navigate('/inventory/products');
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        message.success("Product deleted successfully");
+        navigate("/inventory/products");
       },
     });
   };
@@ -141,13 +145,15 @@ export const ProductDetailsPage: React.FC = () => {
         <Card title="Product Information">
           <Descriptions column={2}>
             <Descriptions.Item label="SKU">{product.sku}</Descriptions.Item>
-            <Descriptions.Item label="Category">{product.categoryName}</Descriptions.Item>
+            <Descriptions.Item label="Category">
+              {product.categoryName}
+            </Descriptions.Item>
             <Descriptions.Item label="Description" span={2}>
-              {product.description || '-'}
+              {product.description || "-"}
             </Descriptions.Item>
             <Descriptions.Item label="Status">
-              <Tag color={product.isActive ? 'success' : 'default'}>
-                {product.isActive ? 'Active' : 'Inactive'}
+              <Tag color={product.isActive ? "success" : "default"}>
+                {product.isActive ? "Active" : "Inactive"}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Stock Status">
@@ -167,7 +173,13 @@ export const ProductDetailsPage: React.FC = () => {
             <Descriptions.Item label="Profit Margin">
               {formatCurrency(product.unitPrice - product.costPrice)}
               <span className={styles.marginPercent}>
-                ({((product.unitPrice - product.costPrice) / product.unitPrice * 100).toFixed(1)}%)
+                (
+                {(
+                  (((product.unitPrice ?? 0) - (product.costPrice ?? 0)) /
+                    (product.unitPrice ?? 1)) *
+                  100
+                ).toFixed(1)}
+                %)
               </span>
             </Descriptions.Item>
           </Descriptions>
@@ -176,7 +188,9 @@ export const ProductDetailsPage: React.FC = () => {
         <Card title="Inventory" className={styles.card}>
           <Descriptions column={2}>
             <Descriptions.Item label="Current Stock">
-              <span className={stockStatus.color === 'error' ? styles.lowStock : ''}>
+              <span
+                className={stockStatus.color === "error" ? styles.lowStock : ""}
+              >
                 {product.stockQuantity} units
               </span>
             </Descriptions.Item>

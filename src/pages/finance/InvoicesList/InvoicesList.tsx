@@ -65,17 +65,17 @@ export const InvoicesList: React.FC = () => {
     },
     {
       title: "Total",
-      dataIndex: "total",
-      key: "total",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      dataIndex: "totalAmount",
+      key: "totalAmount",
+      render: (amount: number) => `$${(amount ?? 0).toFixed(2)}`,
     },
     {
       title: "Balance",
-      dataIndex: "balanceDue",
-      key: "balanceDue",
+      dataIndex: "balance",
+      key: "balance",
       render: (balance: number) => (
-        <span style={{ color: balance > 0 ? "#ff4d4f" : "#52c41a" }}>
-          ${balance.toFixed(2)}
+        <span style={{ color: (balance ?? 0) > 0 ? "#ff4d4f" : "#52c41a" }}>
+          ${(balance ?? 0).toFixed(2)}
         </span>
       ),
     },
@@ -100,7 +100,7 @@ export const InvoicesList: React.FC = () => {
             type="text"
             icon={<DollarOutlined />}
             onClick={() => navigate(`/finance/invoices/${record.id}`)}
-            disabled={record.balanceDue === 0}
+            disabled={record.balance === 0}
           />
           <Button
             type="text"

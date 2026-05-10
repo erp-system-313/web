@@ -1,4 +1,4 @@
-import api, { handleApiError } from './apiClient';
+import { apiClient as api, handleApiError } from "../api/client";
 
 export interface LoginRequest {
   email: string;
@@ -9,7 +9,7 @@ export interface AuthUser {
   id: number;
   email: string;
   name: string;
-  role: "ADMIN" | "MANAGER" | "STAFF" | "GUEST";
+  role: string;
 }
 
 export interface LoginResponse {
@@ -27,9 +27,9 @@ export interface LoginResponse {
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     try {
-      const response = await api.post('/auth/login', credentials);
+      const response = await api.post("/v1/auth/login", credentials);
       const data = response.data;
-      
+
       if (data.success && data.data) {
         return {
           success: true,
@@ -39,17 +39,17 @@ export const authService = {
             user: {
               id: data.data.user.id,
               email: data.data.user.email,
-              name: data.data.user.name || 'User',
+              name: data.data.user.name || "User",
               role: data.data.user.role,
             },
           },
         };
       }
-      
+
       return {
         success: false,
         error: {
-          message: data.error?.message || 'Login failed',
+          message: data.error?.message || "Login failed",
         },
       };
     } catch (error) {
@@ -64,7 +64,7 @@ export const authService = {
 
   logout: async (): Promise<void> => {
     try {
-      await api.post('/auth/logout');
+      await api.post("/v1/auth/logout");
     } catch (error) {
       // Ignore logout errors
     }
@@ -72,9 +72,9 @@ export const authService = {
 
   refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
     try {
-      const response = await api.post('/auth/refresh', { refreshToken });
+      const response = await api.post("/v1/auth/refresh", { refreshToken });
       const data = response.data;
-      
+
       if (data.success && data.data) {
         return {
           success: true,
@@ -84,17 +84,17 @@ export const authService = {
             user: {
               id: data.data.user.id,
               email: data.data.user.email,
-              name: data.data.user.name || 'User',
+              name: data.data.user.name || "User",
               role: data.data.user.role,
             },
           },
         };
       }
-      
+
       return {
         success: false,
         error: {
-          message: 'Token refresh failed',
+          message: "Token refresh failed",
         },
       };
     } catch (error) {

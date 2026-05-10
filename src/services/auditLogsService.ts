@@ -1,15 +1,23 @@
-import api, { handleApiError } from './apiClient';
+import { apiClient as api, handleApiError } from "../api/client";
 
 export interface AuditLog {
   id: number;
   userId: number;
-  userName: string;
+  userEmail: string;
   action: string;
-  entity: string;
+  entityType: string;
   entityId: number;
+  changes?: any;
   details: string;
   ipAddress: string;
-  timestamp: string;
+  createdAt: string;
+}
+
+export interface AuditLogFilters {
+  entityType?: string;
+  userId?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface AuditLogsResponse {
@@ -21,16 +29,16 @@ export interface AuditLogsResponse {
 }
 
 export const auditLogsService = {
-  getAll: async (params?: { 
-    page?: number; 
-    size?: number; 
+  getAll: async (params?: {
+    page?: number;
+    size?: number;
+    entityType?: string;
     userId?: number;
-    action?: string;
     startDate?: string;
     endDate?: string;
   }): Promise<AuditLogsResponse> => {
     try {
-      const response = await api.get('/audit-logs', { params });
+      const response = await api.get("/v1/audit-logs", { params });
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));

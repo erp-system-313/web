@@ -1,26 +1,40 @@
-import api, { handleApiError } from './apiClient';
+import { apiClient as api, handleApiError } from "../api/client";
 
 export interface User {
   id: number;
   email: string;
-  name: string;
-  role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'GUEST';
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  roleName: string;
+  roleId: number;
+  employeeId?: number;
+  isActive: boolean;
+  lastLoginAt?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface CreateUserDto {
+  firstName: string;
+  lastName: string;
   email: string;
+  roleId: number;
   password: string;
-  name: string;
-  role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'GUEST';
+  employeeId?: number;
 }
 
 export interface UpdateUserDto {
+  firstName?: string;
+  lastName?: string;
   email?: string;
-  name?: string;
-  role?: 'ADMIN' | 'MANAGER' | 'STAFF' | 'GUEST';
-  password?: string;
+  roleId?: number;
+  isActive?: boolean;
+  employeeId?: number;
+}
+
+export interface UserFilters {
+  roleName?: string;
+  isActive?: boolean;
 }
 
 export interface UsersResponse {
@@ -32,9 +46,14 @@ export interface UsersResponse {
 }
 
 export const usersService = {
-  getAll: async (params?: { page?: number; size?: number; search?: string }): Promise<UsersResponse> => {
+  getAll: async (params?: {
+    page?: number;
+    size?: number;
+    roleName?: string;
+    isActive?: boolean;
+  }): Promise<UsersResponse> => {
     try {
-      const response = await api.get('/users', { params });
+      const response = await api.get("/v1/users", { params });
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -43,7 +62,7 @@ export const usersService = {
 
   getById: async (id: number): Promise<User> => {
     try {
-      const response = await api.get(`/users/${id}`);
+      const response = await api.get(`/v1/users/${id}`);
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -52,7 +71,7 @@ export const usersService = {
 
   create: async (data: CreateUserDto): Promise<User> => {
     try {
-      const response = await api.post('/users', data);
+      const response = await api.post("/v1/users", data);
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -61,7 +80,7 @@ export const usersService = {
 
   update: async (id: number, data: UpdateUserDto): Promise<User> => {
     try {
-      const response = await api.put(`/users/${id}`, data);
+      const response = await api.put(`/v1/users/${id}`, data);
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -70,7 +89,7 @@ export const usersService = {
 
   delete: async (id: number): Promise<void> => {
     try {
-      await api.delete(`/users/${id}`);
+      await api.delete(`/v1/users/${id}`);
     } catch (error) {
       throw new Error(handleApiError(error));
     }

@@ -2,6 +2,7 @@ import type {
   Invoice,
   Payment,
   Account,
+  AccountType,
   JournalEntry,
   InvoiceFilters,
   JournalFilters,
@@ -93,29 +94,16 @@ export const financeService = {
     },
 
     update: async (
-      id: number,
-      data: Partial<CreateInvoiceDto>,
+      _id: number,
+      _data: Partial<CreateInvoiceDto>,
     ): Promise<Invoice | null> => {
-      try {
-        const response = await apiClient.put<ApiResponse<Invoice>>(
-          endpoints.invoices.update(id),
-          data,
-        );
-        return response.data.data;
-      } catch (error) {
-        console.error(`Failed to update invoice ${id}:`, error);
-        return null;
-      }
+      console.warn("Update/delete not available - backend endpoint missing");
+      return null;
     },
 
-    delete: async (id: number): Promise<boolean> => {
-      try {
-        await apiClient.delete(endpoints.invoices.delete(id));
-        return true;
-      } catch (error) {
-        console.error(`Failed to delete invoice ${id}:`, error);
-        return false;
-      }
+    delete: async (_id: number): Promise<boolean> => {
+      console.warn("Update/delete not available - backend endpoint missing");
+      return false;
     },
 
     recordPayment: async (data: RecordPaymentDto): Promise<Payment> => {
@@ -126,6 +114,7 @@ export const financeService = {
           paymentDate: data.paymentDate,
           method: data.method,
           reference: data.reference,
+          notes: data.notes,
         },
       );
       return response.data.data;
@@ -242,7 +231,12 @@ export const financeService = {
 
     update: async (
       id: number,
-      data: Partial<CreateAccountDto>,
+      data: {
+        name?: string;
+        type?: AccountType;
+        isActive?: boolean;
+        parentId?: number;
+      },
     ): Promise<Account | null> => {
       try {
         const response = await apiClient.put<ApiResponse<Account>>(
@@ -325,19 +319,11 @@ export const financeService = {
     },
 
     update: async (
-      id: number,
-      data: Partial<CreateJournalEntryDto>,
+      _id: number,
+      _data: Partial<CreateJournalEntryDto>,
     ): Promise<JournalEntry | null> => {
-      try {
-        const response = await apiClient.put<ApiResponse<JournalEntry>>(
-          endpoints.journal.getById(id),
-          data,
-        );
-        return response.data.data;
-      } catch (error) {
-        console.error(`Failed to update journal entry ${id}:`, error);
-        return null;
-      }
+      console.warn("Update not available - backend endpoint missing");
+      return null;
     },
 
     post: async (id: number): Promise<JournalEntry> => {

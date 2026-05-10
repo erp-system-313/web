@@ -398,15 +398,15 @@ export const SalesOrderForm: React.FC = () => {
           <div className={styles.totals}>
             <div className={styles.totalRow}>
               <span>Subtotal:</span>
-              <span>${totals.subtotal.toFixed(2)}</span>
+              <span>${(totals.subtotal ?? 0).toFixed(2)}</span>
             </div>
             <div className={styles.totalRow}>
               <span>Tax (10%):</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>${(tax ?? 0).toFixed(2)}</span>
             </div>
             <div className={`${styles.totalRow} ${styles.grandTotal}`}>
               <span>Total:</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${(total ?? 0).toFixed(2)}</span>
             </div>
           </div>
         </Card>

@@ -1,36 +1,42 @@
 export interface Supplier {
-  id: string;
+  id: number;
+  code: string;
   name: string;
   contactPerson: string;
   email: string;
   phone: string;
   address: string;
-  city: string;
-  country: string;
-  paymentTerms: string;
-  rating: number;
-  totalOrders: number;
-  onTimeDelivery: number;
-  isActive: boolean;
+  taxId: string;
+  paymentTerms: number;
+  totalPurchased: number;
+  status: "ACTIVE" | "INACTIVE";
   createdAt: string;
   updatedAt: string;
 }
 
 export interface SupplierFilters {
-  name?: string;
-  city?: string;
-  rating?: number;
+  status?: string;
   search?: string;
-  isActive?: boolean;
 }
 
 export interface CreateSupplierDto {
+  code: string;
   name: string;
   contactPerson: string;
   email: string;
   phone: string;
   address: string;
-  city: string;
-  country: string;
-  paymentTerms: string;
+  taxId: string;
+  paymentTerms: number;
+}
+
+export interface UpdateSupplierDto {
+  code?: string;
+  name?: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  taxId?: string;
+  paymentTerms?: number;
 }

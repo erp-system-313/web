@@ -105,14 +105,14 @@ export const SalesOrderDetails: React.FC = () => {
       dataIndex: "unitPrice",
       key: "unitPrice",
       align: "right" as const,
-      render: (price: number) => `$${price.toFixed(2)}`,
+      render: (price: number) => `$${(price ?? 0).toFixed(2)}`,
     },
     {
       title: "Line Total",
       dataIndex: "lineTotal",
       key: "lineTotal",
       align: "right" as const,
-      render: (total: number) => `$${total.toFixed(2)}`,
+      render: (total: number) => `$${(total ?? 0).toFixed(2)}`,
     },
   ];
 
@@ -178,7 +178,7 @@ export const SalesOrderDetails: React.FC = () => {
                       <strong>Subtotal</strong>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={1} align="right">
-                      <strong>${order.subtotal.toFixed(2)}</strong>
+                      <strong>${(order.subtotal ?? 0).toFixed(2)}</strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                   <Table.Summary.Row>
@@ -186,7 +186,7 @@ export const SalesOrderDetails: React.FC = () => {
                       Tax (10%)
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={1} align="right">
-                      ${order.taxAmount.toFixed(2)}
+                      ${(order.taxAmount ?? 0).toFixed(2)}
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                   <Table.Summary.Row>
@@ -194,7 +194,7 @@ export const SalesOrderDetails: React.FC = () => {
                       <strong>Total</strong>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={1} align="right">
-                      <strong>${order.totalAmount.toFixed(2)}</strong>
+                      <strong>${(order.totalAmount ?? 0).toFixed(2)}</strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                 </Table.Summary>

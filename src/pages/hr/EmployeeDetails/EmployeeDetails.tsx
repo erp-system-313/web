@@ -1,7 +1,17 @@
-import { Form, Input, Select, InputNumber, Card, Typography, Button, Space, Divider } from 'antd';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEmployee } from '../../../hooks';
-import styles from './EmployeeDetails.module.css';
+import {
+  Form,
+  Input,
+  Select,
+  InputNumber,
+  Card,
+  Typography,
+  Button,
+  Space,
+  Divider,
+} from "antd";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEmployee } from "../../../hooks";
+import styles from "./EmployeeDetails.module.css";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -14,12 +24,12 @@ export const EmployeeDetails: React.FC = () => {
   const [form] = Form.useForm();
 
   const onFinish = (values: unknown) => {
-    console.log('Form values:', values);
+    console.log("Form values:", values);
     refetch();
   };
 
   const handleCancel = () => {
-    navigate('/hr/employees');
+    navigate("/hr/employees");
   };
 
   if (loading) {
@@ -37,7 +47,7 @@ export const EmployeeDetails: React.FC = () => {
       <div className={styles.container}>
         <Card>
           <Title level={3}>Employee not found</Title>
-          <Button type="primary" onClick={() => navigate('/hr/employees')}>
+          <Button type="primary" onClick={() => navigate("/hr/employees")}>
             Back to List
           </Button>
         </Card>
@@ -64,6 +74,7 @@ export const EmployeeDetails: React.FC = () => {
             hireDate: employee.hireDate,
             salary: employee.salary,
             status: employee.status,
+            address: employee.address,
           }}
           onFinish={onFinish}
         >
@@ -71,7 +82,7 @@ export const EmployeeDetails: React.FC = () => {
             <Form.Item
               label="First Name"
               name="firstName"
-              rules={[{ required: true, message: 'First name is required' }]}
+              rules={[{ required: true, message: "First name is required" }]}
             >
               <Input />
             </Form.Item>
@@ -79,7 +90,7 @@ export const EmployeeDetails: React.FC = () => {
             <Form.Item
               label="Last Name"
               name="lastName"
-              rules={[{ required: true, message: 'Last name is required' }]}
+              rules={[{ required: true, message: "Last name is required" }]}
             >
               <Input />
             </Form.Item>
@@ -88,8 +99,8 @@ export const EmployeeDetails: React.FC = () => {
               label="Email"
               name="email"
               rules={[
-                { required: true, message: 'Email is required' },
-                { type: 'email', message: 'Please enter a valid email' },
+                { required: true, message: "Email is required" },
+                { type: "email", message: "Please enter a valid email" },
               ]}
             >
               <Input />
@@ -111,18 +122,19 @@ export const EmployeeDetails: React.FC = () => {
               <Input disabled />
             </Form.Item>
 
+            <Form.Item label="Address" name="address">
+              <Input />
+            </Form.Item>
+
             <Form.Item label="Salary" name="salary">
-              <InputNumber
-                style={{ width: '100%' }}
-                prefix="$"
-                disabled
-              />
+              <InputNumber style={{ width: "100%" }} prefix="$" disabled />
             </Form.Item>
 
             <Form.Item label="Status" name="status">
               <Select>
                 <Option value="ACTIVE">Active</Option>
                 <Option value="INACTIVE">Inactive</Option>
+                <Option value="ON_LEAVE">On Leave</Option>
                 <Option value="TERMINATED">Terminated</Option>
               </Select>
             </Form.Item>

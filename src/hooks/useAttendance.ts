@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { hrService, type Attendance } from '../services/hrService';
+import { useState, useEffect, useCallback } from "react";
+import { hrService, type Attendance } from "../services/hrService";
 
 interface AttendanceFilters {
   employeeId?: number;
@@ -21,13 +21,15 @@ export const useAttendance = (filters?: AttendanceFilters) => {
       setData(response.content || []);
       setTotal(response.totalElements || 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch attendance');
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch attendance",
+      );
       setData([]);
       setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [filters?.employeeId, filters?.dateFrom, filters?.dateTo]);
+  }, [filters?.employeeId, filters?.startDate, filters?.endDate]);
 
   useEffect(() => {
     fetchAttendance();
@@ -47,7 +49,7 @@ export const useClockIn = () => {
       const result = await hrService.attendance.clockIn();
       return result;
     } catch (err) {
-      setError('Failed to clock in');
+      setError("Failed to clock in");
       throw err;
     } finally {
       setLoading(false);
@@ -68,7 +70,7 @@ export const useClockOut = () => {
       const result = await hrService.attendance.clockOut();
       return result;
     } catch (err) {
-      setError('Failed to clock out');
+      setError("Failed to clock out");
       throw err;
     } finally {
       setLoading(false);
