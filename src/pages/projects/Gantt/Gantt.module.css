@@ -1,0 +1,89 @@
+.container {
+  padding: 24px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px;
+}
+
+.timeline {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.headerRow {
+  display: flex;
+  background: #fafafa;
+  border-bottom: 2px solid #f0f0f0;
+  font-weight: 600;
+  padding: 12px 16px;
+}
+
+.taskRow {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+
+.taskRow:hover {
+  background: #fafafa;
+}
+
+.taskRow:last-child {
+  border-bottom: none;
+}
+
+.taskNameCol {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.barTrack {
+  flex: 1;
+  height: 28px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.taskBar {
+  height: 100%;
+  width: 60%;
+  border-radius: 6px;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+
+.taskBar:hover {
+  opacity: 1;
+}
+
+.dateLabel {
+  white-space: nowrap;
+  font-size: 12px;
+  min-width: 90px;
+}
+
+.legend {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
