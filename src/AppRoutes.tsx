@@ -34,6 +34,10 @@ import SupplierListPage from "./pages/purchasing/SupplierListPage";
 import SupplierDetailsPage from "./pages/purchasing/SupplierDetailsPage";
 import PurchaseOrderListPage from "./pages/purchasing/PurchaseOrderListPage";
 import CreatePurchaseOrderPage from "./pages/purchasing/CreatePurchaseOrderPage";
+import CRMDashboard from "./pages/crm/Dashboard/Dashboard";
+import LeadsList from "./pages/crm/LeadsList/LeadsList";
+import { Pipeline } from "./pages/crm/Pipeline/Pipeline";
+import LeadDetails from "./pages/crm/LeadDetails/LeadDetails";
 
 export const AppRoutes = () => {
   return (
@@ -86,6 +90,12 @@ export const AppRoutes = () => {
           element={<EditProductPage />}
         />
         <Route path="/inventory/categories" element={<CategoryListPage />} />
+
+        {/* CRM routes */}
+        <Route path="/crm" element={<CRMDashboard />} />
+        <Route path="/crm/leads" element={<LeadsList />} />
+        <Route path="/crm/pipeline" element={<Pipeline />} />
+        <Route path="/crm/leads/:id" element={<LeadDetails />} />
 
         {/* Purchasing routes */}
         <Route path="/purchasing/suppliers" element={<SupplierListPage />} />

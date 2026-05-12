@@ -1,0 +1,22 @@
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.statsRow {
+  margin-bottom: 16px;
+}

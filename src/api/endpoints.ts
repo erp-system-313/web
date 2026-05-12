@@ -108,6 +108,15 @@ export const endpoints = {
     update: (id: number) => `/v1/users/${id}`,
     delete: (id: number) => `/v1/users/${id}`,
   },
+  crm: {
+    dashboard: "/v1/crm/dashboard",
+    leads: "/v1/crm/leads",
+    leadById: (id: number) => `/v1/crm/leads/${id}`,
+    convertLead: (id: number) => `/v1/crm/leads/${id}/convert`,
+    pipelines: "/v1/crm/pipelines",
+    opportunities: "/v1/crm/opportunities",
+    opportunityStage: (id: number) => `/v1/crm/opportunities/${id}/stage`,
+  },
   dashboard: {
     stats: "/v1/dashboard/stats",
   },
