@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { projectService } from '../services/projectService';
-import type { Project, ProjectTask, TaskStage, GanttItem } from '../types/project';
-import type { ProjectListParams } from '../services/projectService';
+import type { Project, ProjectTask, TaskStage, GanttItem, ProjectState } from '../types/project';
 
-export const useProjects = (params?: ProjectListParams) => {
+export const useProjects = (page = 0, size = 20, state?: ProjectState, search?: string) => {
   const [data, setData] = useState<Project[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -13,7 +12,7 @@ export const useProjects = (params?: ProjectListParams) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await projectService.getAll(params);
+      const result = await projectService.getAll({ page, size, state, search });
       setData(result.content);
       setTotal(result.totalElements);
     } catch (err) {
@@ -21,7 +20,7 @@ export const useProjects = (params?: ProjectListParams) => {
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  }, [page, size, state, search]);
 
   useEffect(() => {
     fetch();
