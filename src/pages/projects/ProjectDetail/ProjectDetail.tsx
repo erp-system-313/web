@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Descriptions, Tag, Button, Space, Spin, Table, Modal, Form, Input, DatePicker, message, Popconfirm } from 'antd';
-import { ArrowLeftOutlined, BarChartOutlined, PlusOutlined } from '@ant-design/icons';
-import { useProject, useProjectTasks } from '../../../hooks/useProjects';
+import dayjs from 'dayjs';
+import { Card, Descriptions, Tag, Button, Space, Spin, Table, Modal, Form, Input, DatePicker, message, Popconfirm, Select, Empty } from 'antd';
+import { ArrowLeftOutlined, BarChartOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { useProject, useProjectTasks, useProjectStages } from '../../../hooks/useProjects';
 import { projectService } from '../../../services/projectService';
 import { PROJECT_STATE_LABELS, PROJECT_STATE_COLORS } from '../../../types/project';
-import type { ProjectState, CreateTaskRequest } from '../../../types/project';
+import type { ProjectState, CreateTaskRequest, UpdateTaskRequest, ProjectTask } from '../../../types/project';
 import styles from './ProjectDetail.module.css';
 
 const STATE_TRANSITIONS: Record<ProjectState, ProjectState[]> = {
@@ -24,8 +25,14 @@ export const ProjectDetail: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [form] = Form.useForm();
 
+  const [editingTask, setEditingTask] = useState<ProjectTask | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm] = Form.useForm();
+  const [updatingStage, setUpdatingStage] = useState<number | null>(null);
+
   const { data: project, loading, refetch: refetchProject } = useProject(projectId);
   const { data: tasks, loading: tasksLoading, refetch: refetchTasks } = useProjectTasks(projectId);
+  const { data: stages } = useProjectStages(projectId);
 
   const handleStateChange = async (newState: ProjectState) => {
     if (!projectId) return;
@@ -36,6 +43,61 @@ export const ProjectDetail: React.FC = () => {
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Failed to update state');
     }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!projectId) return;
+    try {
+      await projectService.delete(projectId);
+      message.success('Project deleted successfully');
+      navigate('/projects');
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Failed to delete project');
+    }
+  };
+
+  const handleEditTask = async (values: UpdateTaskRequest) => {
+    if (!editingTask) return;
+    try {
+      const payload: UpdateTaskRequest = {
+        ...values,
+        dueDate: values.dueDate ? String((values.dueDate as any).format?.('YYYY-MM-DD') ?? values.dueDate) : null,
+      };
+      await projectService.updateTask(editingTask.id, payload);
+      message.success('Task updated successfully');
+      setEditModalOpen(false);
+      setEditingTask(null);
+      editForm.resetFields();
+      refetchTasks();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Failed to update task');
+    }
+  };
+
+  const handleUpdateTaskStage = async (taskId: number, stageId: number) => {
+    setUpdatingStage(taskId);
+    try {
+      await projectService.updateTask(taskId, { stageId });
+      message.success('Task stage updated');
+      refetchTasks();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Failed to update task stage');
+    } finally {
+      setUpdatingStage(null);
+    }
+  };
+
+  const openEditModal = (task: ProjectTask) => {
+    setEditingTask(task);
+    editForm.setFieldsValue({
+      name: task.name,
+      description: task.description,
+      dueDate: task.dueDate ? dayjs(task.dueDate) : null,
+      estimatedHours: task.estimatedHours,
+      actualHours: task.actualHours,
+      stageId: task.stageId,
+    });
+    setEditModalOpen(true);
   };
 
   const handleCreateTask = async (values: CreateTaskRequest) => {
@@ -76,9 +138,23 @@ export const ProjectDetail: React.FC = () => {
     { title: 'Name', dataIndex: 'name', key: 'name' },
     {
       title: 'Stage',
-      dataIndex: 'stageName',
-      key: 'stageName',
-      render: (name: string | null) => name || '-',
+      key: 'stage',
+      width: 160,
+      render: (_: unknown, record: ProjectTask) => {
+        const stageOptions = (stages || []).map((s) => ({ value: s.id, label: s.name }));
+        const currentStageId = record.stageId;
+        return (
+          <Select
+            value={currentStageId}
+            options={stageOptions}
+            onChange={(val) => handleUpdateTaskStage(record.id, val)}
+            loading={updatingStage === record.id}
+            size="small"
+            style={{ width: 130 }}
+            placeholder="Set stage"
+          />
+        );
+      },
     },
     { title: 'Due Date', dataIndex: 'dueDate', key: 'dueDate', render: (d: string | null) => d || '-' },
     {
@@ -93,13 +169,26 @@ export const ProjectDetail: React.FC = () => {
       key: 'actualHours',
       render: (h: number | null) => h ?? '-',
     },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 80,
+      render: (_: unknown, record: ProjectTask) => (
+        <Button type="link" icon={<EditOutlined />} onClick={() => openEditModal(record)} />
+      ),
+    },
   ];
 
   return (
     <div className={styles.container}>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/projects')} style={{ marginBottom: 16 }}>
-        Back to Projects
-      </Button>
+      <Space style={{ marginBottom: 16 }}>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/projects')}>
+          Back to Projects
+        </Button>
+        <Popconfirm title="Delete this project?" onConfirm={handleDeleteProject}>
+          <Button danger icon={<DeleteOutlined />}>Delete Project</Button>
+        </Popconfirm>
+      </Space>
 
       <Card
         title={project.name}
@@ -138,18 +227,26 @@ export const ProjectDetail: React.FC = () => {
         title="Tasks"
         style={{ marginTop: 16 }}
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setTaskModalOpen(true)}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => {
+            const defaultStage = stages?.find((s) => s.isDefault);
+            if (defaultStage) form.setFieldValue('stageId', defaultStage.id);
+            setTaskModalOpen(true);
+          }}>
             Add Task
           </Button>
         }
       >
-        <Table
-          dataSource={tasks}
-          columns={taskColumns}
-          rowKey="id"
-          loading={tasksLoading}
-          pagination={false}
-        />
+        {tasks.length === 0 && !tasksLoading ? (
+          <Empty description="No tasks yet" />
+        ) : (
+          <Table
+            dataSource={tasks}
+            columns={taskColumns}
+            rowKey="id"
+            loading={tasksLoading}
+            pagination={false}
+          />
+        )}
       </Card>
 
       <Modal
@@ -171,9 +268,53 @@ export const ProjectDetail: React.FC = () => {
           <Form.Item name="estimatedHours" label="Estimated Hours">
             <Input type="number" min={0} />
           </Form.Item>
+          <Form.Item name="stageId" label="Stage">
+            <Select
+              options={(stages || []).map((s) => ({ value: s.id, label: s.name }))}
+              placeholder="Select stage"
+              defaultValue={stages?.find((s) => s.isDefault)?.id}
+            />
+          </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={creating} block>
               Create Task
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Edit Task"
+        open={editModalOpen}
+        onCancel={() => { setEditModalOpen(false); setEditingTask(null); editForm.resetFields(); }}
+        footer={null}
+      >
+        <Form form={editForm} layout="vertical" onFinish={handleEditTask}>
+          <Form.Item name="name" label="Task Name" rules={[{ required: true, message: 'Name is required' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <Input.TextArea rows={3} />
+          </Form.Item>
+          <Form.Item name="dueDate" label="Due Date">
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="estimatedHours" label="Estimated Hours">
+            <Input type="number" min={0} />
+          </Form.Item>
+          <Form.Item name="actualHours" label="Actual Hours">
+            <Input type="number" min={0} />
+          </Form.Item>
+          <Form.Item name="stageId" label="Stage">
+            <Select
+              options={(stages || []).map((s) => ({ value: s.id, label: s.name }))}
+              placeholder="Select stage"
+              allowClear
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Update Task
             </Button>
           </Form.Item>
         </Form>

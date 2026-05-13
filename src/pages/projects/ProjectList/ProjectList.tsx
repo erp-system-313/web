@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Table, Button, Input, Select, Space, Modal, Form, message, Tag, DatePicker } from 'antd';
+import { Card, Table, Button, Input, Select, Space, Modal, Form, message, Tag, DatePicker, Empty } from 'antd';
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useProjects } from '../../../hooks/useProjects';
@@ -18,7 +18,7 @@ export const ProjectList: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  const { data, total, loading, refetch } = useProjects({ page, size, state: stateFilter, search: search || undefined });
+  const { data, total, loading, refetch } = useProjects(page, size, stateFilter, search || undefined);
 
   const handleCreate = async (values: CreateProjectRequest) => {
     setCreating(true);
@@ -109,6 +109,9 @@ export const ProjectList: React.FC = () => {
           </Button>
         </div>
 
+        {data.length === 0 && !loading ? (
+          <Empty description="No projects found" />
+        ) : (
         <Table
           dataSource={data}
           columns={columns}
@@ -126,6 +129,7 @@ export const ProjectList: React.FC = () => {
             style: { cursor: 'pointer' },
           })}
         />
+        )}
       </Card>
 
       <Modal
