@@ -1,0 +1,19 @@
+.fullPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 64px 0;
+}
+
+.tip {
+  margin-top: 16px;
+  display: block;
+  text-align: center;
+}
