@@ -3,6 +3,32 @@ import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
 const API_BASE_URL = "/api";
 
+const storages = [localStorage, sessionStorage];
+
+function getTokenFromAny(key: string): string | null {
+  for (const s of storages) {
+    const val = s.getItem(key);
+    if (val) return val;
+  }
+  return null;
+}
+
+function getStorageWithKey(key: string): Storage | null {
+  for (const s of storages) {
+    if (s.getItem(key) !== null) return s;
+  }
+  return null;
+}
+
+function removeFromAll(key: string) {
+  for (const s of storages) s.removeItem(key);
+}
+
+function setOnStorage(key: string, value: string) {
+  const store = getStorageWithKey("erp_token") || getStorageWithKey("erp_refresh_token") || localStorage;
+  store.setItem(key, value);
+}
+
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
@@ -30,8 +56,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token =
-      localStorage.getItem("erp_token") || localStorage.getItem("token");
+    const token = getTokenFromAny("erp_token") || getTokenFromAny("token");
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -62,14 +87,14 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem("erp_refresh_token");
+      const refreshToken = getTokenFromAny("erp_refresh_token");
 
       if (!refreshToken) {
         isRefreshing = false;
-        localStorage.removeItem("erp_token");
-        localStorage.removeItem("erp_refresh_token");
-        localStorage.removeItem("erp_user");
-        localStorage.removeItem("token");
+        removeFromAll("erp_token");
+        removeFromAll("erp_refresh_token");
+        removeFromAll("erp_user");
+        removeFromAll("token");
         window.location.href = "/login";
         return Promise.reject(error);
       }
@@ -82,8 +107,8 @@ apiClient.interceptors.response.use(
 
         if (data.success && data.data) {
           const newToken = data.data.accessToken;
-          localStorage.setItem("erp_token", newToken);
-          localStorage.setItem(
+          setOnStorage("erp_token", newToken);
+          setOnStorage(
             "erp_refresh_token",
             data.data.refreshToken || refreshToken,
           );
@@ -97,10 +122,10 @@ apiClient.interceptors.response.use(
 
       processQueue(error, null);
       isRefreshing = false;
-      localStorage.removeItem("erp_token");
-      localStorage.removeItem("erp_refresh_token");
-      localStorage.removeItem("erp_user");
-      localStorage.removeItem("token");
+      removeFromAll("erp_token");
+      removeFromAll("erp_refresh_token");
+      removeFromAll("erp_user");
+      removeFromAll("token");
       window.location.href = "/login";
     }
     return Promise.reject(error);
