@@ -1,0 +1,26 @@
+.header {
+  margin-bottom: 24px;
+}
+
+.breadcrumb {
+  margin-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  margin-bottom: 0 !important;
+}
+
+.subtitle {
+  margin-top: 4px;
+}
