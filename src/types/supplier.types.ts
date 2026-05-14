@@ -8,7 +8,7 @@ export interface Supplier {
   address: string;
   taxId?: string;
   paymentTerms: number;
-  totalPurchased?: number;
+  totalPurchased: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
