@@ -205,7 +205,6 @@ export const CreateProductPage: React.FC = () => {
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Add New Product</h1>
-        <Button onClick={() => navigate('/inventory/products')}>Cancel</Button>
       </div>
       <Card className={styles.formCard}>
         <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} />
