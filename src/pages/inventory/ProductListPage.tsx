@@ -3,14 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, Select, Table, Tag, Space, Input, Modal } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import type { Product, ProductFilters, StockStatus } from '../../types/product.types';
+import type { Category } from '../../types/category.types';
 import { useProducts } from '../../hooks/useProducts';
+import { inventoryService } from '../../services/inventoryService';
 import { formatCurrency } from '../../utils/formatters';
 import styles from './ProductListPage.module.css';
-
-const categories = [
-  { value: 'electronics', label: 'Electronics' },
-  { value: 'office', label: 'Office Supplies' },
-];
 
 const stockStatusOptions = [
   { value: '', label: 'All' },
@@ -25,6 +22,19 @@ export const ProductListPage: React.FC = () => {
   
   const [filters, setFilters] = useState<ProductFilters>({});
   const [searchText, setSearchText] = useState('');
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await inventoryService.getCategories(1, 100);
+        setCategories(result.data.map((cat: Category) => ({ value: String(cat.id), label: cat.name })));
+      } catch {
+        // ignore
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const loadProducts = useCallback(async () => {
     await fetchProducts({ ...filters, search: searchText }, 1);
