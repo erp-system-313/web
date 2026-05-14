@@ -1,16 +1,20 @@
-export type PurchaseOrderStatus = 'DRAFT' | 'SENT' | 'RECEIVED' | 'PARTIAL' | 'CANCELLED';
+export type PurchaseOrderStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "RECEIVED"
+  | "CANCELLED";
 
-export interface PurchaseOrderItem {
+export interface PurchaseOrderLineItem {
   id: number;
-  orderId?: number;
+  orderId: number;
   productId: number;
   productName: string;
   quantity: number;
   unitPrice: number;
-  discount?: number;
+  discount: number;
   lineTotal: number;
-  receivedQty?: number;
-  notes?: string;
+  receivedQty: number;
+  notes: string;
 }
 
 export interface PurchaseOrder {
@@ -19,16 +23,15 @@ export interface PurchaseOrder {
   supplierId: number;
   supplierName: string;
   orderDate: string;
-  expectedDate: string;
-  receivedDate?: string;
+  deliveryDate: string;
   status: PurchaseOrderStatus;
-  notes: string;
-  items: PurchaseOrderItem[];
   subtotal: number;
   taxAmount: number;
-  shippingCost: number;
   totalAmount: number;
-  createdById?: number;
+  shippingCost: number;
+  receivedDate?: string;
+  notes: string;
+  lines: PurchaseOrderLineItem[];
   createdAt: string;
   updatedAt: string;
 }
@@ -36,13 +39,15 @@ export interface PurchaseOrder {
 export interface CreatePurchaseOrderDto {
   supplierId: number;
   orderDate: string;
-  expectedDate: string;
+  expectedDate?: string;
   notes: string;
-  items: {
+  lines: Array<{
     productId: number;
     quantity: number;
     unitPrice: number;
-  }[];
+    discount: number;
+    notes: string;
+  }>;
 }
 
 export interface PurchaseOrderFilters {
