@@ -311,6 +311,74 @@ export const SupplierDetailsPage: React.FC = () => {
       <Card>
         <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
       </Card>
+
+      <Modal
+        title="Edit Supplier"
+        open={editModalOpen}
+        onCancel={() => setEditModalOpen(false)}
+        onOk={handleSubmit(handleEditSupplier)}
+        confirmLoading={editSubmitting}
+        okText="Update Supplier"
+      >
+        <form onSubmit={handleSubmit(handleEditSupplier)}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Supplier Code *</label>
+            <Controller name="code" control={control} render={({ field }) => (
+              <Input {...field} placeholder="e.g. SUP-001" status={errors.code ? "error" : undefined} />
+            )} />
+            {errors.code && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.code.message}</span>}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Supplier Name *</label>
+            <Controller name="name" control={control} render={({ field }) => (
+              <Input {...field} placeholder="Enter supplier name" status={errors.name ? "error" : undefined} />
+            )} />
+            {errors.name && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.name.message}</span>}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Contact Person *</label>
+            <Controller name="contactPerson" control={control} render={({ field }) => (
+              <Input {...field} placeholder="Full name" status={errors.contactPerson ? "error" : undefined} />
+            )} />
+            {errors.contactPerson && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.contactPerson.message}</span>}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Email *</label>
+            <Controller name="email" control={control} render={({ field }) => (
+              <Input {...field} placeholder="email@example.com" status={errors.email ? "error" : undefined} />
+            )} />
+            {errors.email && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.email.message}</span>}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Phone *</label>
+            <Controller name="phone" control={control} render={({ field }) => (
+              <Input {...field} placeholder="Phone number" status={errors.phone ? "error" : undefined} />
+            )} />
+            {errors.phone && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.phone.message}</span>}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Address *</label>
+            <Controller name="address" control={control} render={({ field }) => (
+              <Input.TextArea {...field} rows={2} placeholder="Full address" status={errors.address ? "error" : undefined} />
+            )} />
+            {errors.address && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.address.message}</span>}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Tax ID *</label>
+            <Controller name="taxId" control={control} render={({ field }) => (
+              <Input {...field} placeholder="Tax identification number" status={errors.taxId ? "error" : undefined} />
+            )} />
+            {errors.taxId && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.taxId.message}</span>}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Payment Terms (days) *</label>
+            <Controller name="paymentTerms" control={control} render={({ field }) => (
+              <InputNumber {...field} onChange={(value) => field.onChange(value ?? 30)} style={{ width: "100%" }} min={1} placeholder="30" status={errors.paymentTerms ? "error" : undefined} />
+            )} />
+            {errors.paymentTerms && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.paymentTerms.message}</span>}
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
