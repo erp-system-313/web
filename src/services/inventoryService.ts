@@ -1,4 +1,4 @@
-import api from './apiClient';
+import { apiClient as api } from '../api/client';
 import { endpoints } from '../api/endpoints';
 import type { Product, CreateProductDto, ProductFilters } from '../types/product.types';
 import type { Category, CreateCategoryDto } from '../types/category.types';
@@ -7,9 +7,9 @@ export const inventoryService = {
   async getProducts(filters: ProductFilters = {}, page = 1, size = 20): Promise<{ data: Product[]; total: number }> {
     const params: Record<string, string> = { page: String(page - 1), size: String(size) };
     
-    if (filters.categoryId) params.categoryId = filters.categoryId;
+    if (filters.categoryId !== undefined) params.categoryId = String(filters.categoryId);
     if (filters.search) params.search = filters.search;
-    if (filters.stockStatus) params.filter = filters.stockStatus;
+    if (filters.stockStatus) params.stockStatus = filters.stockStatus;
     if (filters.minPrice !== undefined) params.minPrice = String(filters.minPrice);
     if (filters.maxPrice !== undefined) params.maxPrice = String(filters.maxPrice);
     
@@ -20,8 +20,8 @@ export const inventoryService = {
     };
   },
 
-  async getProduct(id: string): Promise<Product | null> {
-    const response = await api.get(endpoints.products.getById(Number(id)));
+  async getProduct(id: number): Promise<Product | null> {
+    const response = await api.get(endpoints.products.getById(id));
     return response.data.data;
   },
 
@@ -35,13 +35,13 @@ export const inventoryService = {
     return response.data.data;
   },
 
-  async updateProduct(id: string, data: Partial<CreateProductDto>): Promise<Product> {
-    const response = await api.put(endpoints.products.update(Number(id)), data);
+  async updateProduct(id: number, data: Partial<CreateProductDto>): Promise<Product> {
+    const response = await api.put(endpoints.products.update(id), data);
     return response.data.data;
   },
 
-  async deleteProduct(id: string): Promise<void> {
-    await api.delete(endpoints.products.delete(Number(id)));
+  async deleteProduct(id: number): Promise<void> {
+    await api.delete(endpoints.products.delete(id));
   },
 
   async getCategories(page = 1, size = 20): Promise<{ data: Category[]; total: number }> {
@@ -54,8 +54,8 @@ export const inventoryService = {
     };
   },
 
-  async getCategory(id: string): Promise<Category | null> {
-    const response = await api.get(endpoints.categories.getById(Number(id)));
+  async getCategory(id: number): Promise<Category | null> {
+    const response = await api.get(endpoints.categories.getById(id));
     return response.data.data;
   },
 
@@ -64,13 +64,13 @@ export const inventoryService = {
     return response.data.data;
   },
 
-  async updateCategory(id: string, data: CreateCategoryDto): Promise<Category> {
-    const response = await api.put(endpoints.categories.update(Number(id)), data);
+  async updateCategory(id: number, data: CreateCategoryDto): Promise<Category> {
+    const response = await api.put(endpoints.categories.update(id), data);
     return response.data.data;
   },
 
-  async deleteCategory(id: string): Promise<void> {
-    await api.delete(endpoints.categories.delete(Number(id)));
+  async deleteCategory(id: number): Promise<void> {
+    await api.delete(endpoints.categories.delete(id));
   },
 };
 

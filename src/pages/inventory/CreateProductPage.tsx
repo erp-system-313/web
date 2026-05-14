@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Tabs, Input, InputNumber, Select } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useProducts } from '../../hooks/useProducts';
+import { inventoryService } from '../../services/inventoryService';
 import styles from './CreateProductPage.module.css';
 
 const basicInfoSchema = yup.object({
   name: yup.string().required('Product name is required'),
   sku: yup.string().required('SKU is required'),
   description: yup.string().default(''),
-  categoryId: yup.string().required('Category is required'),
+  categoryId: yup.number().required('Category is required').typeError('Category is required'),
 });
 
 const pricingSchema = yup.object({
@@ -20,58 +21,71 @@ const pricingSchema = yup.object({
 });
 
 const inventorySchema = yup.object({
-  stockQuantity: yup.number().required('Stock quantity is required').min(0, 'Quantity must be positive'),
-  reorderPoint: yup.number().required('Reorder point is required').min(0, 'Must be positive'),
+  currentStock: yup.number().required('Stock quantity is required').min(0, 'Quantity must be positive'),
+  reorderLevel: yup.number().required('Reorder point is required').min(0, 'Must be positive'),
 });
 
 type BasicInfoData = yup.InferType<typeof basicInfoSchema>;
 type PricingData = yup.InferType<typeof pricingSchema>;
 type InventoryData = yup.InferType<typeof inventorySchema>;
 
-const categories = [
-  { value: 'electronics', label: 'Electronics' },
-  { value: 'office', label: 'Office Supplies' },
-];
-
 export const CreateProductPage: React.FC = () => {
   const navigate = useNavigate();
   const { createProduct } = useProducts();
   const [activeTab, setActiveTab] = useState('basic');
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register: registerBasic, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
+  const { control: basicControl, handleSubmit: handleBasicSubmit, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
     resolver: yupResolver(basicInfoSchema),
     mode: 'onBlur',
+    defaultValues: { name: '', sku: '', description: '' },
   });
 
-  const { control: pricingControl, formState: { errors: errorsPricing }, getValues: getPricingValues } = useForm<PricingData>({
+  const { control: pricingControl, handleSubmit: handlePricingSubmit, formState: { errors: errorsPricing } } = useForm<PricingData>({
     resolver: yupResolver(pricingSchema),
     mode: 'onBlur',
-    defaultValues: { unitPrice: 0, costPrice: 0 },
   });
 
-  const { control: inventoryControl, formState: { errors: errorsInventory }, getValues: getInventoryValues } = useForm<InventoryData>({
+  const { control: inventoryControl, handleSubmit: handleInventorySubmit, formState: { errors: errorsInventory } } = useForm<InventoryData>({
     resolver: yupResolver(inventorySchema),
     mode: 'onBlur',
-    defaultValues: { stockQuantity: 0, reorderPoint: 0 },
   });
 
   const [basicData, setBasicData] = useState<BasicInfoData | null>(null);
   const [pricingData, setPricingData] = useState<PricingData | null>(null);
+  const [categoryOptions, setCategoryOptions] = useState<{ value: number; label: string }[]>([]);
 
-  const handleBasicSubmit = (data: BasicInfoData) => {
+  useEffect(() => {
+    inventoryService.getCategories(1, 100).then(res => {
+      setCategoryOptions(res.data.map(cat => ({ value: cat.id, label: cat.name })));
+    }).catch(() => {});
+  }, []);
+
+  const handleTabChange = (key: string) => {
+    const steps = ['basic', 'pricing', 'inventory'];
+    const currentIdx = steps.indexOf(activeTab);
+    const targetIdx = steps.indexOf(key);
+
+    // Only allow going back to previous steps or to next completed steps
+    if (targetIdx <= currentIdx || completedSteps.has(key)) {
+      setActiveTab(key);
+    }
+  };
+
+  const onBasicSubmit = (data: BasicInfoData) => {
     setBasicData(data);
+    setCompletedSteps(prev => new Set(prev).add('basic'));
     setActiveTab('pricing');
   };
 
-  const handlePricingSubmit = () => {
-    const data = getPricingValues();
+  const onPricingSubmit = (data: PricingData) => {
     setPricingData(data);
+    setCompletedSteps(prev => new Set(prev).add('pricing'));
     setActiveTab('inventory');
   };
 
-  const handleInventorySubmit = async () => {
-    const inventoryValues = getInventoryValues();
+  const onInventorySubmit = async (data: InventoryData) => {
     setIsSubmitting(true);
     try {
       if (basicData && pricingData) {
@@ -82,13 +96,12 @@ export const CreateProductPage: React.FC = () => {
           categoryId: basicData.categoryId,
           unitPrice: pricingData.unitPrice,
           costPrice: pricingData.costPrice,
-          stockQuantity: inventoryValues.stockQuantity,
-          reorderPoint: inventoryValues.reorderPoint,
+          currentStock: data.currentStock,
+          reorderLevel: data.reorderLevel,
         });
         navigate('/inventory/products');
       }
     } catch {
-      // Error handled by hook
     } finally {
       setIsSubmitting(false);
     }
@@ -99,25 +112,33 @@ export const CreateProductPage: React.FC = () => {
       key: 'basic',
       label: 'Basic Info',
       children: (
-        <form onSubmit={(e) => { e.preventDefault(); handleBasicSubmit(basicData!); }}>
+        <form onSubmit={handleBasicSubmit(onBasicSubmit)}>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Product Name *</label>
-            <Input {...registerBasic('name')} placeholder="Enter product name" status={errorsBasic.name ? 'error' : undefined} />
+            <Controller name="name" control={basicControl} render={({ field }) => (
+              <Input {...field} placeholder="Enter product name" status={errorsBasic.name ? 'error' : undefined} />
+            )} />
             {errorsBasic.name && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.name.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>SKU *</label>
-            <Input {...registerBasic('sku')} placeholder="Enter SKU" status={errorsBasic.sku ? 'error' : undefined} />
+            <Controller name="sku" control={basicControl} render={({ field }) => (
+              <Input {...field} placeholder="Enter SKU" status={errorsBasic.sku ? 'error' : undefined} />
+            )} />
             {errorsBasic.sku && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.sku.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Category *</label>
-            <Select {...registerBasic('categoryId')} placeholder="Select category" style={{ width: '100%' }} options={categories} status={errorsBasic.categoryId ? 'error' : undefined} />
+            <Controller name="categoryId" control={basicControl} render={({ field }) => (
+              <Select {...field} onChange={(value) => field.onChange(value)} placeholder="Select category" style={{ width: '100%' }} options={categoryOptions} status={errorsBasic.categoryId ? 'error' : undefined} />
+            )} />
             {errorsBasic.categoryId && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.categoryId.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Description</label>
-            <Input.TextArea {...registerBasic('description')} rows={4} placeholder="Enter product description" />
+            <Controller name="description" control={basicControl} render={({ field }) => (
+              <Input.TextArea {...field} rows={4} placeholder="Enter product description" />
+            )} />
           </div>
           <div className={styles.actions}>
             <Button onClick={() => navigate('/inventory/products')}>Cancel</Button>
@@ -130,18 +151,18 @@ export const CreateProductPage: React.FC = () => {
       key: 'pricing',
       label: 'Pricing',
       children: (
-        <form onSubmit={(e) => { e.preventDefault(); handlePricingSubmit(); }}>
+        <form onSubmit={handlePricingSubmit(onPricingSubmit)}>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Unit Price *</label>
             <Controller name="unitPrice" control={pricingControl} render={({ field }) => (
-              <InputNumber {...field} onChange={(value) => field.onChange(value ?? 0)} prefix="$" style={{ width: '100%' }} min={0} precision={2} placeholder="0.00" status={errorsPricing.unitPrice ? 'error' : undefined} />
+              <InputNumber {...field} onChange={(value) => field.onChange(value ?? undefined)} prefix="$" style={{ width: '100%' }} min={0} precision={2} placeholder="0.00" status={errorsPricing.unitPrice ? 'error' : undefined} />
             )} />
             {errorsPricing.unitPrice && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsPricing.unitPrice.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Cost Price *</label>
             <Controller name="costPrice" control={pricingControl} render={({ field }) => (
-              <InputNumber {...field} onChange={(value) => field.onChange(value ?? 0)} prefix="$" style={{ width: '100%' }} min={0} precision={2} placeholder="0.00" status={errorsPricing.costPrice ? 'error' : undefined} />
+              <InputNumber {...field} onChange={(value) => field.onChange(value ?? undefined)} prefix="$" style={{ width: '100%' }} min={0} precision={2} placeholder="0.00" status={errorsPricing.costPrice ? 'error' : undefined} />
             )} />
             {errorsPricing.costPrice && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsPricing.costPrice.message}</span>}
           </div>
@@ -156,20 +177,20 @@ export const CreateProductPage: React.FC = () => {
       key: 'inventory',
       label: 'Inventory',
       children: (
-        <form onSubmit={(e) => { e.preventDefault(); handleInventorySubmit(); }}>
+        <form onSubmit={handleInventorySubmit(onInventorySubmit)}>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Stock Quantity *</label>
-            <Controller name="stockQuantity" control={inventoryControl} render={({ field }) => (
-              <InputNumber {...field} onChange={(value) => field.onChange(value ?? 0)} style={{ width: '100%' }} min={0} placeholder="0" status={errorsInventory.stockQuantity ? 'error' : undefined} />
+            <Controller name="currentStock" control={inventoryControl} render={({ field }) => (
+              <InputNumber {...field} onChange={(value) => field.onChange(value ?? undefined)} style={{ width: '100%' }} min={0} placeholder="0" status={errorsInventory.currentStock ? 'error' : undefined} />
             )} />
-            {errorsInventory.stockQuantity && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsInventory.stockQuantity.message}</span>}
+            {errorsInventory.currentStock && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsInventory.currentStock.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Reorder Point *</label>
-            <Controller name="reorderPoint" control={inventoryControl} render={({ field }) => (
-              <InputNumber {...field} onChange={(value) => field.onChange(value ?? 0)} style={{ width: '100%' }} min={0} placeholder="0" status={errorsInventory.reorderPoint ? 'error' : undefined} />
+            <Controller name="reorderLevel" control={inventoryControl} render={({ field }) => (
+              <InputNumber {...field} onChange={(value) => field.onChange(value ?? undefined)} style={{ width: '100%' }} min={0} placeholder="0" status={errorsInventory.reorderLevel ? 'error' : undefined} />
             )} />
-            {errorsInventory.reorderPoint && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsInventory.reorderPoint.message}</span>}
+            {errorsInventory.reorderLevel && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsInventory.reorderLevel.message}</span>}
           </div>
           <div className={styles.actions}>
             <Button onClick={() => setActiveTab('pricing')} disabled={isSubmitting}>Previous</Button>
@@ -187,7 +208,7 @@ export const CreateProductPage: React.FC = () => {
         <Button onClick={() => navigate('/inventory/products')}>Cancel</Button>
       </div>
       <Card className={styles.formCard}>
-        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
+        <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} />
       </Card>
     </div>
   );

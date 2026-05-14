@@ -1,16 +1,14 @@
 export interface Supplier {
-  id: string;
+  id: number;
+  code?: string;
   name: string;
   contactPerson: string;
   email: string;
   phone: string;
   address: string;
-  city: string;
-  country: string;
+  taxId?: string;
   paymentTerms: string;
-  rating: number;
-  totalOrders: number;
-  onTimeDelivery: number;
+  totalPurchased?: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -18,19 +16,16 @@ export interface Supplier {
 
 export interface SupplierFilters {
   name?: string;
-  city?: string;
-  rating?: number;
   search?: string;
   isActive?: boolean;
 }
 
 export interface CreateSupplierDto {
+  code: string;
   name: string;
   contactPerson: string;
   email: string;
   phone: string;
   address: string;
-  city: string;
-  country: string;
-  paymentTerms: string;
+  paymentTerms: number;
 }

@@ -1,4 +1,4 @@
-import api from './apiClient';
+import { apiClient as api } from '../api/client';
 import { endpoints } from '../api/endpoints';
 import type { Supplier, CreateSupplierDto, SupplierFilters } from '../types/supplier.types';
 import type { PurchaseOrder, CreatePurchaseOrderDto, PurchaseOrderFilters } from '../types/purchaseOrder.types';
@@ -17,8 +17,8 @@ export const purchasingService = {
     };
   },
 
-  async getSupplier(id: string): Promise<Supplier | null> {
-    const response = await api.get(endpoints.suppliers.getById(Number(id)));
+  async getSupplier(id: number): Promise<Supplier | null> {
+    const response = await api.get(endpoints.suppliers.getById(id));
     return response.data.data;
   },
 
@@ -27,17 +27,17 @@ export const purchasingService = {
     return response.data.data;
   },
 
-  async updateSupplier(id: string, data: Partial<CreateSupplierDto>): Promise<Supplier> {
-    const response = await api.put(endpoints.suppliers.update(Number(id)), data);
+  async updateSupplier(id: number, data: Partial<CreateSupplierDto>): Promise<Supplier> {
+    const response = await api.put(endpoints.suppliers.update(id), data);
     return response.data.data;
   },
 
-  async deleteSupplier(id: string): Promise<void> {
-    await api.delete(endpoints.suppliers.delete(Number(id)));
+  async deleteSupplier(id: number): Promise<void> {
+    await api.delete(endpoints.suppliers.delete(id));
   },
 
   async getPurchaseOrders(filters: PurchaseOrderFilters = {}, page = 1, size = 20): Promise<{ data: PurchaseOrder[]; total: number }> {
-    const params: Record<string, string> = {};
+    const params: Record<string, string | number> = {};
     params.page = String(page - 1);
     params.size = String(size);
     
@@ -52,8 +52,8 @@ export const purchasingService = {
     };
   },
 
-  async getPurchaseOrder(id: string): Promise<PurchaseOrder | null> {
-    const response = await api.get(endpoints.purchaseOrders.getById(Number(id)));
+  async getPurchaseOrder(id: number): Promise<PurchaseOrder | null> {
+    const response = await api.get(endpoints.purchaseOrders.getById(id));
     return response.data.data;
   },
 
@@ -62,22 +62,22 @@ export const purchasingService = {
     return response.data.data;
   },
 
-  async updatePurchaseOrder(id: string, data: Partial<CreatePurchaseOrderDto>): Promise<PurchaseOrder> {
-    const response = await api.put(endpoints.purchaseOrders.update(Number(id)), data);
+  async updatePurchaseOrder(id: number, data: Partial<CreatePurchaseOrderDto>): Promise<PurchaseOrder> {
+    const response = await api.put(endpoints.purchaseOrders.update(id), data);
     return response.data.data;
   },
 
-  async deletePurchaseOrder(id: string): Promise<void> {
-    await api.delete(endpoints.purchaseOrders.delete(Number(id)));
+  async deletePurchaseOrder(id: number): Promise<void> {
+    await api.delete(endpoints.purchaseOrders.delete(id));
   },
 
-  async receivePurchaseOrder(id: string, lines: { lineId: number; receivedQty: number }[]): Promise<PurchaseOrder> {
-    const response = await api.put(endpoints.purchaseOrders.receive(Number(id)), { lines });
+  async receivePurchaseOrder(id: number, lines: { lineId: number; receivedQty: number }[]): Promise<PurchaseOrder> {
+    const response = await api.put(endpoints.purchaseOrders.receive(id), { lines });
     return response.data.data;
   },
 
-  async cancelPurchaseOrder(id: string): Promise<PurchaseOrder> {
-    const response = await api.put(endpoints.purchaseOrders.cancel(Number(id)));
+  async cancelPurchaseOrder(id: number): Promise<PurchaseOrder> {
+    const response = await api.put(endpoints.purchaseOrders.cancel(id));
     return response.data.data;
   },
 };

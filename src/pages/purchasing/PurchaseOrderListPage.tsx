@@ -8,22 +8,20 @@ import styles from './PurchaseOrderListPage.module.css';
 
 const statusOptions = [
   { value: '', label: 'All Statuses' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'submitted', label: 'Submitted' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SENT', label: 'Sent' },
+  { value: 'RECEIVED', label: 'Received' },
+  { value: 'PARTIAL', label: 'Partial' },
+  { value: 'CANCELLED', label: 'Cancelled' },
 ];
 
 const getStatusTag = (status: PurchaseOrderStatus) => {
   const colors: Record<PurchaseOrderStatus, string> = {
-    draft: 'default',
-    submitted: 'processing',
-    confirmed: 'blue',
-    shipped: 'orange',
-    delivered: 'green',
-    cancelled: 'red',
+    DRAFT: 'default',
+    SENT: 'processing',
+    RECEIVED: 'green',
+    PARTIAL: 'blue',
+    CANCELLED: 'red',
   };
   return <Tag color={colors[status]}>{status}</Tag>;
 };
@@ -31,7 +29,7 @@ const getStatusTag = (status: PurchaseOrderStatus) => {
 export const PurchaseOrderListPage: React.FC = () => {
   const navigate = useNavigate();
   const { orders, loading, fetchOrders, deleteOrder } = usePurchaseOrders();
-  
+
   const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | ''>('');
   const [searchText, setSearchText] = useState('');
 
@@ -58,15 +56,15 @@ export const PurchaseOrderListPage: React.FC = () => {
     navigate('/purchasing/orders/new');
   };
 
-  const handleViewOrder = (id: string) => {
+  const handleViewOrder = (id: number) => {
     navigate(`/purchasing/orders/${id}`);
   };
 
-  const handleEditOrder = (id: string) => {
+  const handleEditOrder = (id: number) => {
     navigate(`/purchasing/orders/${id}/edit`);
   };
 
-  const handleDeleteOrder = (id: string) => {
+  const handleDeleteOrder = (id: number) => {
     Modal.confirm({
       title: 'Delete Purchase Order',
       content: 'Are you sure you want to delete this purchase order?',
@@ -97,10 +95,10 @@ export const PurchaseOrderListPage: React.FC = () => {
       render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
-      title: 'Delivery Date',
-      dataIndex: 'deliveryDate',
-      key: 'deliveryDate',
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      title: 'Expected Date',
+      dataIndex: 'expectedDate',
+      key: 'expectedDate',
+      render: (date: string) => date ? new Date(date).toLocaleDateString() : '-',
     },
     {
       title: 'Status',
@@ -120,7 +118,7 @@ export const PurchaseOrderListPage: React.FC = () => {
       render: (_: unknown, record: PurchaseOrder) => (
         <Space className={styles.tableActions}>
           <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewOrder(record.id)} />
-          {record.status === 'draft' && (
+          {record.status === 'DRAFT' && (
             <>
               <Button type="text" icon={<EditOutlined />} onClick={() => handleEditOrder(record.id)} />
               <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDeleteOrder(record.id)} />

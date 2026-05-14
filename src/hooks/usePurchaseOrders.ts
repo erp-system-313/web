@@ -8,11 +8,11 @@ interface UsePurchaseOrdersReturn {
   loading: boolean;
   total: number;
   fetchOrders: (filters: PurchaseOrderFilters, page: number) => Promise<void>;
-  getOrder: (id: string) => Promise<PurchaseOrder | null>;
+  getOrder: (id: number) => Promise<PurchaseOrder | null>;
   createOrder: (data: CreatePurchaseOrderDto) => Promise<PurchaseOrder>;
   createPurchaseOrder: (data: CreatePurchaseOrderDto) => Promise<void>;
-  updateOrder: (id: string, data: Partial<CreatePurchaseOrderDto>) => Promise<PurchaseOrder>;
-  deleteOrder: (id: string) => Promise<void>;
+  updateOrder: (id: number, data: Partial<CreatePurchaseOrderDto>) => Promise<PurchaseOrder>;
+  deleteOrder: (id: number) => Promise<void>;
 }
 
 export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
@@ -33,7 +33,7 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     }
   }, []);
 
-  const getOrder = useCallback(async (id: string): Promise<PurchaseOrder | null> => {
+  const getOrder = useCallback(async (id: number): Promise<PurchaseOrder | null> => {
     try {
       return await purchasingService.getPurchaseOrder(id);
     } catch (error) {
@@ -57,7 +57,7 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     await createOrder(data);
   }, [createOrder]);
 
-  const updateOrder = useCallback(async (id: string, data: Partial<CreatePurchaseOrderDto>): Promise<PurchaseOrder> => {
+  const updateOrder = useCallback(async (id: number, data: Partial<CreatePurchaseOrderDto>): Promise<PurchaseOrder> => {
     try {
       const order = await purchasingService.updatePurchaseOrder(id, data);
       setOrders(prev => prev.map(o => o.id === id ? order : o));
@@ -69,7 +69,7 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     }
   }, []);
 
-  const deleteOrder = useCallback(async (id: string): Promise<void> => {
+  const deleteOrder = useCallback(async (id: number): Promise<void> => {
     try {
       await purchasingService.deletePurchaseOrder(id);
       setOrders(prev => prev.filter(o => o.id !== id));

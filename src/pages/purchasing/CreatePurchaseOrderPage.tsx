@@ -1,57 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Card, Select, Input, InputNumber, Table, Space, message } from 'antd';
+import { Button, Card, Select, Input, InputNumber, Table, Space, message, AutoComplete as AntAutoComplete } from 'antd';
 import { PlusOutlined, DeleteOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import type { PurchaseOrderItem } from '../../types/purchaseOrder.types';
+import { inventoryService } from '../../services/inventoryService';
+import type { Product } from '../../types/product.types';
 import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
 import { useSuppliers } from '../../hooks/useSuppliers';
 import styles from './CreatePurchaseOrderPage.module.css';
 
 const schema = yup.object({
-  supplierId: yup.string().required('Supplier is required'),
+  supplierId: yup.number().required('Supplier is required'),
   orderDate: yup.string().required('Order date is required'),
-  deliveryDate: yup.string().default(''),
-  paymentTerms: yup.string().required('Payment terms is required'),
+  expectedDate: yup.string().default(''),
   notes: yup.string().default(''),
 });
 
 type FormData = yup.InferType<typeof schema>;
 
-const paymentTermsOptions = [
-  { value: 'Net 30', label: 'Net 30' },
-  { value: 'Net 60', label: 'Net 60' },
-  { value: 'Net 90', label: 'Net 90' },
-  { value: 'COD', label: 'COD' },
-  { value: 'Prepaid', label: 'Prepaid' },
-];
-
-const mockProducts = [
-  { value: 'prod1', label: 'Product A (SKU: A001)' },
-  { value: 'prod2', label: 'Product B (SKU: B002)' },
-  { value: 'prod3', label: 'Product C (SKU: C003)' },
-];
+interface LineItem {
+  tempId: number;
+  productId: number | undefined;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
 
 export const CreatePurchaseOrderPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { createPurchaseOrder } = usePurchaseOrders();
   const { suppliers, fetchSuppliers } = useSuppliers();
-  
-  const defaultSupplierId = searchParams.get('supplier') || '';
-  
+
+  const defaultSupplierId = searchParams.get('supplier') ? Number(searchParams.get('supplier')) : undefined;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [items, setItems] = useState<PurchaseOrderItem[]>([]);
+  const [items, setItems] = useState<LineItem[]>([]);
+  const [productSearchResults, setProductSearchResults] = useState<Product[]>([]);
 
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
       supplierId: defaultSupplierId,
       orderDate: new Date().toISOString().split('T')[0],
-      deliveryDate: '',
-      paymentTerms: 'Net 30',
+      expectedDate: '',
       notes: '',
     },
   });
@@ -63,33 +58,71 @@ export const CreatePurchaseOrderPage: React.FC = () => {
     fetchSuppliers({}, 1);
   }, [fetchSuppliers]);
 
+  const searchProducts = async (query: string) => {
+    try {
+      const result = await inventoryService.getProducts({ search: query });
+      setProductSearchResults(result.data);
+    } catch {
+      setProductSearchResults([]);
+    }
+  };
+
+  useEffect(() => {
+    searchProducts('');
+  }, []);
+
   const addItem = () => {
+    let nextId = 1;
+    if (items.length > 0) {
+      nextId = Math.max(...items.map(i => i.tempId)) + 1;
+    }
     setItems([
       ...items,
       {
-        id: Date.now().toString(),
-        productId: '',
+        tempId: nextId,
+        productId: undefined,
         productName: '',
-        productSku: '',
         quantity: 1,
         unitPrice: 0,
-        totalPrice: 0,
+        lineTotal: 0,
       },
     ]);
   };
 
-  const updateItem = (index: number, productId: string, quantity: number, unitPrice: number) => {
+  const handleProductSelect = (index: number, productId: number | null, product?: Product) => {
     const updatedItems = [...items];
-    const product = mockProducts.find(p => p.value === productId);
-    updatedItems[index] = {
-      ...updatedItems[index],
-      productId,
-      productName: product?.label.split(' (')[0] || '',
-      productSku: product?.label.match(/\(SKU: (.+)\)/)?.[1] || '',
-      quantity,
-      unitPrice,
-      totalPrice: quantity * unitPrice,
-    };
+    if (productId && product) {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        productId,
+        productName: product.name,
+        quantity: updatedItems[index].quantity,
+        unitPrice: product.unitPrice,
+        lineTotal: product.unitPrice * updatedItems[index].quantity,
+      };
+    } else {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        productId: undefined,
+        productName: '',
+        unitPrice: 0,
+        lineTotal: 0,
+      };
+    }
+    setItems(updatedItems);
+  };
+
+  const updateQuantity = (index: number, quantity: number) => {
+    const updatedItems = [...items];
+    updatedItems[index].quantity = quantity;
+    updatedItems[index].lineTotal = updatedItems[index].unitPrice * quantity;
+    setItems(updatedItems);
+  };
+
+  const updateUnitPrice = (index: number, unitPrice: number) => {
+    const updatedItems = [...items];
+    updatedItems[index].unitPrice = unitPrice;
+    updatedItems[index].lineTotal = unitPrice * updatedItems[index].quantity;
     setItems(updatedItems);
   };
 
@@ -98,33 +131,42 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   };
 
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
     const taxAmount = subtotal * 0.1;
     const shippingCost = 50;
     const totalAmount = subtotal + taxAmount + shippingCost;
     return { subtotal, taxAmount, shippingCost, totalAmount };
   };
 
-  const onSubmit = async (data: FormData, status: 'draft' | 'submitted') => {
+  const onSubmit = async (data: FormData) => {
     if (items.length === 0) {
       message.error('Please add at least one product');
       return;
     }
 
-    const totals = calculateTotals();
+    const hasInvalid = items.some(i => !i.productId);
+    if (hasInvalid) {
+      message.error('Please select a product for all line items');
+      return;
+    }
+
     setIsSubmitting(true);
-    
+
     try {
       await createPurchaseOrder({
         supplierId: data.supplierId,
-        orderDate: data.orderDate,
-        deliveryDate: data.deliveryDate || new Date().toISOString().split('T')[0],
-        paymentTerms: data.paymentTerms,
+        orderDate: new Date(data.orderDate).toISOString(),
+        expectedDate: data.expectedDate
+          ? new Date(data.expectedDate).toISOString()
+          : new Date().toISOString(),
         notes: data.notes || '',
-        status,
-        items,
-        ...totals,
+        items: items.map(i => ({
+          productId: i.productId!,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+        })),
       });
+      message.success('Purchase order created successfully');
       navigate('/purchasing/orders');
     } catch {
       message.error('Failed to create purchase order');
@@ -135,18 +177,31 @@ export const CreatePurchaseOrderPage: React.FC = () => {
 
   const totals = calculateTotals();
 
+  const productOptions = productSearchResults.map(p => ({
+    value: p.id,
+    label: `${p.name} (${p.sku})`,
+  }));
+
   const itemColumns = [
     {
       title: 'Product',
       dataIndex: 'productId',
       key: 'productId',
-      render: (_: unknown, record: PurchaseOrderItem, index: number) => (
-        <Select
-          placeholder="Select product"
+      width: 250,
+      render: (_: unknown, record: LineItem, index: number) => (
+        <AntAutoComplete
           style={{ width: '100%' }}
-          options={mockProducts}
-          value={record.productId || undefined}
-          onChange={(value) => updateItem(index, value, items[index]?.quantity || 1, items[index]?.unitPrice || 0)}
+          placeholder="Search product..."
+          value={record.productId ?? undefined}
+          options={productOptions}
+          onSelect={(value) => {
+            const product = productSearchResults.find(p => p.id === value);
+            handleProductSelect(index, value as number, product);
+          }}
+          onSearch={searchProducts}
+          onFocus={() => searchProducts('')}
+          allowClear
+          filterOption={false}
         />
       ),
     },
@@ -155,11 +210,11 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       dataIndex: 'quantity',
       key: 'quantity',
       width: 120,
-      render: (_: unknown, record: PurchaseOrderItem, index: number) => (
+      render: (_: unknown, record: LineItem, index: number) => (
         <InputNumber
           min={1}
-          value={record.quantity || 1}
-          onChange={(value) => updateItem(index, items[index]?.productId, value || 1, items[index]?.unitPrice || 0)}
+          value={record.quantity}
+          onChange={(value) => updateQuantity(index, value || 1)}
           style={{ width: '100%' }}
         />
       ),
@@ -169,21 +224,21 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       dataIndex: 'unitPrice',
       key: 'unitPrice',
       width: 120,
-      render: (_: unknown, record: PurchaseOrderItem, index: number) => (
+      render: (_: unknown, record: LineItem, index: number) => (
         <InputNumber
           min={0}
           precision={2}
           prefix="$"
-          value={record.unitPrice || 0}
-          onChange={(value) => updateItem(index, items[index]?.productId, items[index]?.quantity || 1, value || 0)}
+          value={record.unitPrice}
+          onChange={(value) => updateUnitPrice(index, value || 0)}
           style={{ width: '100%' }}
         />
       ),
     },
     {
       title: 'Total',
-      dataIndex: 'totalPrice',
-      key: 'totalPrice',
+      dataIndex: 'lineTotal',
+      key: 'lineTotal',
       width: 120,
       render: (total: number) => `$${total.toFixed(2)}`,
     },
@@ -191,7 +246,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       title: '',
       key: 'actions',
       width: 80,
-      render: (_: unknown, _record: PurchaseOrderItem, index: number) => (
+      render: (_: unknown, _record: LineItem, index: number) => (
         <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeItem(index)} />
       ),
     },
@@ -202,17 +257,17 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       <div className={styles.header}>
         <h1 className={styles.title}>Create Purchase Order</h1>
         <Space className={styles.actions}>
-          <Button 
-            icon={<SaveOutlined />} 
-            onClick={handleSubmit((data) => onSubmit(data, 'draft'))}
+          <Button
+            icon={<SaveOutlined />}
+            onClick={handleSubmit(onSubmit)}
             loading={isSubmitting}
           >
             Save Draft
           </Button>
-          <Button 
-            type="primary" 
-            icon={<SendOutlined />} 
-            onClick={handleSubmit((data) => onSubmit(data, 'submitted'))}
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={handleSubmit(onSubmit)}
             loading={isSubmitting}
           >
             Submit Order
@@ -236,8 +291,9 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                     {...field}
                     placeholder="Choose a supplier..."
                     style={{ width: '100%' }}
-                    options={suppliers.map(s => ({ value: s.id, label: `${s.name} - ${s.city}` }))}
+                    options={suppliers.map(s => ({ value: s.id, label: s.name }))}
                     status={errors.supplierId ? 'error' : undefined}
+                    onFocus={() => fetchSuppliers({}, 1)}
                   />
                 )}
               />
@@ -256,8 +312,8 @@ export const CreatePurchaseOrderPage: React.FC = () => {
             )}
           </Card>
 
-          <Card 
-            title="Order Lines" 
+          <Card
+            title="Order Lines"
             className={styles.formCard}
             extra={
               <Button type="primary" icon={<PlusOutlined />} onClick={addItem}>
@@ -268,7 +324,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
             <Table
               columns={itemColumns}
               dataSource={items}
-              rowKey="id"
+              rowKey="tempId"
               pagination={false}
               className={styles.itemsTable}
               locale={{ emptyText: 'No products added yet. Click "Add Product" to start.' }}
@@ -293,25 +349,10 @@ export const CreatePurchaseOrderPage: React.FC = () => {
               <div className={styles.formSection}>
                 <label style={{ display: 'block', marginBottom: 8 }}>Expected Delivery Date</label>
                 <Controller
-                  name="deliveryDate"
+                  name="expectedDate"
                   control={control}
                   render={({ field }) => (
                     <Input type="date" {...field} />
-                  )}
-                />
-              </div>
-
-              <div className={styles.formSection}>
-                <label style={{ display: 'block', marginBottom: 8 }}>Payment Terms</label>
-                <Controller
-                  name="paymentTerms"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      style={{ width: '100%' }}
-                      options={paymentTermsOptions}
-                    />
                   )}
                 />
               </div>

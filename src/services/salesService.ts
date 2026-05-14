@@ -1,6 +1,6 @@
 import type {
   Customer,
-  CustomerContact,
+  Product,
   SalesOrder,
   SalesOrderFilters,
   CustomerFilters,
@@ -74,21 +74,6 @@ export const salesService = {
       }
     },
 
-    getContacts: async (customerId: number): Promise<CustomerContact[]> => {
-      try {
-        const response = await apiClient.get<ApiResponse<CustomerContact[]>>(
-          endpoints.customers.getOrders(customerId),
-        );
-        return response.data.data;
-      } catch (error) {
-        console.error(
-          `Failed to fetch contacts for customer ${customerId}:`,
-          error,
-        );
-        return [];
-      }
-    },
-
     getSalesHistory: async (customerId: number): Promise<SalesOrder[]> => {
       try {
         const response = await apiClient.get<ApiResponse<SalesOrder[]>>(
@@ -127,6 +112,22 @@ export const salesService = {
       } catch (error) {
         console.error(`Failed to delete customer ${id}:`, error);
         return false;
+      }
+    },
+
+    search: async (query: string): Promise<Customer[]> => {
+      try {
+        const params = new URLSearchParams();
+        params.append("search", query);
+        params.append("page", "0");
+        params.append("size", "20");
+        const response = await apiClient.get<ApiResponse<PageResponse<Customer>>>(
+          endpoints.customers.list, { params }
+        );
+        return response.data.data.content;
+      } catch (error) {
+        console.error("Failed to search customers:", error);
+        return [];
       }
     },
   },
@@ -244,13 +245,13 @@ export const salesService = {
   },
 
   products: {
-    search: async (query: string): Promise<Customer[]> => {
+    search: async (query: string): Promise<Product[]> => {
       try {
         const params = new URLSearchParams();
         params.append("search", query);
 
         const response = await apiClient.get<
-          ApiResponse<PageResponse<Customer>>
+          ApiResponse<PageResponse<Product>>
         >(endpoints.products.list, { params });
         return response.data.data.content;
       } catch (error) {

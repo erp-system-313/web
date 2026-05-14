@@ -10,6 +10,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { DataTable, StatusBadge } from "../../../components/common";
 import { useSalesOrders } from "../../../hooks";
+import { salesService } from "../../../services/salesService";
 import type {
   SalesOrder,
   SalesOrderFilters,
@@ -36,15 +37,20 @@ export const SalesOrdersList: React.FC = () => {
 
   const { data, loading, total, refetch } = useSalesOrders(filters);
 
-  const handleDelete = (order: SalesOrder) => {
+  const handleDelete = async (order: SalesOrder) => {
     confirm({
       title: "Delete Order",
       content: `Are you sure you want to delete order ${order.orderNumber}?`,
       okText: "Delete",
       okType: "danger",
-      onOk: () => {
-        message.success(`Order ${order.orderNumber} deleted`);
-        refetch();
+      onOk: async () => {
+        const deleted = await salesService.salesOrders.delete(order.id);
+        if (deleted) {
+          message.success(`Order ${order.orderNumber} deleted`);
+          refetch();
+        } else {
+          message.error(`Failed to delete order ${order.orderNumber}`);
+        }
       },
     });
   };
@@ -66,13 +72,6 @@ export const SalesOrdersList: React.FC = () => {
       dataIndex: "orderDate",
       key: "orderDate",
       render: (date: string) => new Date(date).toLocaleDateString(),
-    },
-    {
-      title: "Required Date",
-      dataIndex: "requiredDate",
-      key: "requiredDate",
-      render: (date: string) =>
-        date ? new Date(date).toLocaleDateString() : "-",
     },
     {
       title: "Status",

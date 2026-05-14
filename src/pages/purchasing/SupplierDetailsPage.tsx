@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Tabs, Table, Tag, Space, Progress, Statistic, Row, Col, message, Modal, Rate } from 'antd';
+import { Button, Card, Tabs, Table, Tag, Space, message, Modal } from 'antd';
 import { EditOutlined, DeleteOutlined, ShoppingCartOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import type { PurchaseOrder, PurchaseOrderStatus } from '../../types/purchaseOrder.types';
 import { useSuppliers } from '../../hooks/useSuppliers';
@@ -9,18 +9,18 @@ import styles from './SupplierDetailsPage.module.css';
 
 const getStatusTag = (status: PurchaseOrderStatus) => {
   const colors: Record<PurchaseOrderStatus, string> = {
-    draft: 'default',
-    submitted: 'processing',
-    confirmed: 'blue',
-    shipped: 'orange',
-    delivered: 'green',
-    cancelled: 'red',
+    DRAFT: 'default',
+    SENT: 'processing',
+    RECEIVED: 'green',
+    PARTIAL: 'blue',
+    CANCELLED: 'red',
   };
   return <Tag color={colors[status]}>{status}</Tag>;
 };
 
 export const SupplierDetailsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: idStr } = useParams<{ id: string }>();
+  const id = idStr ? Number(idStr) : undefined;
   const navigate = useNavigate();
   const { suppliers, loading: supplierLoading, fetchSuppliers, deleteSupplier } = useSuppliers();
   const { orders, loading: ordersLoading, fetchOrders } = usePurchaseOrders();
@@ -67,7 +67,7 @@ export const SupplierDetailsPage: React.FC = () => {
     navigate('/purchasing/suppliers');
   };
 
-  const handleViewOrder = (orderId: string) => {
+  const handleViewOrder = (orderId: number) => {
     navigate(`/purchasing/orders/${orderId}`);
   };
 
@@ -128,36 +128,6 @@ export const SupplierDetailsPage: React.FC = () => {
         </div>
       ),
     },
-    {
-      key: 'analytics',
-      label: 'Analytics',
-      children: (
-        <div className={styles.tabContent}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Card title="Delivery Performance">
-                <Progress 
-                  percent={supplier.onTimeDelivery} 
-                  status="active"
-                  strokeColor="#52c41a"
-                />
-                <div style={{ textAlign: 'center', marginTop: 16 }}>
-                  <span style={{ color: '#999' }}>On-Time Delivery Rate</span>
-                </div>
-              </Card>
-            </Col>
-            <Col span={12}>
-              <Card title="Order Volume">
-                <Statistic value={supplier.totalOrders} />
-                <div style={{ textAlign: 'center', marginTop: 8 }}>
-                  <span style={{ color: '#999' }}>Total Orders</span>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -195,23 +165,18 @@ export const SupplierDetailsPage: React.FC = () => {
         <Card className={styles.infoCard}>
           <div className={styles.infoCardTitle}>Address</div>
           <div className={styles.infoRow}>{supplier.address}</div>
-          <div className={styles.infoRow}>{supplier.city}, {supplier.country}</div>
         </Card>
 
         <Card className={styles.infoCard}>
-          <div className={styles.infoCardTitle}>Performance</div>
+          <div className={styles.infoCardTitle}>Details</div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Payment Terms:</span> {supplier.paymentTerms}
           </div>
           <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Rating:</span>{' '}
-            <Rate disabled value={supplier.rating} />
+            <span className={styles.infoLabel}>Code:</span> {supplier.code}
           </div>
           <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Total Orders:</span> {supplier.totalOrders}
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>On-Time:</span> {supplier.onTimeDelivery}%
+            <span className={styles.infoLabel}>Tax ID:</span> {supplier.taxId}
           </div>
         </Card>
       </div>

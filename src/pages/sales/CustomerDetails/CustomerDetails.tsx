@@ -1,11 +1,11 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, Button, Descriptions, Table, Space, Typography } from "antd";
+import { Card, Button, Descriptions, Table, Typography } from "antd";
 import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { StatusBadge, TabPanel } from "../../../components/common";
 import { useCustomer } from "../../../hooks";
-import type { CustomerContact, SalesOrder } from "../../../types/sales";
+import type { SalesOrder } from "../../../types/sales";
 import styles from "./CustomerDetails.module.css";
 
 const { Title } = Typography;
@@ -17,7 +17,6 @@ export const CustomerDetails: React.FC = () => {
 
   const {
     data: customer,
-    contacts,
     salesHistory,
     loading,
     error,
@@ -30,25 +29,6 @@ export const CustomerDetails: React.FC = () => {
   if (error || !customer) {
     return <div className={styles.container}>Customer not found</div>;
   }
-
-  const contactColumns: ColumnsType<CustomerContact> = [
-    { title: "Name", dataIndex: "name", key: "name" },
-    { title: "Role", dataIndex: "role", key: "role" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Phone", dataIndex: "phone", key: "phone" },
-    {
-      title: "Actions",
-      key: "actions",
-      render: () => (
-        <Space>
-          <Button type="text" icon={<EditOutlined />} size="small" />
-          <Button type="text" danger size="small">
-            Delete
-          </Button>
-        </Space>
-      ),
-    },
-  ];
 
   const orderColumns: ColumnsType<SalesOrder> = [
     {
@@ -117,23 +97,6 @@ export const CustomerDetails: React.FC = () => {
             {customer.paymentTerms.replace("_", " ")}
           </Descriptions.Item>
         </Descriptions>
-      ),
-    },
-    {
-      label: `Contacts (${contacts.length})`,
-      key: "contacts",
-      children: (
-        <div>
-          <div className={styles.sectionHeader}>
-            <Button type="primary">Add Contact</Button>
-          </div>
-          <Table
-            dataSource={contacts}
-            columns={contactColumns}
-            rowKey="id"
-            pagination={false}
-          />
-        </div>
       ),
     },
     {

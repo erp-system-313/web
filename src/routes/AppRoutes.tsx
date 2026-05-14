@@ -15,7 +15,7 @@ const Attendance = lazy(() => import("@/pages/hr/Attendance"));
 const LeaveRequests = lazy(() => import("@/pages/hr/LeaveRequests"));
 const Products = lazy(() => import("@/pages/inventory/Products"));
 const AddProduct = lazy(() => import("@/pages/inventory/AddProduct"));
-const Categories = lazy(() => import("@/pages/inventory/Categories"));
+const Categories = lazy(() => import("@/pages/inventory/CategoryListPage"));
 const Suppliers = lazy(() => import("@/pages/purchasing/Suppliers"));
 const SupplierDetails = lazy(
   () => import("@/pages/purchasing/SupplierDetails"),
@@ -28,6 +28,8 @@ const Customers = lazy(() => import("@/pages/sales/Customers"));
 const CustomerDetails = lazy(() => import("@/pages/sales/CustomerDetails"));
 const SalesOrders = lazy(() => import("@/pages/sales/SalesOrders"));
 const NewSalesOrder = lazy(() => import("@/pages/sales/NewSalesOrder"));
+const SalesOrderView = lazy(() => import("@/pages/sales/SalesOrderDetails"));
+const SalesOrderEdit = lazy(() => import("@/pages/sales/SalesOrderForm"));
 const Invoices = lazy(() => import("@/pages/finance/Invoices"));
 const NewInvoice = lazy(() => import("@/pages/finance/NewInvoice"));
 const InvoiceDetails = lazy(() => import("@/pages/finance/InvoiceDetails"));
@@ -200,6 +202,22 @@ export default function AppRoutes() {
             element={
               <Suspense fallback={<PageLoader />}>
                 <NewSalesOrder />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/sales/orders/:id/edit"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <SalesOrderEdit />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/sales/orders/:id"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <SalesOrderView />
               </Suspense>
             }
           />

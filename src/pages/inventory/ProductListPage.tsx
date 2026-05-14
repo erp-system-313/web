@@ -4,13 +4,9 @@ import { Button, Card, Select, Table, Tag, Space, Input, Modal } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import type { Product, ProductFilters, StockStatus } from '../../types/product.types';
 import { useProducts } from '../../hooks/useProducts';
+import { inventoryService } from '../../services/inventoryService';
 import { formatCurrency } from '../../utils/formatters';
 import styles from './ProductListPage.module.css';
-
-const categories = [
-  { value: 'electronics', label: 'Electronics' },
-  { value: 'office', label: 'Office Supplies' },
-];
 
 const stockStatusOptions = [
   { value: '', label: 'All' },
@@ -25,6 +21,13 @@ export const ProductListPage: React.FC = () => {
   
   const [filters, setFilters] = useState<ProductFilters>({});
   const [searchText, setSearchText] = useState('');
+  const [categoryOptions, setCategoryOptions] = useState<{ value: number; label: string }[]>([]);
+
+  useEffect(() => {
+    inventoryService.getCategories(1, 100).then(res => {
+      setCategoryOptions(res.data.map(cat => ({ value: cat.id, label: cat.name })));
+    }).catch(() => {});
+  }, []);
 
   const loadProducts = useCallback(async () => {
     await fetchProducts({ ...filters, search: searchText }, 1);
@@ -38,8 +41,8 @@ export const ProductListPage: React.FC = () => {
     setSearchText(value);
   };
 
-  const handleCategoryFilter = (categoryId: string) => {
-    setFilters(prev => ({ ...prev, categoryId: categoryId || undefined }));
+  const handleCategoryFilter = (categoryId: number | undefined) => {
+    setFilters(prev => ({ ...prev, categoryId }));
   };
 
   const handleStockStatusFilter = (stockStatus: string) => {
@@ -50,15 +53,15 @@ export const ProductListPage: React.FC = () => {
     navigate('/inventory/products/new');
   };
 
-  const handleViewProduct = (id: string) => {
+  const handleViewProduct = (id: number) => {
     navigate(`/inventory/products/${id}`);
   };
 
-  const handleEditProduct = (id: string) => {
+  const handleEditProduct = (id: number) => {
     navigate(`/inventory/products/${id}/edit`);
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = (id: number) => {
     Modal.confirm({
       title: 'Delete Product',
       content: 'Are you sure you want to delete this product?',
@@ -71,8 +74,8 @@ export const ProductListPage: React.FC = () => {
   };
 
   const getStockTag = (product: Product) => {
-    if (product.stockQuantity === 0) return <Tag color="error">Out of Stock</Tag>;
-    if (product.stockQuantity <= product.reorderPoint) return <Tag color="warning">Low Stock</Tag>;
+    if (product.currentStock === 0) return <Tag color="error">Out of Stock</Tag>;
+    if (product.currentStock <= product.reorderLevel) return <Tag color="warning">Low Stock</Tag>;
     return <Tag color="success">In Stock</Tag>;
   };
 
@@ -94,7 +97,7 @@ export const ProductListPage: React.FC = () => {
       key: 'stock',
       render: (_: unknown, record: Product) => (
         <div className={styles.stockSection}>
-          <span className={styles.stockQuantity}>{record.stockQuantity} units</span>
+          <span className={styles.currentStock}>{record.currentStock} units</span>
           {getStockTag(record)}
         </div>
       ),
@@ -132,7 +135,7 @@ export const ProductListPage: React.FC = () => {
       <Card className={styles.filterPanel}>
         <Space size="large" wrap>
           <Input.Search placeholder="Search products..." allowClear prefix={<SearchOutlined />} onSearch={handleSearch} style={{ width: 300 }} />
-          <Select placeholder="Category" allowClear style={{ width: 200 }} options={categories} onChange={handleCategoryFilter} />
+          <Select placeholder="Category" allowClear style={{ width: 200 }} options={categoryOptions} onChange={handleCategoryFilter} />
           <Select placeholder="Stock Status" allowClear style={{ width: 150 }} options={stockStatusOptions} onChange={handleStockStatusFilter} />
         </Space>
       </Card>

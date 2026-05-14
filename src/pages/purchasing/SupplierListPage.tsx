@@ -1,29 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Select, Table, Input, Space, message, Rate } from 'antd';
+import { Button, Card, Table, Input, Space, message } from 'antd';
 import { PlusOutlined, EyeOutlined, ShoppingCartOutlined, SearchOutlined } from '@ant-design/icons';
-import type { Supplier, SupplierFilters } from '../../types/supplier.types';
+import type { Supplier } from '../../types/supplier.types';
 import { useSuppliers } from '../../hooks/useSuppliers';
 import styles from './SupplierListPage.module.css';
-
-const ratingOptions = [
-  { value: 0, label: 'All Ratings' },
-  { value: 5, label: '★★★★★ (5)' },
-  { value: 4, label: '★★★★☆ (4+)' },
-  { value: 3, label: '★★★☆☆ (3+)' },
-];
 
 export const SupplierListPage: React.FC = () => {
   const navigate = useNavigate();
   const { suppliers, loading, fetchSuppliers } = useSuppliers();
   
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [filters, setFilters] = useState<SupplierFilters>({});
   const [searchText, setSearchText] = useState('');
 
   const loadSuppliers = useCallback(async () => {
-    await fetchSuppliers({ ...filters, name: searchText }, 1);
-  }, [fetchSuppliers, filters, searchText]);
+    await fetchSuppliers({ search: searchText || undefined }, 1);
+  }, [fetchSuppliers, searchText]);
 
   useEffect(() => {
     loadSuppliers();
@@ -33,19 +24,11 @@ export const SupplierListPage: React.FC = () => {
     setSearchText(value);
   };
 
-  const handleCityFilter = (city: string) => {
-    setFilters(prev => ({ ...prev, city: city || undefined }));
-  };
-
-  const handleRatingFilter = (rating: number) => {
-    setFilters(prev => ({ ...prev, rating: rating || undefined }));
-  };
-
-  const handleViewSupplier = (id: string) => {
+  const handleViewSupplier = (id: number) => {
     navigate(`/purchasing/suppliers/${id}`);
   };
 
-  const handleCreatePO = (supplierId: string) => {
+  const handleCreatePO = (supplierId: number) => {
     navigate(`/purchasing/orders/new?supplier=${supplierId}`);
   };
 
@@ -74,17 +57,6 @@ export const SupplierListPage: React.FC = () => {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-    },
-    {
-      title: 'City',
-      dataIndex: 'city',
-      key: 'city',
-    },
-    {
-      title: 'Rating',
-      dataIndex: 'rating',
-      key: 'rating',
-      render: (rating: number) => <Rate disabled defaultValue={rating} style={{ fontSize: 14 }} />,
     },
     {
       title: 'Actions',
@@ -116,75 +88,20 @@ export const SupplierListPage: React.FC = () => {
             onSearch={handleSearch}
             style={{ width: 280 }}
           />
-          <Input
-            placeholder="Filter by city"
-            allowClear
-            style={{ width: 180 }}
-            onChange={(e) => handleCityFilter(e.target.value)}
-          />
-          <Select
-            placeholder="Rating"
-            allowClear
-            style={{ width: 150 }}
-            options={ratingOptions}
-            onChange={handleRatingFilter}
-          />
-          <Space className={styles.viewToggle}>
-            <Button.Group>
-              <Button 
-                type={viewMode === 'list' ? 'primary' : 'default'}
-                onClick={() => setViewMode('list')}
-              >
-                List View
-              </Button>
-              <Button 
-                type={viewMode === 'grid' ? 'primary' : 'default'}
-                onClick={() => setViewMode('grid')}
-              >
-                Grid View
-              </Button>
-            </Button.Group>
-          </Space>
         </Space>
       </Card>
 
-      {viewMode === 'list' ? (
-        <Table
-          columns={listColumns}
-          dataSource={suppliers}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: false,
-            showTotal: (total) => `Total ${total} suppliers`,
-          }}
-        />
-      ) : (
-        <div className={styles.supplierGrid}>
-          {suppliers.map((supplier) => (
-            <Card
-              key={supplier.id}
-              className={styles.supplierCard}
-              title={supplier.name}
-              extra={
-                <Rate disabled defaultValue={supplier.rating} style={{ fontSize: 12 }} />
-              }
-              actions={[
-                <Button key="view" icon={<EyeOutlined />} onClick={() => handleViewSupplier(supplier.id)}>View</Button>,
-                <Button key="po" icon={<ShoppingCartOutlined />} onClick={() => handleCreatePO(supplier.id)}>Create PO</Button>,
-              ]}
-            >
-              <div className={styles.supplierInfo}>
-                <p><strong>Contact:</strong> {supplier.contactPerson}</p>
-                <p><strong>Phone:</strong> {supplier.phone}</p>
-                <p><strong>Email:</strong> {supplier.email}</p>
-                <p><strong>City:</strong> {supplier.city}</p>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      <Table
+        columns={listColumns}
+        dataSource={suppliers}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: false,
+          showTotal: (total) => `Total ${total} suppliers`,
+        }}
+      />
 
       {suppliers.length === 0 && !loading && (
         <div className={styles.emptyState}>

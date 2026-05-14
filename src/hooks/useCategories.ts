@@ -7,10 +7,10 @@ interface UseCategoriesReturn {
   categories: Category[];
   loading: boolean;
   fetchCategories: () => Promise<void>;
-  getCategory: (id: string) => Promise<Category | null>;
+  getCategory: (id: number) => Promise<Category | null>;
   createCategory: (data: CreateCategoryDto) => Promise<Category>;
-  updateCategory: (id: string, data: CreateCategoryDto) => Promise<Category>;
-  deleteCategory: (id: string) => Promise<void>;
+  updateCategory: (id: number, data: CreateCategoryDto) => Promise<Category>;
+  deleteCategory: (id: number) => Promise<void>;
 }
 
 export const useCategories = (): UseCategoriesReturn => {
@@ -20,8 +20,8 @@ export const useCategories = (): UseCategoriesReturn => {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await inventoryService.getCategories();
-      setCategories(data);
+      const result = await inventoryService.getCategories();
+      setCategories(result.data);
     } catch (error) {
       message.error('Failed to fetch categories');
     } finally {
@@ -29,7 +29,7 @@ export const useCategories = (): UseCategoriesReturn => {
     }
   }, []);
 
-  const getCategory = useCallback(async (id: string): Promise<Category | null> => {
+  const getCategory = useCallback(async (id: number): Promise<Category | null> => {
     try {
       return await inventoryService.getCategory(id);
     } catch (error) {
@@ -50,7 +50,7 @@ export const useCategories = (): UseCategoriesReturn => {
     }
   }, []);
 
-  const updateCategory = useCallback(async (id: string, data: CreateCategoryDto): Promise<Category> => {
+  const updateCategory = useCallback(async (id: number, data: CreateCategoryDto): Promise<Category> => {
     try {
       const category = await inventoryService.updateCategory(id, data);
       setCategories(prev => prev.map(cat => cat.id === id ? category : cat));
@@ -62,7 +62,7 @@ export const useCategories = (): UseCategoriesReturn => {
     }
   }, []);
 
-  const deleteCategory = useCallback(async (id: string): Promise<void> => {
+  const deleteCategory = useCallback(async (id: number): Promise<void> => {
     try {
       await inventoryService.deleteCategory(id);
       setCategories(prev => prev.filter(cat => cat.id !== id));

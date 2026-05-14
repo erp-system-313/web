@@ -8,10 +8,10 @@ interface UseSuppliersReturn {
   loading: boolean;
   total: number;
   fetchSuppliers: (filters: SupplierFilters, page: number) => Promise<void>;
-  getSupplier: (id: string) => Promise<Supplier | null>;
+  getSupplier: (id: number) => Promise<Supplier | null>;
   createSupplier: (data: CreateSupplierDto) => Promise<Supplier>;
-  updateSupplier: (id: string, data: Partial<CreateSupplierDto>) => Promise<Supplier>;
-  deleteSupplier: (id: string) => Promise<void>;
+  updateSupplier: (id: number, data: Partial<CreateSupplierDto>) => Promise<Supplier>;
+  deleteSupplier: (id: number) => Promise<void>;
 }
 
 export const useSuppliers = (): UseSuppliersReturn => {
@@ -32,7 +32,7 @@ export const useSuppliers = (): UseSuppliersReturn => {
     }
   }, []);
 
-  const getSupplier = useCallback(async (id: string): Promise<Supplier | null> => {
+  const getSupplier = useCallback(async (id: number): Promise<Supplier | null> => {
     try {
       return await purchasingService.getSupplier(id);
     } catch (error) {
@@ -52,7 +52,7 @@ export const useSuppliers = (): UseSuppliersReturn => {
     }
   }, []);
 
-  const updateSupplier = useCallback(async (id: string, data: Partial<CreateSupplierDto>): Promise<Supplier> => {
+  const updateSupplier = useCallback(async (id: number, data: Partial<CreateSupplierDto>): Promise<Supplier> => {
     try {
       const supplier = await purchasingService.updateSupplier(id, data);
       setSuppliers(prev => prev.map(s => s.id === id ? supplier : s));
@@ -64,7 +64,7 @@ export const useSuppliers = (): UseSuppliersReturn => {
     }
   }, []);
 
-  const deleteSupplier = useCallback(async (id: string): Promise<void> => {
+  const deleteSupplier = useCallback(async (id: number): Promise<void> => {
     try {
       await purchasingService.deleteSupplier(id);
       setSuppliers(prev => prev.filter(s => s.id !== id));
