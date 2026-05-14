@@ -30,6 +30,9 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    if (config.url?.includes("/auth/")) {
+      return config;
+    }
     const token =
       localStorage.getItem("erp_token") || localStorage.getItem("token");
     if (token && config.headers) {
