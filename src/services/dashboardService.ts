@@ -78,7 +78,7 @@ const mapBackendToFrontend = (
 export const dashboardService = {
   getStats: async (): Promise<DashboardStats> => {
     try {
-      const response = await apiClient.get("/dashboard/stats");
+      const response = await apiClient.get("/v1/dashboard/stats");
       return mapBackendToFrontend(response.data?.data);
     } catch (error) {
       throw new Error(handleApiError(error));
