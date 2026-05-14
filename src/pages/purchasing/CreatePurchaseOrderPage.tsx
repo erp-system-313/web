@@ -13,6 +13,7 @@ import {
 import {
   PlusOutlined,
   DeleteOutlined,
+  SaveOutlined,
   SendOutlined,
 } from "@ant-design/icons";
 import { useForm, Controller } from "react-hook-form";
@@ -20,7 +21,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import { useSuppliers } from "../../hooks/useSuppliers";
-
+import { useProducts } from "../../hooks/useProducts";
 import styles from "./CreatePurchaseOrderPage.module.css";
 
 interface LineItem {
@@ -42,13 +43,10 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>;
 
-const mockProducts = [
-  { id: "1", name: "Laptop Pro 15", sku: "LAP-001", unitPrice: 1499.99 },
-  { id: "2", name: "Wireless Mouse", sku: "MOU-001", unitPrice: 29.99 },
-  { id: "3", name: "Mechanical Keyboard", sku: "KEY-001", unitPrice: 89.99 },
-  { id: "4", name: "27\" Monitor 4K", sku: "MON-001", unitPrice: 449.99 },
-  { id: "5", name: "USB-C Hub", sku: "USB-001", unitPrice: 34.99 },
-  { id: "6", name: "External SSD 1TB", sku: "SSD-001", unitPrice: 119.99 },
+const productStatusOptions = [
+  { value: "", label: "All Statuses" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "INACTIVE", label: "Inactive" },
 ];
 
 export const CreatePurchaseOrderPage: React.FC = () => {
@@ -56,6 +54,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { createPurchaseOrder } = usePurchaseOrders();
   const { suppliers, fetchSuppliers } = useSuppliers();
+  const { products, loading: productsLoading, fetchProducts } = useProducts();
 
   const defaultSupplierId = searchParams.get("supplier") || "";
 
@@ -84,7 +83,8 @@ export const CreatePurchaseOrderPage: React.FC = () => {
 
   useEffect(() => {
     fetchSuppliers({}, 1);
-  }, [fetchSuppliers]);
+    fetchProducts({}, 1);
+  }, [fetchSuppliers, fetchProducts]);
 
   const addItem = () => {
     setItems([
@@ -108,7 +108,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
     unitPrice: number,
   ) => {
     const updatedItems = [...items];
-    const product = mockProducts.find((p) => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     updatedItems[index] = {
       ...updatedItems[index],
       productId,
@@ -174,10 +174,10 @@ export const CreatePurchaseOrderPage: React.FC = () => {
         <Select
           placeholder="Select product"
           style={{ width: "100%" }}
-          loading={false}
+          loading={productsLoading}
           showSearch
           optionFilterProp="label"
-          options={mockProducts.map((p) => ({
+          options={products.map((p) => ({
             value: String(p.id),
             label: `${p.name} (${p.sku})`,
           }))}
