@@ -57,11 +57,21 @@ export const SupplierListPage: React.FC = () => {
     await fetchSuppliers(
       {
         status: statusFilter || undefined,
-        search: searchText,
       },
       1,
     );
-  }, [fetchSuppliers, statusFilter, searchText]);
+  }, [fetchSuppliers, statusFilter]);
+
+  const filteredSuppliers = suppliers.filter(s => {
+    if (!searchText) return true;
+    const q = searchText.toLowerCase();
+    return (
+      s.name.toLowerCase().includes(q) ||
+      s.code.toLowerCase().includes(q) ||
+      s.contactPerson.toLowerCase().includes(q) ||
+      s.email.toLowerCase().includes(q)
+    );
+  });
 
   useEffect(() => {
     loadSuppliers();
@@ -179,6 +189,8 @@ export const SupplierListPage: React.FC = () => {
             placeholder="Search suppliers..."
             allowClear
             prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
             onSearch={setSearchText}
             style={{ width: 280 }}
           />
@@ -194,7 +206,7 @@ export const SupplierListPage: React.FC = () => {
 
       <Table
         columns={listColumns}
-        dataSource={suppliers}
+        dataSource={filteredSuppliers}
         rowKey="id"
         loading={loading}
         pagination={{
@@ -279,9 +291,9 @@ export const SupplierListPage: React.FC = () => {
         </form>
       </Modal>
 
-      {suppliers.length === 0 && !loading && (
+      {filteredSuppliers.length === 0 && !loading && (
         <div className={styles.emptyState}>
-          No suppliers found. Click "Add Supplier" to create one.
+          {searchText ? "No suppliers match your search." : 'No suppliers found. Click "Add Supplier" to create one.'}
         </div>
       )}
     </div>
