@@ -4,6 +4,7 @@ import {
   Tag,
   Button,
   Select,
+  Space,
   Typography,
   Input,
   message,
@@ -15,6 +16,7 @@ import {
 import {
   ArrowLeftOutlined,
   DeleteOutlined,
+  EditOutlined,
   UserOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
@@ -84,6 +86,10 @@ export const TicketDetails: React.FC = () => {
     );
   }
 
+  const isEditable =
+    ticket.status === "OPEN" || ticket.status === "IN_PROGRESS";
+  const isClosed = ticket.status === "CLOSED";
+
   const handleStatusChange = async (newStatus: TicketStatus) => {
     try {
       await supportService.update(ticketId, { status: newStatus });
@@ -149,9 +155,21 @@ export const TicketDetails: React.FC = () => {
         >
           Back to Tickets
         </Button>
-        <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>
-          Delete
-        </Button>
+        <Space>
+          {isEditable && (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => navigate(`/support/tickets/${ticketId}/edit`)}
+            >
+              Edit
+            </Button>
+          )}
+          {isEditable && (
+            <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>
+              Delete
+            </Button>
+          )}
+        </Space>
       </div>
 
       <div className={styles.post}>
@@ -198,13 +216,35 @@ export const TicketDetails: React.FC = () => {
                 ]}
               />
             ) : (
-              <Tag
-                color={statusColors[ticket.status]}
-                className={styles.editableTag}
-                onClick={() => setEditingStatus(true)}
-              >
-                {ticket.status.replace("_", " ")}
-              </Tag>
+              <Space>
+                <Tag
+                  color={statusColors[ticket.status]}
+                  className={isEditable ? styles.editableTag : undefined}
+                  onClick={() => isEditable && setEditingStatus(true)}
+                  style={isEditable ? { cursor: "pointer" } : undefined}
+                >
+                  {ticket.status.replace("_", " ")}
+                </Tag>
+                {ticket.status === "RESOLVED" && (
+                  <Button
+                    size="small"
+                    type="primary"
+                    onClick={async () => {
+                      try {
+                        await supportService.update(ticketId, {
+                          status: "OPEN",
+                        });
+                        message.success("Ticket reopened");
+                        refetch();
+                      } catch {
+                        message.error("Failed to reopen ticket");
+                      }
+                    }}
+                  >
+                    Reopen
+                  </Button>
+                )}
+              </Space>
             )}
           </div>
           <div className={styles.metaItem}>
@@ -229,8 +269,9 @@ export const TicketDetails: React.FC = () => {
             ) : (
               <Tag
                 color={priorityColors[ticket.priority]}
-                className={styles.editableTag}
-                onClick={() => setEditingPriority(true)}
+                className={isEditable ? styles.editableTag : undefined}
+                onClick={() => isEditable && setEditingPriority(true)}
+                style={isEditable ? { cursor: "pointer" } : undefined}
               >
                 {ticket.priority}
               </Tag>
@@ -296,23 +337,27 @@ export const TicketDetails: React.FC = () => {
             </Text>
           )}
 
-          <div className={styles.addComment}>
-            <TextArea
-              rows={3}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Add a comment..."
-            />
-            <Button
-              type="primary"
-              loading={submitting}
-              disabled={!comment.trim()}
-              onClick={handleAddComment}
-              className={styles.commentButton}
-            >
-              Comment
-            </Button>
-          </div>
+          {isClosed ? (
+            <Text type="secondary">This ticket is closed.</Text>
+          ) : (
+            <div className={styles.addComment}>
+              <TextArea
+                rows={3}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Add a comment..."
+              />
+              <Button
+                type="primary"
+                loading={submitting}
+                disabled={!comment.trim()}
+                onClick={handleAddComment}
+                className={styles.commentButton}
+              >
+                Comment
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
