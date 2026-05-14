@@ -7,56 +7,9 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import type { Product } from "../../types/product.types";
+import { inventoryService } from "../../services/inventoryService";
 import { formatCurrency } from "../../utils/formatters";
 import styles from "./ProductDetailsPage.module.css";
-
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    name: "Wireless Mouse",
-    sku: "WM-001",
-    description: "Ergonomic wireless mouse with USB receiver",
-    categoryId: "electronics",
-    categoryName: "Electronics",
-    unitPrice: 29.99,
-    costPrice: 15.0,
-    stockQuantity: 150,
-    reorderPoint: 20,
-    isActive: true,
-    createdAt: "2024-01-15T10:00:00Z",
-    updatedAt: "2024-01-15T10:00:00Z",
-  },
-  {
-    id: "2",
-    name: "USB-C Cable",
-    sku: "USB-C-01",
-    description: "High-speed USB-C charging cable 6ft",
-    categoryId: "electronics",
-    categoryName: "Electronics",
-    unitPrice: 12.99,
-    costPrice: 5.0,
-    stockQuantity: 8,
-    reorderPoint: 15,
-    isActive: true,
-    createdAt: "2024-01-16T10:00:00Z",
-    updatedAt: "2024-01-16T10:00:00Z",
-  },
-  {
-    id: "3",
-    name: "Notebook A5",
-    sku: "NB-A5-01",
-    description: "Lined notebook with 200 pages",
-    categoryId: "office",
-    categoryName: "Office Supplies",
-    unitPrice: 8.99,
-    costPrice: 3.0,
-    stockQuantity: 0,
-    reorderPoint: 25,
-    isActive: true,
-    createdAt: "2024-01-17T10:00:00Z",
-    updatedAt: "2024-01-17T10:00:00Z",
-  },
-];
 
 const getStockStatus = (product: Product) => {
   if (product.stockQuantity === 0) {
@@ -76,11 +29,17 @@ export const ProductDetailsPage: React.FC = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!id) return;
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const found = mockProducts.find((p) => p.id === id);
-      setProduct(found || null);
-      setLoading(false);
+      try {
+        const found = await inventoryService.getProduct(id);
+        setProduct(found);
+      } catch {
+        message.error("Failed to load product");
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProduct();
   }, [id]);
@@ -100,9 +59,14 @@ export const ProductDetailsPage: React.FC = () => {
       okText: "Delete",
       okType: "danger",
       onOk: async () => {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        message.success("Product deleted successfully");
-        navigate("/inventory/products");
+        if (!id) return;
+        try {
+          await inventoryService.deleteProduct(id);
+          message.success("Product deleted successfully");
+          navigate("/inventory/products");
+        } catch {
+          message.error("Failed to delete product");
+        }
       },
     });
   };
