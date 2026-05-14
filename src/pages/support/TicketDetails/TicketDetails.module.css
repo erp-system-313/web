@@ -74,6 +74,18 @@
 
 .editableTag {
   cursor: pointer;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #d9d9d9 !important;
+  padding-right: 4px !important;
+}
+
+.editableTag::after {
+  content: "▾";
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.6;
 }
 
 .commentsSection {
