@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, Button, Space, message, Divider, Row, Col } from "antd";
+import { Card, Button, Space, message, Divider, Row, Col, Select } from "antd";
 import {
   SaveOutlined,
   SendOutlined,
@@ -12,16 +12,17 @@ import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { StatusBadge, Autocomplete } from "../../../components/common";
-import { useSalesOrder, useProducts } from "../../../hooks";
+import { useSalesOrder } from "../../../hooks";
+import { salesService } from "../../../services/salesService";
+import { inventoryService } from "../../../services/inventoryService";
+import type { Product } from "../../../types/product.types";
+import type { SalesOrder } from "../../../types/sales";
 import styles from "./SalesOrderForm.module.css";
 
 interface FormValues {
   customerId?: number;
   orderDate?: string;
-  requiredDate?: string;
   notes?: string;
-  shippingAddress?: string;
-  paymentTerms?: string;
   lines: {
     productId?: number;
     productName?: string;
@@ -35,10 +36,7 @@ interface FormValues {
 const schema = yup.object({
   customerId: yup.number().required("Customer is required"),
   orderDate: yup.string().required("Order date is required"),
-  requiredDate: yup.string().optional(),
   notes: yup.string().optional(),
-  shippingAddress: yup.string().optional(),
-  paymentTerms: yup.string().optional(),
   lines: yup
     .array()
     .of(
@@ -67,7 +65,6 @@ export const SalesOrderForm: React.FC = () => {
     create,
     update,
   } = useSalesOrder(orderId);
-  const { searchProducts } = useProducts();
 
   const {
     register,
@@ -98,10 +95,7 @@ export const SalesOrderForm: React.FC = () => {
       reset({
         customerId: existingOrder.customerId,
         orderDate: existingOrder.orderDate,
-        requiredDate: existingOrder.requiredDate,
         notes: existingOrder.notes || "",
-        shippingAddress: existingOrder.shippingAddress || "",
-        paymentTerms: existingOrder.paymentTerms || "",
         lines:
           existingOrder.lines?.map((line) => ({
             productId: line.productId,
@@ -115,31 +109,40 @@ export const SalesOrderForm: React.FC = () => {
     }
   }, [existingOrder, reset]);
 
+  const toISO = (dateStr: string) => {
+    if (!dateStr) return new Date().toISOString();
+    return new Date(dateStr).toISOString();
+  };
+
+  const buildOrderData = (data: FormValues) => ({
+    customerId: data.customerId!,
+    orderDate: toISO(data.orderDate!),
+    notes: data.notes,
+    lines: data.lines
+      .filter((line) => line.productId)
+      .map((line) => ({
+        productId: line.productId!,
+        quantity: line.quantity,
+        unitPrice: line.unitPrice,
+      })),
+  });
+
   const onSubmit = async (data: FormValues) => {
     try {
-      const validLines = data.lines.filter((line) => line.productId);
-      const orderData = {
-        customerId: data.customerId!,
-        orderDate: data.orderDate!,
-        requiredDate: data.requiredDate,
-        notes: data.notes,
-        shippingAddress: data.shippingAddress,
-        paymentTerms: data.paymentTerms,
-        status: "DRAFT" as const,
-        lines: validLines.map((line) => ({
-          productId: line.productId!,
-          quantity: line.quantity,
-          unitPrice: line.unitPrice,
-        })),
-      };
+      const orderData = buildOrderData(data);
+      let result: SalesOrder | null = null;
 
       if (isEditMode) {
-        await update(orderData);
-        message.success("Order saved successfully");
+        result = await update(orderData);
       } else {
-        await create(orderData);
-        message.success("Order created successfully");
+        result = await create(orderData);
       }
+
+      if (!result) {
+        message.error("Failed to save order");
+        return;
+      }
+      message.success(isEditMode ? "Order saved successfully" : "Order created successfully");
       navigate("/sales/orders");
     } catch {
       message.error("Failed to save order");
@@ -148,29 +151,22 @@ export const SalesOrderForm: React.FC = () => {
 
   const onSubmitForApproval = handleSubmit(async (data) => {
     try {
-      const validLines = data.lines.filter((line) => line.productId);
-      const orderData = {
-        customerId: data.customerId!,
-        orderDate: data.orderDate!,
-        requiredDate: data.requiredDate,
-        notes: data.notes,
-        shippingAddress: data.shippingAddress,
-        paymentTerms: data.paymentTerms,
-        status: "CONFIRMED" as const,
-        lines: validLines.map((line) => ({
-          productId: line.productId!,
-          quantity: line.quantity,
-          unitPrice: line.unitPrice,
-        })),
-      };
+      const orderData = buildOrderData(data);
+      let order: SalesOrder | null = null;
 
       if (isEditMode) {
-        await update(orderData);
-        message.success("Order submitted successfully");
+        order = await update(orderData);
       } else {
-        await create(orderData);
-        message.success("Order created and submitted");
+        order = await create(orderData);
       }
+
+      if (!order) {
+        message.error("Failed to submit order");
+        return;
+      }
+
+      await salesService.salesOrders.confirm(order.id);
+      message.success("Order submitted successfully");
       navigate("/sales/orders");
     } catch {
       message.error("Failed to submit order");
@@ -180,7 +176,7 @@ export const SalesOrderForm: React.FC = () => {
   const handleProductChange = (
     index: number,
     productId: number | null,
-    product?: { name?: string; sku?: string; unitPrice?: number },
+    product?: { name?: string; sku?: string; costPrice?: number },
   ) => {
     if (productId && product) {
       setValue(`lines.${index}.productId`, productId, { shouldValidate: true });
@@ -188,12 +184,12 @@ export const SalesOrderForm: React.FC = () => {
         shouldDirty: true,
       });
       setValue(`lines.${index}.productSku`, product.sku, { shouldDirty: true });
-      setValue(`lines.${index}.unitPrice`, product.unitPrice || 0, {
+      setValue(`lines.${index}.unitPrice`, product.costPrice || 0, {
         shouldDirty: true,
       });
       setValue(
         `lines.${index}.lineTotal`,
-        (product.unitPrice || 0) * watchedLines[index].quantity,
+        (product.costPrice || 0) * watchedLines[index].quantity,
         { shouldDirty: true },
       );
     } else {
@@ -223,9 +219,24 @@ export const SalesOrderForm: React.FC = () => {
   const tax = totals.subtotal * 0.1;
   const total = totals.subtotal + tax;
 
-  const fetchProductOptions = async (query: string) => {
-    return searchProducts(query);
-  };
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = React.useState(false);
+
+  const loadProducts = React.useCallback(async () => {
+    setProductsLoading(true);
+    try {
+      const result = await inventoryService.getProducts({}, 1, 200);
+      setProducts(result.data);
+    } catch {
+      message.error("Failed to load products");
+    } finally {
+      setProductsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   if (isEditMode && loading) {
     return <div>Loading...</div>;
@@ -261,11 +272,7 @@ export const SalesOrderForm: React.FC = () => {
                         field.onChange(newId);
                       }}
                       fetchOptions={async (query) => {
-                        const results = await searchProducts(query);
-                        return results as unknown as Array<{
-                          id: number;
-                          name: string;
-                        }>;
+                        return salesService.customers.search(query);
                       }}
                       displayFormatter={(item) => `${item.name}`}
                     />
@@ -293,16 +300,6 @@ export const SalesOrderForm: React.FC = () => {
                 )}
               </div>
             </Col>
-            <Col span={8}>
-              <div className={styles.formItem}>
-                <label>Required Date</label>
-                <input
-                  type="date"
-                  {...register("requiredDate")}
-                  className={styles.dateInput}
-                />
-              </div>
-            </Col>
           </Row>
         </Card>
 
@@ -321,31 +318,41 @@ export const SalesOrderForm: React.FC = () => {
             <tbody>
               {fields.map((field, index) => (
                 <tr key={field.id}>
-                  <td>
-                    <Controller
-                      name={`lines.${index}.productId`}
-                      control={control}
-                      render={() => (
-                        <Autocomplete
-                          placeholder="Search product..."
-                          value={watchedLines[index]?.productId}
-                          onChange={(newId, item) =>
-                            handleProductChange(
-                              index,
-                              newId,
-                              item?.data as {
-                                name?: string;
-                                sku?: string;
-                                unitPrice?: number;
-                              },
-                            )
-                          }
-                          fetchOptions={fetchProductOptions}
-                          displayFormatter={(p) => `${p.name} (${p.sku})`}
-                        />
-                      )}
-                    />
-                  </td>
+                    <td>
+                      <Controller
+                        name={`lines.${index}.productId`}
+                        control={control}
+                        render={() => (
+                          <Select
+                            placeholder="Select a product..."
+                            style={{ width: '100%' }}
+                            loading={productsLoading}
+                            showSearch
+                            filterOption={(input, option) =>
+                              (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                            }
+                            options={products.map(p => ({
+                              value: p.id,
+                              label: `${p.name} (${p.sku})`,
+                            }))}
+                            value={watchedLines[index]?.productId || undefined}
+                            onChange={(value) => {
+                              const product = products.find(p => p.id === value);
+                              handleProductChange(
+                                index,
+                                value as number | null,
+                                product
+                                  ? { name: product.name, sku: product.sku, costPrice: product.costPrice }
+                                  : undefined,
+                              );
+                            }}
+                            onFocus={loadProducts}
+                            notFoundContent={productsLoading ? "Loading..." : "No products found"}
+                            allowClear
+                          />
+                        )}
+                      />
+                    </td>
                   <td>{watchedLines[index]?.productSku || "-"}</td>
                   <td>
                     <input
@@ -424,28 +431,7 @@ export const SalesOrderForm: React.FC = () => {
                 />
               </div>
             </Col>
-            <Col span={12}>
-              <div className={styles.formItem}>
-                <label>Shipping Address</label>
-                <textarea
-                  {...register("shippingAddress")}
-                  rows={2}
-                  placeholder="Enter shipping address..."
-                  className={styles.textarea}
-                />
-              </div>
-            </Col>
-            <Col span={12}>
-              <div className={styles.formItem}>
-                <label>Payment Terms</label>
-                <input
-                  type="text"
-                  {...register("paymentTerms")}
-                  placeholder="e.g., NET 30"
-                  className={styles.textInput}
-                />
-              </div>
-            </Col>
+
           </Row>
         </Card>
 

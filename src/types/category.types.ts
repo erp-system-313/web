@@ -1,9 +1,10 @@
 export interface Category {
-  id: string;
+  id: number;
   name: string;
   description: string;
-  parentId: string | null;
-  productCount: number;
+  parentId: number | null;
+  sortOrder?: number;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -11,5 +12,5 @@ export interface Category {
 export interface CreateCategoryDto {
   name: string;
   description: string;
-  parentId: string | null;
+  parentId: number | null;
 }

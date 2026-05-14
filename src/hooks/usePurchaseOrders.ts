@@ -15,10 +15,7 @@ interface UsePurchaseOrdersReturn {
   getOrder: (id: number) => Promise<PurchaseOrder | null>;
   createOrder: (data: CreatePurchaseOrderDto) => Promise<PurchaseOrder>;
   createPurchaseOrder: (data: CreatePurchaseOrderDto) => Promise<void>;
-  updateOrder: (
-    id: number,
-    data: Partial<CreatePurchaseOrderDto>,
-  ) => Promise<PurchaseOrder>;
+  updateOrder: (id: number, data: Partial<CreatePurchaseOrderDto>) => Promise<PurchaseOrder>;
   deleteOrder: (id: number) => Promise<void>;
 }
 
@@ -43,17 +40,14 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     [],
   );
 
-  const getOrder = useCallback(
-    async (id: number): Promise<PurchaseOrder | null> => {
-      try {
-        return await purchasingService.getPurchaseOrder(id);
-      } catch (error) {
-        message.error("Failed to fetch purchase order");
-        return null;
-      }
-    },
-    [],
-  );
+  const getOrder = useCallback(async (id: number): Promise<PurchaseOrder | null> => {
+    try {
+      return await purchasingService.getPurchaseOrder(id);
+    } catch (error) {
+      message.error('Failed to fetch purchase order');
+      return null;
+    }
+  }, []);
 
   const createOrder = useCallback(
     async (data: CreatePurchaseOrderDto): Promise<PurchaseOrder> => {
@@ -76,23 +70,17 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     [createOrder],
   );
 
-  const updateOrder = useCallback(
-    async (
-      id: number,
-      data: Partial<CreatePurchaseOrderDto>,
-    ): Promise<PurchaseOrder> => {
-      try {
-        const order = await purchasingService.updatePurchaseOrder(id, data);
-        setOrders((prev) => prev.map((o) => (o.id === id ? order : o)));
-        message.success("Purchase order updated successfully");
-        return order;
-      } catch (error) {
-        message.error("Failed to update purchase order");
-        throw error;
-      }
-    },
-    [],
-  );
+  const updateOrder = useCallback(async (id: number, data: Partial<CreatePurchaseOrderDto>): Promise<PurchaseOrder> => {
+    try {
+      const order = await purchasingService.updatePurchaseOrder(id, data);
+      setOrders(prev => prev.map(o => o.id === id ? order : o));
+      message.success('Purchase order updated successfully');
+      return order;
+    } catch (error) {
+      message.error('Failed to update purchase order');
+      throw error;
+    }
+  }, []);
 
   const deleteOrder = useCallback(async (id: number): Promise<void> => {
     try {

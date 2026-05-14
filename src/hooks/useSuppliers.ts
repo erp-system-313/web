@@ -14,10 +14,7 @@ interface UseSuppliersReturn {
   fetchSuppliers: (filters: SupplierFilters, page: number) => Promise<void>;
   getSupplier: (id: number) => Promise<Supplier | null>;
   createSupplier: (data: CreateSupplierDto) => Promise<Supplier>;
-  updateSupplier: (
-    id: number,
-    data: Partial<CreateSupplierDto>,
-  ) => Promise<Supplier>;
+  updateSupplier: (id: number, data: Partial<CreateSupplierDto>) => Promise<Supplier>;
   deleteSupplier: (id: number) => Promise<void>;
 }
 
@@ -42,17 +39,14 @@ export const useSuppliers = (): UseSuppliersReturn => {
     [],
   );
 
-  const getSupplier = useCallback(
-    async (id: number): Promise<Supplier | null> => {
-      try {
-        return await purchasingService.getSupplier(id);
-      } catch (error) {
-        message.error("Failed to fetch supplier");
-        return null;
-      }
-    },
-    [],
-  );
+  const getSupplier = useCallback(async (id: number): Promise<Supplier | null> => {
+    try {
+      return await purchasingService.getSupplier(id);
+    } catch (error) {
+      message.error('Failed to fetch supplier');
+      return null;
+    }
+  }, []);
 
   const createSupplier = useCallback(
     async (data: CreateSupplierDto): Promise<Supplier> => {
@@ -68,20 +62,17 @@ export const useSuppliers = (): UseSuppliersReturn => {
     [],
   );
 
-  const updateSupplier = useCallback(
-    async (id: number, data: Partial<CreateSupplierDto>): Promise<Supplier> => {
-      try {
-        const supplier = await purchasingService.updateSupplier(id, data);
-        setSuppliers((prev) => prev.map((s) => (s.id === id ? supplier : s)));
-        message.success("Supplier updated successfully");
-        return supplier;
-      } catch (error) {
-        message.error("Failed to update supplier");
-        throw error;
-      }
-    },
-    [],
-  );
+  const updateSupplier = useCallback(async (id: number, data: Partial<CreateSupplierDto>): Promise<Supplier> => {
+    try {
+      const supplier = await purchasingService.updateSupplier(id, data);
+      setSuppliers(prev => prev.map(s => s.id === id ? supplier : s));
+      message.success('Supplier updated successfully');
+      return supplier;
+    } catch (error) {
+      message.error('Failed to update supplier');
+      throw error;
+    }
+  }, []);
 
   const deleteSupplier = useCallback(async (id: number): Promise<void> => {
     try {

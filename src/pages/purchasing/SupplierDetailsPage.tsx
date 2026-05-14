@@ -1,41 +1,26 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import {
-  Button,
-  Card,
-  Tabs,
-  Table,
-  Tag,
-  Space,
-  Statistic,
-  Row,
-  Col,
-  message,
-  Modal,
-} from "antd";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  ShoppingCartOutlined,
-  ArrowLeftOutlined,
-} from "@ant-design/icons";
-import type { PurchaseOrderStatus } from "../../types/purchaseOrder.types";
-import { useSuppliers } from "../../hooks/useSuppliers";
-import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
-import styles from "./SupplierDetailsPage.module.css";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Button, Card, Tabs, Table, Tag, Space, message, Modal } from 'antd';
+import { EditOutlined, DeleteOutlined, ShoppingCartOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import type { PurchaseOrder, PurchaseOrderStatus } from '../../types/purchaseOrder.types';
+import { useSuppliers } from '../../hooks/useSuppliers';
+import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
+import styles from './SupplierDetailsPage.module.css';
 
 const getStatusTag = (status: PurchaseOrderStatus) => {
   const colors: Record<PurchaseOrderStatus, string> = {
-    PENDING: "default",
-    APPROVED: "processing",
-    RECEIVED: "green",
-    CANCELLED: "red",
+    DRAFT: 'default',
+    SENT: 'processing',
+    RECEIVED: 'green',
+    PARTIAL: 'blue',
+    CANCELLED: 'red',
   };
   return <Tag color={colors[status]}>{status}</Tag>;
 };
 
 export const SupplierDetailsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: idStr } = useParams<{ id: string }>();
+  const id = idStr ? Number(idStr) : undefined;
   const navigate = useNavigate();
   const {
     suppliers,
@@ -86,8 +71,8 @@ export const SupplierDetailsPage: React.FC = () => {
     navigate(`/purchasing/orders/new?supplier=${id}`);
   };
 
-  const handleBack = () => {
-    navigate("/purchasing/suppliers");
+  const handleViewOrder = (orderId: number) => {
+    navigate(`/purchasing/orders/${orderId}`);
   };
 
   const orderColumns = [
@@ -144,41 +129,6 @@ export const SupplierDetailsPage: React.FC = () => {
         </div>
       ),
     },
-    {
-      key: "analytics",
-      label: "Analytics",
-      children: (
-        <div className={styles.tabContent}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Card title="Purchasing Volume">
-                <Statistic
-                  value={supplier.totalPurchased}
-                  prefix="$"
-                  precision={2}
-                />
-                <div style={{ textAlign: "center", marginTop: 16 }}>
-                  <span style={{ color: "#999" }}>Total Purchased</span>
-                </div>
-              </Card>
-            </Col>
-            <Col span={12}>
-              <Card title="Status">
-                <Tag
-                  color={supplier.status === "ACTIVE" ? "green" : "red"}
-                  style={{ fontSize: 16, padding: "4px 12px" }}
-                >
-                  {supplier.status}
-                </Tag>
-                <div style={{ textAlign: "center", marginTop: 16 }}>
-                  <span style={{ color: "#999" }}>Current Status</span>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -226,34 +176,21 @@ export const SupplierDetailsPage: React.FC = () => {
         </Card>
 
         <Card className={styles.infoCard}>
-          <div className={styles.infoCardTitle}>Details</div>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Code:</span> {supplier.code}
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Tax ID:</span> {supplier.taxId}
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Address:</span>{" "}
-            {supplier.address}
-          </div>
+          <div className={styles.infoCardTitle}>Address</div>
+          <div className={styles.infoRow}>{supplier.address}</div>
         </Card>
 
         <Card className={styles.infoCard}>
-          <div className={styles.infoCardTitle}>Payment & Status</div>
+          <div className={styles.infoCardTitle}>Details</div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Payment Terms:</span> Net{" "}
             {supplier.paymentTerms}
           </div>
           <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Status:</span>{" "}
-            <Tag color={supplier.status === "ACTIVE" ? "green" : "red"}>
-              {supplier.status}
-            </Tag>
+            <span className={styles.infoLabel}>Code:</span> {supplier.code}
           </div>
           <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Total Purchased:</span> $
-            {(supplier.totalPurchased ?? 0).toFixed(2)}
+            <span className={styles.infoLabel}>Tax ID:</span> {supplier.taxId}
           </div>
         </Card>
       </div>

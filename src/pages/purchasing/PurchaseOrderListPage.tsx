@@ -13,18 +13,23 @@ import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import styles from "./PurchaseOrderListPage.module.css";
 
 const statusOptions = [
-  { value: "", label: "All Statuses" },
-  { value: "PENDING", label: "Pending" },
-  { value: "APPROVED", label: "Approved" },
-  { value: "RECEIVED", label: "Received" },
-  { value: "CANCELLED", label: "Cancelled" },
+  { value: '', label: 'All Statuses' },
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SENT', label: 'Sent' },
+  { value: 'RECEIVED', label: 'Received' },
+  { value: 'PARTIAL', label: 'Partial' },
+  { value: 'CANCELLED', label: 'Cancelled' },
 ];
 
-const statusColors: Record<PurchaseOrderStatus, string> = {
-  PENDING: "default",
-  APPROVED: "processing",
-  RECEIVED: "green",
-  CANCELLED: "red",
+const getStatusTag = (status: PurchaseOrderStatus) => {
+  const colors: Record<PurchaseOrderStatus, string> = {
+    DRAFT: 'default',
+    SENT: 'processing',
+    RECEIVED: 'green',
+    PARTIAL: 'blue',
+    CANCELLED: 'red',
+  };
+  return <Tag color={colors[status]}>{status}</Tag>;
 };
 
 const getStatusTag = (status: PurchaseOrderStatus) => (
@@ -35,10 +40,8 @@ export const PurchaseOrderListPage: React.FC = () => {
   const navigate = useNavigate();
   const { orders, loading, fetchOrders, deleteOrder } = usePurchaseOrders();
 
-  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | "">(
-    "",
-  );
-  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | ''>('');
+  const [searchText, setSearchText] = useState('');
 
   const loadOrders = useCallback(async () => {
     await fetchOrders(
@@ -101,11 +104,10 @@ export const PurchaseOrderListPage: React.FC = () => {
       render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
-      title: "Delivery Date",
-      dataIndex: "deliveryDate",
-      key: "deliveryDate",
-      render: (date: string) =>
-        date ? new Date(date).toLocaleDateString() : "-",
+      title: 'Expected Date',
+      dataIndex: 'expectedDate',
+      key: 'expectedDate',
+      render: (date: string) => date ? new Date(date).toLocaleDateString() : '-',
     },
     {
       title: "Status",
@@ -124,12 +126,8 @@ export const PurchaseOrderListPage: React.FC = () => {
       key: "actions",
       render: (_: unknown, record: any) => (
         <Space className={styles.tableActions}>
-          <Button
-            type="text"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewOrder(record.id)}
-          />
-          {record.status === "PENDING" && (
+          <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewOrder(record.id)} />
+          {record.status === 'DRAFT' && (
             <>
               <Button
                 type="text"
