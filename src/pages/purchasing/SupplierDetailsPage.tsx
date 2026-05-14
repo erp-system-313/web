@@ -116,6 +116,18 @@ export const SupplierDetailsPage: React.FC = () => {
     navigate("/purchasing/suppliers");
   };
 
+  const handleEditSupplier = async (data: EditFormData) => {
+    setEditSubmitting(true);
+    try {
+      await updateSupplier(supplier.id, data as Partial<CreateSupplierDto>);
+      setEditModalOpen(false);
+    } catch {
+      // error handled by hook
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
   const orderColumns = [
     {
       title: "PO Number",
@@ -219,7 +231,19 @@ export const SupplierDetailsPage: React.FC = () => {
         <Space className={styles.headerActions}>
           <Button
             icon={<EditOutlined />}
-            onClick={() => message.info("Edit supplier form coming soon")}
+            onClick={() => {
+              reset({
+                code: supplier.code,
+                name: supplier.name,
+                contactPerson: supplier.contactPerson,
+                email: supplier.email,
+                phone: supplier.phone,
+                address: supplier.address,
+                taxId: supplier.taxId,
+                paymentTerms: supplier.paymentTerms,
+              });
+              setEditModalOpen(true);
+            }}
           >
             Edit
           </Button>
