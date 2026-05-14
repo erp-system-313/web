@@ -275,7 +275,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
         <Space className={styles.actions}>
           <Button
             icon={<SaveOutlined />}
-            onClick={handleSubmit((data) => onSubmit(data, "draft"))}
+            onClick={() => handleSubmit((data) => onSubmit(data, "draft"))()}
             loading={isSubmitting}
           >
             Save Draft
@@ -283,7 +283,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
           <Button
             type="primary"
             icon={<SendOutlined />}
-            onClick={handleSubmit((data) => onSubmit(data, "submitted"))}
+            onClick={() => handleSubmit((data) => onSubmit(data, "submitted"))()}
             loading={isSubmitting}
           >
             Submit Order
@@ -292,6 +292,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
         </Space>
       </div>
 
+      <form onSubmit={(e) => e.preventDefault()}>
       <div className={styles.formGrid}>
         <div>
           <Card title="Supplier Information" className={styles.formCard}>
@@ -453,6 +454,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
           </div>
         </div>
       </div>
+      </form>
     </div>
   );
 };
