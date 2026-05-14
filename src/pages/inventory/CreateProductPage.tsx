@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Tabs, Input, InputNumber, Select, TreeSelect } from 'antd';
+import { Button, Card, Tabs, Input, InputNumber, Select } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useProducts } from '../../hooks/useProducts';
 import { inventoryService } from '../../services/inventoryService';
-import type { Category } from '../../types/category.types';
 import styles from './CreateProductPage.module.css';
 
 const basicInfoSchema = yup.object({
@@ -29,18 +28,6 @@ const inventorySchema = yup.object({
 type BasicInfoData = yup.InferType<typeof basicInfoSchema>;
 type PricingData = yup.InferType<typeof pricingSchema>;
 type InventoryData = yup.InferType<typeof inventorySchema>;
-
-function buildCategoryTree(categories: Category[]): { value: number; title: string; children?: { value: number; title: string }[] }[] {
-  const parents = categories.filter(c => c.parentId === null).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-  return parents.map(parent => {
-    const children = categories.filter(c => c.parentId === parent.id).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-    return {
-      value: parent.id,
-      title: parent.name,
-      children: children.length > 0 ? children.map(c => ({ value: c.id, title: c.name })) : undefined,
-    };
-  });
-}
 
 export const CreateProductPage: React.FC = () => {
   const navigate = useNavigate();
@@ -67,15 +54,13 @@ export const CreateProductPage: React.FC = () => {
 
   const [basicData, setBasicData] = useState<BasicInfoData | null>(null);
   const [pricingData, setPricingData] = useState<PricingData | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<{ value: number; label: string }[]>([]);
 
   useEffect(() => {
     inventoryService.getCategories(1, 100).then(res => {
-      setCategories(res.data);
+      setCategoryOptions(res.data.map(cat => ({ value: cat.id, label: cat.name })));
     }).catch(() => {});
   }, []);
-
-  const categoryTreeData = buildCategoryTree(categories);
 
   const handleTabChange = (key: string) => {
     const steps = ['basic', 'pricing', 'inventory'];
@@ -145,7 +130,7 @@ export const CreateProductPage: React.FC = () => {
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Category *</label>
             <Controller name="categoryId" control={basicControl} render={({ field }) => (
-              <TreeSelect {...field} onChange={(value) => field.onChange(value)} placeholder="Select category" style={{ width: '100%' }} treeData={categoryTreeData} treeDefaultExpandAll status={errorsBasic.categoryId ? 'error' : undefined} />
+              <Select {...field} onChange={(value) => field.onChange(value)} placeholder="Select category" style={{ width: '100%' }} options={categoryOptions} status={errorsBasic.categoryId ? 'error' : undefined} />
             )} />
             {errorsBasic.categoryId && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.categoryId.message}</span>}
           </div>
@@ -220,6 +205,7 @@ export const CreateProductPage: React.FC = () => {
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Add New Product</h1>
+        <Button onClick={() => navigate('/inventory/products')}>Cancel</Button>
       </div>
       <Card className={styles.formCard}>
         <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} />

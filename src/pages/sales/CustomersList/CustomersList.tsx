@@ -10,6 +10,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { DataTable, StatusBadge } from "../../../components/common";
 import { useCustomers } from "../../../hooks";
+import { salesService } from "../../../services/salesService";
 import type { Customer, CustomerFilters } from "../../../types/sales";
 import styles from "./CustomersList.module.css";
 
@@ -30,15 +31,20 @@ export const CustomersList: React.FC = () => {
 
   const { data, loading, total, refetch } = useCustomers(filters);
 
-  const handleDelete = (customer: Customer) => {
+  const handleDelete = async (customer: Customer) => {
     confirm({
       title: "Delete Customer",
       content: `Are you sure you want to delete ${customer.name}?`,
       okText: "Delete",
       okType: "danger",
-      onOk: () => {
-        message.success(`Customer ${customer.name} deleted`);
-        refetch();
+      onOk: async () => {
+        const deleted = await salesService.customers.delete(customer.id);
+        if (deleted) {
+          message.success(`Customer ${customer.name} deleted`);
+          refetch();
+        } else {
+          message.error(`Failed to delete customer ${customer.name}`);
+        }
       },
     });
   };

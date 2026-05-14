@@ -1,7 +1,7 @@
 export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock';
 
 export interface ProductFilters {
-  categoryId?: string;
+  categoryId?: number;
   stockStatus?: StockStatus;
   minPrice?: number;
   maxPrice?: number;
@@ -9,16 +9,20 @@ export interface ProductFilters {
 }
 
 export interface Product {
-  id: string;
+  id: number;
   name: string;
   sku: string;
   description: string;
-  categoryId: string;
+  categoryId: number;
   categoryName: string;
+  supplierId?: number;
+  supplierName?: string;
   unitPrice: number;
   costPrice: number;
-  stockQuantity: number;
-  reorderPoint: number;
+  currentStock: number;
+  reorderLevel: number;
+  reorderQuantity?: number;
+  unitOfMeasure?: string;
   imageUrl?: string;
   isActive: boolean;
   createdAt: string;
@@ -29,10 +33,10 @@ export interface CreateProductDto {
   name: string;
   sku: string;
   description: string;
-  categoryId: string;
+  categoryId: number;
   unitPrice: number;
   costPrice: number;
-  stockQuantity: number;
-  reorderPoint: number;
+  currentStock: number;
+  reorderLevel: number;
   imageUrl?: string;
 }

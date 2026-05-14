@@ -20,7 +20,7 @@ export const useSalesOrders = (filters?: SalesOrderFilters) => {
     } finally {
       setLoading(false);
     }
-  }, [filters?.search, filters?.status, filters?.customerId]);
+  }, [filters?.search, filters?.status, filters?.customerId, filters?.dateFrom, filters?.dateTo, filters?.page, filters?.size]);
 
   useEffect(() => {
     fetchOrders();

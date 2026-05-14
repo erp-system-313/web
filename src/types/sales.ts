@@ -11,15 +11,6 @@ export interface Customer {
   updatedAt: string;
 }
 
-export interface CustomerContact {
-  id: number;
-  customerId: number;
-  name: string;
-  role: string;
-  email: string;
-  phone: string;
-}
-
 export interface Product {
   id: number;
   sku: string;
@@ -37,14 +28,11 @@ export interface SalesOrder {
   customerId: number;
   customerName?: string;
   orderDate: string;
-  requiredDate?: string;
   status: SalesOrderStatus;
   subtotal: number;
   taxAmount: number;
   totalAmount: number;
   notes?: string;
-  shippingAddress?: string;
-  paymentTerms?: string;
   createdBy: number;
   createdAt: string;
   updatedAt: string;
@@ -72,11 +60,9 @@ export type SalesOrderStatus =
 export interface CreateSalesOrderDto {
   customerId: number;
   orderDate: string;
-  requiredDate?: string;
   status: SalesOrderStatus;
   notes?: string;
-  shippingAddress?: string;
-  paymentTerms?: string;
+  taxAmount?: number;
   lines: Omit<
     SalesOrderLine,
     "id" | "orderId" | "productName" | "productSku" | "lineTotal"
