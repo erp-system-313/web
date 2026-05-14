@@ -8,6 +8,7 @@ import {
   InputNumber,
   Table,
   Space,
+  Tooltip,
   message,
 } from "antd";
 import {
@@ -329,9 +330,18 @@ export const CreatePurchaseOrderPage: React.FC = () => {
             title="Order Lines"
             className={styles.formCard}
             extra={
-              <Button type="primary" icon={<PlusOutlined />} onClick={addItem}>
-                Add Product
-              </Button>
+              <Tooltip
+                title={!selectedSupplier ? "Select a supplier first" : undefined}
+              >
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={addItem}
+                  disabled={!selectedSupplier}
+                >
+                  Add Product
+                </Button>
+              </Tooltip>
             }
           >
             <Table
