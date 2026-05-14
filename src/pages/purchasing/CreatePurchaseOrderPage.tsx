@@ -13,7 +13,6 @@ import {
 import {
   PlusOutlined,
   DeleteOutlined,
-  SaveOutlined,
   SendOutlined,
 } from "@ant-design/icons";
 import { useForm, Controller } from "react-hook-form";
@@ -42,12 +41,6 @@ const schema = yup.object({
 });
 
 type FormData = yup.InferType<typeof schema>;
-
-const productStatusOptions = [
-  { value: "", label: "All Statuses" },
-  { value: "ACTIVE", label: "Active" },
-  { value: "INACTIVE", label: "Inactive" },
-];
 
 export const CreatePurchaseOrderPage: React.FC = () => {
   const navigate = useNavigate();
