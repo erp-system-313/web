@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Ticket, TicketFilters, CreateTicketDto } from "../types/support";
+import type {
+  Ticket,
+  TicketFilters,
+  CreateTicketDto,
+  UpdateTicketDto,
+} from "../types/support";
 import { supportService } from "../services/supportService";
 
 export const useTickets = (filters: TicketFilters = {}) => {
@@ -79,4 +84,30 @@ export const useCreateTicket = () => {
   }, []);
 
   return { createTicket, loading, error };
+};
+
+export const useUpdateTicket = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateTicket = useCallback(
+    async (id: number, data: UpdateTicketDto) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const ticket = await supportService.update(id, data);
+        return ticket;
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Failed to update ticket";
+        setError(msg);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  return { updateTicket, loading, error };
 };
