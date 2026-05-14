@@ -219,9 +219,8 @@ export const TicketDetails: React.FC = () => {
               <Space>
                 <Tag
                   color={statusColors[ticket.status]}
-                  className={isEditable ? styles.editableTag : undefined}
+                  className={styles.editableTag}
                   onClick={() => isEditable && setEditingStatus(true)}
-                  style={isEditable ? { cursor: "pointer" } : undefined}
                 >
                   {ticket.status.replace("_", " ")}
                 </Tag>
