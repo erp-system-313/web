@@ -99,7 +99,7 @@ export const ProductDetailsPage: React.FC = () => {
         <Card title="Product Information">
           <Descriptions column={2}>
             <Descriptions.Item label="SKU">{product.sku}</Descriptions.Item>
-            <Descriptions.Item label="Category">{product.categoryName}</Descriptions.Item>
+            <Descriptions.Item label="Category">{product.categoryName || 'None'}</Descriptions.Item>
             <Descriptions.Item label="Description" span={2}>
               {product.description || '-'}
             </Descriptions.Item>

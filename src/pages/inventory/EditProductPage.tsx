@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Tabs, Input, InputNumber, Select, Spin, message } from 'antd';
+import { Button, Card, Tabs, Input, InputNumber, Select, Spin, message, TreeSelect } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useProducts } from '../../hooks/useProducts';
 import { inventoryService } from '../../services/inventoryService';
 import type { CreateProductDto } from '../../types/product.types';
-import styles from './CreateProductPage.module.css';
+import type { Category } from '../../types/category.types';
+import styles from './EditProductPage.module.css';
 
 const basicInfoSchema = yup.object({
   name: yup.string().required('Product name is required'),
@@ -30,6 +31,18 @@ type BasicInfoData = yup.InferType<typeof basicInfoSchema>;
 type PricingData = yup.InferType<typeof pricingSchema>;
 type InventoryData = yup.InferType<typeof inventorySchema>;
 
+function buildCategoryTree(categories: Category[]): { value: number; title: string; children?: { value: number; title: string }[] }[] {
+  const parents = categories.filter(c => c.parentId === null).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  return parents.map(parent => {
+    const children = categories.filter(c => c.parentId === parent.id).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    return {
+      value: parent.id,
+      title: parent.name,
+      children: children.length > 0 ? children.map(c => ({ value: c.id, title: c.name })) : undefined,
+    };
+  });
+}
+
 export const EditProductPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -39,13 +52,15 @@ export const EditProductPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const originalData = useRef<CreateProductDto | null>(null);
-  const [categoryOptions, setCategoryOptions] = useState<{ value: number; label: string }[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     inventoryService.getCategories(1, 100).then(res => {
-      setCategoryOptions(res.data.map(cat => ({ value: cat.id, label: cat.name })));
+      setCategories(res.data);
     }).catch(() => {});
   }, []);
+
+  const categoryTreeData = buildCategoryTree(categories);
 
   const { control: basicControl, handleSubmit: handleBasicSubmit, formState: { errors: errorsBasic }, reset: resetBasic } = useForm<BasicInfoData>({
     resolver: yupResolver(basicInfoSchema),
@@ -161,7 +176,7 @@ export const EditProductPage: React.FC = () => {
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Category *</label>
             <Controller name="categoryId" control={basicControl} render={({ field }) => (
-              <Select {...field} onChange={(value) => field.onChange(value)} placeholder="Select category" style={{ width: '100%' }} options={categoryOptions} status={errorsBasic.categoryId ? 'error' : undefined} />
+              <TreeSelect {...field} onChange={(value) => field.onChange(value)} placeholder="Select category" style={{ width: '100%' }} treeData={categoryTreeData} treeDefaultExpandAll status={errorsBasic.categoryId ? 'error' : undefined} />
             )} />
             {errorsBasic.categoryId && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.categoryId.message}</span>}
           </div>
@@ -236,7 +251,6 @@ export const EditProductPage: React.FC = () => {
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Edit Product</h1>
-        <Button onClick={() => navigate('/inventory/products')}>Cancel</Button>
       </div>
       <Card className={styles.formCard}>
         <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />

@@ -1,12 +1,25 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Select, Table, Tag, Space, Input, Modal } from 'antd';
+import { Button, Card, Select, Table, Tag, Space, Input, Modal, TreeSelect } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import type { Product, ProductFilters, StockStatus } from '../../types/product.types';
+import type { Category } from '../../types/category.types';
 import { useProducts } from '../../hooks/useProducts';
 import { inventoryService } from '../../services/inventoryService';
 import { formatCurrency } from '../../utils/formatters';
 import styles from './ProductListPage.module.css';
+
+function buildCategoryTree(categories: Category[]): { value: number; title: string; children?: { value: number; title: string }[] }[] {
+  const parents = categories.filter(c => c.parentId === null).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  return parents.map(parent => {
+    const children = categories.filter(c => c.parentId === parent.id).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    return {
+      value: parent.id,
+      title: parent.name,
+      children: children.length > 0 ? children.map(c => ({ value: c.id, title: c.name })) : undefined,
+    };
+  });
+}
 
 const stockStatusOptions = [
   { value: '', label: 'All' },
@@ -21,13 +34,15 @@ export const ProductListPage: React.FC = () => {
   
   const [filters, setFilters] = useState<ProductFilters>({});
   const [searchText, setSearchText] = useState('');
-  const [categoryOptions, setCategoryOptions] = useState<{ value: number; label: string }[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     inventoryService.getCategories(1, 100).then(res => {
-      setCategoryOptions(res.data.map(cat => ({ value: cat.id, label: cat.name })));
+      setCategories(res.data);
     }).catch(() => {});
   }, []);
+
+  const categoryTreeData = buildCategoryTree(categories);
 
   const loadProducts = useCallback(async () => {
     await fetchProducts({ ...filters, search: searchText }, 1);
@@ -79,6 +94,16 @@ export const ProductListPage: React.FC = () => {
     return <Tag color="success">In Stock</Tag>;
   };
 
+  const displayedProducts = useMemo(() => {
+    if (!filters.stockStatus) return products;
+    return products.filter(p => {
+      const status = p.currentStock === 0 ? 'out_of_stock'
+        : p.currentStock <= p.reorderLevel ? 'low_stock'
+        : 'in_stock';
+      return status === filters.stockStatus;
+    });
+  }, [products, filters.stockStatus]);
+
   const columns = [
     {
       title: 'Product Info',
@@ -91,7 +116,7 @@ export const ProductListPage: React.FC = () => {
       ),
     },
     { title: 'SKU', dataIndex: 'sku', key: 'sku' },
-    { title: 'Category', dataIndex: 'categoryName', key: 'categoryName' },
+    { title: 'Category', dataIndex: 'categoryName', key: 'categoryName', render: (name: string | null) => name || 'None' },
     {
       title: 'Stock',
       key: 'stock',
@@ -135,12 +160,12 @@ export const ProductListPage: React.FC = () => {
       <Card className={styles.filterPanel}>
         <Space size="large" wrap>
           <Input.Search placeholder="Search products..." allowClear prefix={<SearchOutlined />} onSearch={handleSearch} style={{ width: 300 }} />
-          <Select placeholder="Category" allowClear style={{ width: 200 }} options={categoryOptions} onChange={handleCategoryFilter} />
+          <TreeSelect placeholder="Category" allowClear style={{ width: 200 }} treeData={categoryTreeData} treeDefaultExpandAll onChange={handleCategoryFilter} />
           <Select placeholder="Stock Status" allowClear style={{ width: 150 }} options={stockStatusOptions} onChange={handleStockStatusFilter} />
         </Space>
       </Card>
 
-      <Table columns={columns} dataSource={products} rowKey="id" loading={loading} pagination={{ pageSize: 10, showSizeChanger: false, showTotal: (total) => `Total ${total} products` }} />
+      <Table columns={columns} dataSource={displayedProducts} rowKey="id" loading={loading} pagination={{ pageSize: 10, showSizeChanger: false, showTotal: (total) => `Total ${total} products` }} />
     </div>
   );
 };

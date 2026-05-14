@@ -13,14 +13,16 @@ const Employees = lazy(() => import("@/pages/hr/Employees"));
 const EmployeeDetails = lazy(() => import("@/pages/hr/EmployeeDetails"));
 const Attendance = lazy(() => import("@/pages/hr/Attendance"));
 const LeaveRequests = lazy(() => import("@/pages/hr/LeaveRequests"));
-const Products = lazy(() => import("@/pages/inventory/Products"));
-const AddProduct = lazy(() => import("@/pages/inventory/AddProduct"));
+const Products = lazy(() => import("@/pages/inventory/ProductListPage"));
+const AddProduct = lazy(() => import("@/pages/inventory/CreateProductPage"));
+const ProductDetails = lazy(() => import("@/pages/inventory/ProductDetailsPage"));
+const EditProduct = lazy(() => import("@/pages/inventory/EditProductPage"));
 const Categories = lazy(() => import("@/pages/inventory/CategoryListPage"));
-const Suppliers = lazy(() => import("@/pages/purchasing/Suppliers"));
+const Suppliers = lazy(() => import("@/pages/purchasing/SupplierListPage"));
 const SupplierDetails = lazy(
   () => import("@/pages/purchasing/SupplierDetails"),
 );
-const PurchaseOrders = lazy(() => import("@/pages/purchasing/PurchaseOrders"));
+const PurchaseOrders = lazy(() => import("@/pages/purchasing/PurchaseOrderListPage"));
 const NewPurchaseOrder = lazy(
   () => import("@/pages/purchasing/NewPurchaseOrder"),
 );
@@ -130,6 +132,22 @@ export default function AppRoutes() {
             element={
               <Suspense fallback={<PageLoader />}>
                 <AddProduct />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/inventory/products/:id/edit"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <EditProduct />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/inventory/products/:id"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <ProductDetails />
               </Suspense>
             }
           />
