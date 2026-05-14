@@ -123,6 +123,7 @@ export const endpoints = {
     create: "/v1/support/tickets",
     update: (id: number) => `/v1/support/tickets/${id}`,
     delete: (id: number) => `/v1/support/tickets/${id}`,
+    addComment: (id: number) => `/v1/support/tickets/${id}/comments`,
   },
   dashboard: {
     stats: "/v1/dashboard/stats",

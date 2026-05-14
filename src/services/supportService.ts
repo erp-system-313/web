@@ -5,6 +5,8 @@ import type {
   CreateTicketDto,
   UpdateTicketDto,
   TicketFilters,
+  AddCommentDto,
+  TicketComment,
 } from "../types/support";
 
 export const supportService = {
@@ -42,6 +44,17 @@ export const supportService = {
 
   async delete(id: number): Promise<void> {
     await apiClient.delete(endpoints.support.delete(id));
+  },
+
+  async addComment(
+    ticketId: number,
+    data: AddCommentDto,
+  ): Promise<TicketComment> {
+    const response = await apiClient.post(
+      endpoints.support.addComment(ticketId),
+      data,
+    );
+    return response.data.data;
   },
 };
 
