@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Tabs, Input, InputNumber, Select } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useProducts } from '../../hooks/useProducts';
+import { inventoryService } from '../../services/inventoryService';
+import type { Category } from '../../types/category.types';
 import styles from './CreateProductPage.module.css';
 
 const basicInfoSchema = yup.object({
@@ -28,20 +30,28 @@ type BasicInfoData = yup.InferType<typeof basicInfoSchema>;
 type PricingData = yup.InferType<typeof pricingSchema>;
 type InventoryData = yup.InferType<typeof inventorySchema>;
 
-const categories = [
-  { value: 'electronics', label: 'Electronics' },
-  { value: 'office', label: 'Office Supplies' },
-];
-
 export const CreateProductPage: React.FC = () => {
   const navigate = useNavigate();
   const { createProduct } = useProducts();
   const [activeTab, setActiveTab] = useState('basic');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
 
-  const { register: registerBasic, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await inventoryService.getCategories(1, 100);
+        setCategories(result.data.map((cat: Category) => ({ value: String(cat.id), label: cat.name })));
+      } catch {
+        // ignore
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const { control: basicControl, handleSubmit: handleBasicSubmit, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
     resolver: yupResolver(basicInfoSchema),
-    mode: 'onBlur',
+    defaultValues: { name: '', sku: '', description: '', categoryId: '' },
   });
 
   const { control: pricingControl, formState: { errors: errorsPricing }, getValues: getPricingValues } = useForm<PricingData>({
@@ -59,7 +69,7 @@ export const CreateProductPage: React.FC = () => {
   const [basicData, setBasicData] = useState<BasicInfoData | null>(null);
   const [pricingData, setPricingData] = useState<PricingData | null>(null);
 
-  const handleBasicSubmit = (data: BasicInfoData) => {
+  const onBasicSubmit = (data: BasicInfoData) => {
     setBasicData(data);
     setActiveTab('pricing');
   };
@@ -99,25 +109,33 @@ export const CreateProductPage: React.FC = () => {
       key: 'basic',
       label: 'Basic Info',
       children: (
-        <form onSubmit={(e) => { e.preventDefault(); handleBasicSubmit(basicData!); }}>
+        <form onSubmit={handleBasicSubmit(onBasicSubmit)}>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Product Name *</label>
-            <Input {...registerBasic('name')} placeholder="Enter product name" status={errorsBasic.name ? 'error' : undefined} />
+            <Controller name="name" control={basicControl} render={({ field }) => (
+              <Input {...field} placeholder="Enter product name" status={errorsBasic.name ? 'error' : undefined} />
+            )} />
             {errorsBasic.name && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.name.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>SKU *</label>
-            <Input {...registerBasic('sku')} placeholder="Enter SKU" status={errorsBasic.sku ? 'error' : undefined} />
+            <Controller name="sku" control={basicControl} render={({ field }) => (
+              <Input {...field} placeholder="Enter SKU" status={errorsBasic.sku ? 'error' : undefined} />
+            )} />
             {errorsBasic.sku && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.sku.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Category *</label>
-            <Select {...registerBasic('categoryId')} placeholder="Select category" style={{ width: '100%' }} options={categories} status={errorsBasic.categoryId ? 'error' : undefined} />
+            <Controller name="categoryId" control={basicControl} render={({ field }) => (
+              <Select value={field.value || undefined} onChange={(value) => field.onChange(value)} onBlur={field.onBlur} placeholder="Select category" style={{ width: '100%' }} options={categories} status={errorsBasic.categoryId ? 'error' : undefined} />
+            )} />
             {errorsBasic.categoryId && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.categoryId.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Description</label>
-            <Input.TextArea {...registerBasic('description')} rows={4} placeholder="Enter product description" />
+            <Controller name="description" control={basicControl} render={({ field }) => (
+              <Input.TextArea {...field} rows={4} placeholder="Enter product description" />
+            )} />
           </div>
           <div className={styles.actions}>
             <Button onClick={() => navigate('/inventory/products')}>Cancel</Button>
