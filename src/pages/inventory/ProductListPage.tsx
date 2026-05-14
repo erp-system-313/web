@@ -2,18 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Select, Table, Tag, Space, Input, Modal } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-import type { Product, ProductFilters, StockStatus } from '../../types/product.types';
+import type { Product, ProductFilters } from '../../types/product.types';
 import type { Category } from '../../types/category.types';
 import { useProducts } from '../../hooks/useProducts';
 import { inventoryService } from '../../services/inventoryService';
 import { formatCurrency } from '../../utils/formatters';
 import styles from './ProductListPage.module.css';
 
-const stockStatusOptions = [
+const statusOptions = [
   { value: '', label: 'All' },
-  { value: 'in_stock', label: 'In Stock' },
-  { value: 'low_stock', label: 'Low Stock' },
-  { value: 'out_of_stock', label: 'Out of Stock' },
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'INACTIVE', label: 'Inactive' },
+  { value: 'DISCONTINUED', label: 'Discontinued' },
 ];
 
 export const ProductListPage: React.FC = () => {
@@ -52,8 +52,8 @@ export const ProductListPage: React.FC = () => {
     setFilters(prev => ({ ...prev, categoryId: categoryId || undefined }));
   };
 
-  const handleStockStatusFilter = (stockStatus: string) => {
-    setFilters(prev => ({ ...prev, stockStatus: stockStatus ? stockStatus as StockStatus : undefined }));
+  const handleStatusFilter = (status: string) => {
+    setFilters(prev => ({ ...prev, status: status || undefined }));
   };
 
   const handleAddProduct = () => {
@@ -143,7 +143,7 @@ export const ProductListPage: React.FC = () => {
         <Space size="large" wrap>
           <Input.Search placeholder="Search products..." allowClear prefix={<SearchOutlined />} onSearch={handleSearch} style={{ width: 300 }} />
           <Select placeholder="Category" allowClear style={{ width: 200 }} options={categories} onChange={handleCategoryFilter} />
-          <Select placeholder="Stock Status" allowClear style={{ width: 150 }} options={stockStatusOptions} onChange={handleStockStatusFilter} />
+          <Select placeholder="Status" allowClear style={{ width: 150 }} options={statusOptions} onChange={handleStatusFilter} />
         </Space>
       </Card>
 

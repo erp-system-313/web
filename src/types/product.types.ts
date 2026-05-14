@@ -1,8 +1,6 @@
-export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock';
-
 export interface ProductFilters {
   categoryId?: string;
-  stockStatus?: StockStatus;
+  status?: string;
   minPrice?: number;
   maxPrice?: number;
   search?: string;
