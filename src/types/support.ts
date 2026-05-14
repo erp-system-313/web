@@ -55,4 +55,6 @@ export interface TicketFilters {
   status?: TicketStatus;
   priority?: TicketPriority;
   search?: string;
+  createdById?: number;
+  assignedToId?: number;
 }

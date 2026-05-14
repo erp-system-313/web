@@ -19,6 +19,9 @@ export const supportService = {
     if (filters.status) params.status = filters.status;
     if (filters.priority) params.priority = filters.priority;
     if (filters.search) params.search = filters.search;
+    if (filters.createdById) params.createdById = String(filters.createdById);
+    if (filters.assignedToId)
+      params.assignedToId = String(filters.assignedToId);
 
     const response = await apiClient.get(endpoints.support.list, { params });
     return {

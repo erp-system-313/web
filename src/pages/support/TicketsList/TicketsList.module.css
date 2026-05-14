@@ -5,6 +5,12 @@
   margin-bottom: 16px;
 }
 
+.viewToggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
 .filters {
   margin-bottom: 16px;
 }

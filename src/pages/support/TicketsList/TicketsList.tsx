@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, Tag, Button, Input, Select, Space, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { AuthContext } from "../../../contexts/AuthContext";
 import { useTickets } from "../../../hooks/useSupport";
 import type {
   Ticket,
@@ -28,6 +29,12 @@ const statusColors: Record<TicketStatus, string> = {
 
 export const TicketsList: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext) || {};
+  const userId = user?.id;
+  const isAdmin = user?.role === "ADMIN" || user?.role === "MANAGER";
+  const [view, setView] = useState<"my" | "assigned" | "all">(
+    isAdmin ? "all" : "my",
+  );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "">("");
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | "">("");
@@ -39,16 +46,22 @@ export const TicketsList: React.FC = () => {
     search?: string;
     status?: TicketStatus;
     priority?: TicketPriority;
+    createdById?: number;
+    assignedToId?: number;
   } = {
     page,
     size: 20,
   };
+  if (view === "my" && userId) filters.createdById = userId;
+  if (view === "assigned" && userId) filters.assignedToId = userId;
   if (search) filters.search = search;
   if (statusFilter) filters.status = statusFilter as TicketStatus;
   if (priorityFilter) filters.priority = priorityFilter as TicketPriority;
 
+  const hasActiveFilters =
+    search || statusFilter || priorityFilter || view !== "all";
   const { data, total, loading } = useTickets(
-    search || statusFilter || priorityFilter ? filters : { page, size: 20 },
+    hasActiveFilters ? filters : { page, size: 20 },
   );
 
   const columns = [
@@ -109,6 +122,41 @@ export const TicketsList: React.FC = () => {
         >
           New Ticket
         </Button>
+      </div>
+
+      <div className={styles.viewToggle}>
+        <Button
+          type={view === "my" ? "primary" : "default"}
+          size="small"
+          onClick={() => {
+            setView("my");
+            setPage(0);
+          }}
+        >
+          My Tickets
+        </Button>
+        <Button
+          type={view === "assigned" ? "primary" : "default"}
+          size="small"
+          onClick={() => {
+            setView("assigned");
+            setPage(0);
+          }}
+        >
+          Assigned
+        </Button>
+        {isAdmin && (
+          <Button
+            type={view === "all" ? "primary" : "default"}
+            size="small"
+            onClick={() => {
+              setView("all");
+              setPage(0);
+            }}
+          >
+            All
+          </Button>
+        )}
       </div>
 
       <Space className={styles.filters}>
