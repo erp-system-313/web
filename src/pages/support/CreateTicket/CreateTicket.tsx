@@ -13,8 +13,10 @@ import {
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useCreateTicket } from "../../../hooks/useSupport";
 import { salesService } from "../../../services/salesService";
+import { hrService } from "../../../services/hrService";
 import type { CreateTicketDto } from "../../../types/support";
 import type { Customer } from "../../../types/sales";
+import type { Employee } from "../../../types/hr";
 import styles from "./CreateTicket.module.css";
 
 const { Title } = Typography;
@@ -28,6 +30,10 @@ export const CreateTicket: React.FC = () => {
     { value: number; label: string }[]
   >([]);
   const [searching, setSearching] = useState(false);
+  const [employeeOptions, setEmployeeOptions] = useState<
+    { value: number; label: string }[]
+  >([]);
+  const [searchingEmployee, setSearchingEmployee] = useState(false);
 
   const handleCustomerSearch = useCallback(async (query: string) => {
     if (!query) {
@@ -50,6 +56,31 @@ export const CreateTicket: React.FC = () => {
       setCustomerOptions([]);
     } finally {
       setSearching(false);
+    }
+  }, []);
+
+  const handleEmployeeSearch = useCallback(async (query: string) => {
+    if (!query) {
+      setEmployeeOptions([]);
+      return;
+    }
+    setSearchingEmployee(true);
+    try {
+      const result = await hrService.employees.getAll({
+        search: query,
+        size: 20,
+      });
+      const employees: Employee[] = result.content || [];
+      setEmployeeOptions(
+        employees.map((e) => ({
+          value: e.id,
+          label: `${e.fullName} (${e.department})`,
+        })),
+      );
+    } catch {
+      setEmployeeOptions([]);
+    } finally {
+      setSearchingEmployee(false);
     }
   }, []);
 
@@ -126,6 +157,19 @@ export const CreateTicket: React.FC = () => {
                 { value: "HIGH", label: "High" },
                 { value: "URGENT", label: "Urgent" },
               ]}
+            />
+          </Form.Item>
+
+          <Form.Item name="assignedTo" label="Assigned To">
+            <Select
+              showSearch
+              placeholder="Search employee..."
+              filterOption={false}
+              onSearch={handleEmployeeSearch}
+              options={employeeOptions}
+              loading={searchingEmployee}
+              allowClear
+              notFoundContent={null}
             />
           </Form.Item>
 

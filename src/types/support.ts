@@ -34,6 +34,7 @@ export interface CreateTicketDto {
   description?: string;
   customerId: number;
   priority: TicketPriority;
+  assignedTo?: number;
 }
 
 export interface AddCommentDto {
