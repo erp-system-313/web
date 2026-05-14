@@ -61,9 +61,16 @@ export const SupplierDetailsPage: React.FC = () => {
     loading: supplierLoading,
     fetchSuppliers,
     deleteSupplier,
+    updateSupplier,
   } = useSuppliers();
   const { orders, loading: ordersLoading, fetchOrders } = usePurchaseOrders();
   const [activeTab, setActiveTab] = useState("purchaseOrders");
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<EditFormData>({
+    resolver: yupResolver(editSchema),
+  });
 
   const supplier = suppliers.find((s) => s.id === Number(id));
 
