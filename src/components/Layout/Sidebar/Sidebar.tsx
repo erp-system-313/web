@@ -10,6 +10,7 @@ import {
   FileTextOutlined,
   TeamOutlined,
   SettingOutlined,
+  CustomerServiceOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../../contexts/AuthContext";
@@ -115,6 +116,18 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       ],
     },
     {
+      key: "support",
+      icon: <CustomerServiceOutlined />,
+      label: "Support",
+      children: [
+        {
+          key: "tickets",
+          label: "Tickets",
+          onClick: () => navigate("/support/tickets"),
+        },
+      ],
+    },
+    {
       key: "hr",
       icon: <TeamOutlined />,
       label: "HR",
@@ -178,6 +191,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/finance/invoices")) return "invoices";
     if (path.startsWith("/finance/journal")) return "journal";
     if (path.startsWith("/finance/accounts")) return "accounts";
+    if (path.startsWith("/support/tickets")) return "tickets";
     if (path.startsWith("/hr/employees")) return "employees";
     if (path.startsWith("/hr/attendance")) return "attendance";
     if (path.startsWith("/hr/leave")) return "leave";
@@ -201,6 +215,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       invoices: "finance",
       journal: "finance",
       accounts: "finance",
+      tickets: "support",
       employees: "hr",
       attendance: "hr",
       leave: "hr",
@@ -242,7 +257,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           role="button"
           tabIndex={0}
           onKeyDown={(e) => e.key === "Enter" && logout?.()}
-          style={{ display: collapsed ? 'none' : 'flex' }}
+          style={{ display: collapsed ? "none" : "flex" }}
         >
           <LogoutOutlined />
           {!collapsed && <span>Logout</span>}
