@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Button,
@@ -19,6 +19,8 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
+import { useSuppliers } from "../../hooks/useSuppliers";
+
 import styles from "./CreatePurchaseOrderPage.module.css";
 
 interface LineItem {
@@ -49,18 +51,11 @@ const mockProducts = [
   { id: "6", name: "External SSD 1TB", sku: "SSD-001", unitPrice: 119.99 },
 ];
 
-const mockSuppliers = [
-  { id: 1, code: "SUP-001", name: "TechWorld Distributors", contactPerson: "Ahmed Hassan", email: "ahmed@techworld.com", phone: "+20 100 123 4567", paymentTerms: 30 },
-  { id: 2, code: "SUP-002", name: "Global Supply Co.", contactPerson: "Sara Ali", email: "sara@globalsupply.com", phone: "+20 120 987 6543", paymentTerms: 60 },
-  { id: 3, code: "SUP-003", name: "ElectroParts Ltd", contactPerson: "Mohamed Kamal", email: "mohamed@electroparts.com", phone: "+20 155 555 7890", paymentTerms: 30 },
-  { id: 4, code: "SUP-004", name: "Prime Materials Inc", contactPerson: "Nour El-Din", email: "nour@primetmaterials.com", phone: "+20 122 333 4444", paymentTerms: 90 },
-];
-
 export const CreatePurchaseOrderPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { createPurchaseOrder } = usePurchaseOrders();
-  const suppliers = mockSuppliers;
+  const { suppliers, fetchSuppliers } = useSuppliers();
 
   const defaultSupplierId = searchParams.get("supplier") || "";
 
@@ -86,6 +81,10 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   const selectedSupplier = suppliers.find(
     (s) => s.id === Number(selectedSupplierId),
   );
+
+  useEffect(() => {
+    fetchSuppliers({}, 1);
+  }, [fetchSuppliers]);
 
   const addItem = () => {
     setItems([
