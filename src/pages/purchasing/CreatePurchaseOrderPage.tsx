@@ -42,6 +42,8 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>;
 
+const today = new Date().toISOString().split("T")[0];
+
 export const CreatePurchaseOrderPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -351,7 +353,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                 <Controller
                   name="orderDate"
                   control={control}
-                  render={({ field }) => <Input type="date" {...field} />}
+                  render={({ field }) => <Input type="date" min={today} {...field} />}
                 />
               </div>
 
@@ -362,7 +364,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                 <Controller
                   name="expectedDate"
                   control={control}
-                  render={({ field }) => <Input type="date" {...field} />}
+                  render={({ field }) => <Input type="date" min={today} {...field} />}
                 />
               </div>
 
