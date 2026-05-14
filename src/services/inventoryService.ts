@@ -9,7 +9,6 @@ export const inventoryService = {
     
     if (filters.categoryId !== undefined) params.categoryId = String(filters.categoryId);
     if (filters.search) params.search = filters.search;
-    if (filters.stockStatus) params.stockStatus = filters.stockStatus;
     if (filters.minPrice !== undefined) params.minPrice = String(filters.minPrice);
     if (filters.maxPrice !== undefined) params.maxPrice = String(filters.maxPrice);
     

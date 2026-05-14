@@ -156,9 +156,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       await createPurchaseOrder({
         supplierId: data.supplierId,
         orderDate: new Date(data.orderDate).toISOString(),
-        expectedDate: data.expectedDate
-          ? new Date(data.expectedDate).toISOString()
-          : new Date().toISOString(),
+        expectedDate: data.expectedDate || new Date().toISOString().split('T')[0],
         notes: data.notes || '',
         items: items.map(i => ({
           productId: i.productId!,

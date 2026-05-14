@@ -1,6 +1,5 @@
 import type {
   Customer,
-  Product,
   SalesOrder,
   SalesOrderFilters,
   CustomerFilters,
@@ -8,6 +7,7 @@ import type {
   UpdateSalesOrderDto,
   PaginatedResponse,
 } from "../types/sales";
+import type { Product } from "../types/product.types";
 import { apiClient } from "../api/client";
 import { endpoints } from "../api/endpoints";
 
