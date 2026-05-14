@@ -1,20 +1,23 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Card,
-  Descriptions,
   Tag,
   Button,
   Select,
-  Space,
   Typography,
-  List,
   Input,
   message,
   Spin,
   Modal,
+  Avatar,
+  Divider,
 } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  DeleteOutlined,
+  UserOutlined,
+  ClockCircleOutlined,
+} from "@ant-design/icons";
 import { useTicket } from "../../../hooks/useSupport";
 import { supportService } from "../../../services/supportService";
 import type { TicketPriority, TicketStatus } from "../../../types/support";
@@ -36,6 +39,20 @@ const statusColors: Record<TicketStatus, string> = {
   RESOLVED: "success",
   CLOSED: "default",
 };
+
+function timeAgo(dateStr: string): string {
+  const now = Date.now();
+  const date = new Date(dateStr).getTime();
+  const diff = now - date;
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
 
 export const TicketDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -93,7 +110,7 @@ export const TicketDetails: React.FC = () => {
     if (!comment.trim()) return;
     setSubmitting(true);
     try {
-      await supportService.update(ticketId, { description: comment });
+      await supportService.addComment(ticketId, { message: comment });
       message.success("Comment added");
       setComment("");
       refetch();
@@ -124,42 +141,52 @@ export const TicketDetails: React.FC = () => {
   };
 
   return (
-    <div>
-      <Space className={styles.backButton}>
+    <div className={styles.container}>
+      <div className={styles.toolbar}>
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/support/tickets")}
         >
           Back to Tickets
         </Button>
-      </Space>
+        <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>
+          Delete
+        </Button>
+      </div>
 
-      <Card
-        title={
-          <Title level={4} style={{ margin: 0 }}>
-            {ticket.title}
-          </Title>
-        }
-        extra={
-          <Space>
-            <Button danger onClick={handleDelete}>
-              Delete
-            </Button>
-          </Space>
-        }
-      >
-        <Descriptions column={2} bordered size="small">
-          <Descriptions.Item label="Customer">
-            {ticket.customerName || `#${ticket.customerId}`}
-          </Descriptions.Item>
-          <Descriptions.Item label="Description">
-            {ticket.description || "-"}
-          </Descriptions.Item>
-          <Descriptions.Item label="Status">
+      <div className={styles.post}>
+        <div className={styles.postHeader}>
+          <Avatar size={40} icon={<UserOutlined />} className={styles.avatar} />
+          <div className={styles.headerMeta}>
+            <Text strong>
+              {ticket.createdByName || ticket.customerName || "Unknown"}
+            </Text>
+            <Text type="secondary" className={styles.timestamp}>
+              <ClockCircleOutlined /> {timeAgo(ticket.createdAt)}
+            </Text>
+          </div>
+        </div>
+
+        <Title level={4} className={styles.title}>
+          #{ticket.id} - {ticket.title}
+        </Title>
+
+        {ticket.description && (
+          <div className={styles.description}>
+            <Text>{ticket.description}</Text>
+          </div>
+        )}
+
+        <div className={styles.metadata}>
+          <div className={styles.metaItem}>
+            <Text type="secondary" className={styles.metaLabel}>
+              Status
+            </Text>
             {editingStatus ? (
               <Select
                 defaultValue={ticket.status}
-                style={{ width: 140 }}
+                size="small"
+                style={{ width: 130 }}
                 onSelect={handleStatusChange}
                 onBlur={() => setEditingStatus(false)}
                 autoFocus
@@ -173,18 +200,22 @@ export const TicketDetails: React.FC = () => {
             ) : (
               <Tag
                 color={statusColors[ticket.status]}
-                style={{ cursor: "pointer" }}
+                className={styles.editableTag}
                 onClick={() => setEditingStatus(true)}
               >
                 {ticket.status.replace("_", " ")}
               </Tag>
             )}
-          </Descriptions.Item>
-          <Descriptions.Item label="Priority">
+          </div>
+          <div className={styles.metaItem}>
+            <Text type="secondary" className={styles.metaLabel}>
+              Priority
+            </Text>
             {editingPriority ? (
               <Select
                 defaultValue={ticket.priority}
-                style={{ width: 140 }}
+                size="small"
+                style={{ width: 120 }}
                 onSelect={handlePriorityChange}
                 onBlur={() => setEditingPriority(false)}
                 autoFocus
@@ -198,67 +229,92 @@ export const TicketDetails: React.FC = () => {
             ) : (
               <Tag
                 color={priorityColors[ticket.priority]}
-                style={{ cursor: "pointer" }}
+                className={styles.editableTag}
                 onClick={() => setEditingPriority(true)}
               >
                 {ticket.priority}
               </Tag>
             )}
-          </Descriptions.Item>
-          <Descriptions.Item label="Assigned To">
-            {ticket.assignedToName || "Unassigned"}
-          </Descriptions.Item>
-          <Descriptions.Item label="Created">
-            {new Date(ticket.createdAt).toLocaleString()}
-          </Descriptions.Item>
-          <Descriptions.Item label="Updated">
-            {new Date(ticket.updatedAt).toLocaleString()}
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-
-      <Card title="Comments" className={styles.commentsSection}>
-        {ticket.comments.length > 0 ? (
-          <List
-            dataSource={ticket.comments}
-            renderItem={(item) => (
-              <List.Item>
-                <List.Item.Meta
-                  title={<Text strong>{item.authorName}</Text>}
-                  description={
-                    <Space direction="vertical" size={0}>
-                      <Text>{item.message}</Text>
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        {new Date(item.createdAt).toLocaleString()}
-                      </Text>
-                    </Space>
-                  }
-                />
-              </List.Item>
-            )}
-          />
-        ) : (
-          <Text type="secondary">No comments yet.</Text>
-        )}
-
-        <div className={styles.addComment}>
-          <TextArea
-            rows={3}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Add a comment..."
-          />
-          <Button
-            type="primary"
-            loading={submitting}
-            disabled={!comment.trim()}
-            onClick={handleAddComment}
-            style={{ marginTop: 8 }}
-          >
-            Add Comment
-          </Button>
+          </div>
+          <div className={styles.metaItem}>
+            <Text type="secondary" className={styles.metaLabel}>
+              Customer
+            </Text>
+            <Text>{ticket.customerName || `#${ticket.customerId}`}</Text>
+          </div>
+          <div className={styles.metaItem}>
+            <Text type="secondary" className={styles.metaLabel}>
+              Assigned To
+            </Text>
+            <Text>{ticket.assignedToName || "Unassigned"}</Text>
+          </div>
+          <div className={styles.metaItem}>
+            <Text type="secondary" className={styles.metaLabel}>
+              Created
+            </Text>
+            <Text>{new Date(ticket.createdAt).toLocaleDateString()}</Text>
+          </div>
+          <div className={styles.metaItem}>
+            <Text type="secondary" className={styles.metaLabel}>
+              Updated
+            </Text>
+            <Text>{new Date(ticket.updatedAt).toLocaleDateString()}</Text>
+          </div>
         </div>
-      </Card>
+
+        <Divider />
+
+        <div className={styles.commentsSection}>
+          <Title level={5} className={styles.commentsHeading}>
+            Comments ({ticket.comments.length})
+          </Title>
+
+          {ticket.comments.length > 0 ? (
+            <div className={styles.commentsList}>
+              {ticket.comments.map((c) => (
+                <div key={c.id} className={styles.comment}>
+                  <Avatar
+                    size={32}
+                    icon={<UserOutlined />}
+                    className={styles.commentAvatar}
+                  />
+                  <div className={styles.commentBody}>
+                    <div className={styles.commentMeta}>
+                      <Text strong>{c.authorName}</Text>
+                      <Text type="secondary" className={styles.timestamp}>
+                        <ClockCircleOutlined /> {timeAgo(c.createdAt)}
+                      </Text>
+                    </div>
+                    <Text className={styles.commentMessage}>{c.message}</Text>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Text type="secondary" className={styles.noComments}>
+              No comments yet.
+            </Text>
+          )}
+
+          <div className={styles.addComment}>
+            <TextArea
+              rows={3}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Add a comment..."
+            />
+            <Button
+              type="primary"
+              loading={submitting}
+              disabled={!comment.trim()}
+              onClick={handleAddComment}
+              className={styles.commentButton}
+            >
+              Comment
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
