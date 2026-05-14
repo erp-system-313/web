@@ -10,6 +10,8 @@ import {
   Statistic,
   Row,
   Col,
+  Input,
+  InputNumber,
   message,
   Modal,
 } from "antd";
@@ -19,10 +21,27 @@ import {
   ShoppingCartOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import type { PurchaseOrderStatus } from "../../types/purchaseOrder.types";
+import type { CreateSupplierDto } from "../../types/supplier.types";
 import { useSuppliers } from "../../hooks/useSuppliers";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import styles from "./SupplierDetailsPage.module.css";
+
+const editSchema = yup.object({
+  code: yup.string().required("Supplier code is required"),
+  name: yup.string().required("Supplier name is required"),
+  contactPerson: yup.string().required("Contact person is required"),
+  email: yup.string().email("Invalid email").required("Email is required"),
+  phone: yup.string().required("Phone is required"),
+  address: yup.string().required("Address is required"),
+  taxId: yup.string().required("Tax ID is required"),
+  paymentTerms: yup.number().required("Payment terms is required").min(1, "Must be at least 1"),
+});
+
+type EditFormData = yup.InferType<typeof editSchema>;
 
 const getStatusTag = (status: PurchaseOrderStatus) => {
   const colors: Record<PurchaseOrderStatus, string> = {
