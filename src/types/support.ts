@@ -12,6 +12,8 @@ export interface Ticket {
   status: TicketStatus;
   assignedToId?: number;
   assignedToName?: string;
+  createdById?: number;
+  createdByName?: string;
   createdAt: string;
   updatedAt: string;
   comments: TicketComment[];
