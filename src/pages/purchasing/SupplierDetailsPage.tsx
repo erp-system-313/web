@@ -1,37 +1,76 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Tabs, Table, Tag, Space, message, Modal } from 'antd';
-import { EditOutlined, DeleteOutlined, ShoppingCartOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import type { PurchaseOrderStatus } from '../../types/purchaseOrder.types';
-import { useSuppliers } from '../../hooks/useSuppliers';
-import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
-import styles from './SupplierDetailsPage.module.css';
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Button,
+  Card,
+  Tabs,
+  Table,
+  Tag,
+  Space,
+  Statistic,
+  Row,
+  Col,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+} from "antd";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  ShoppingCartOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import type { PurchaseOrderStatus } from "../../types/purchaseOrder.types";
+import type { CreateSupplierDto } from "../../types/supplier.types";
+import { useSuppliers } from "../../hooks/useSuppliers";
+import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
+import styles from "./SupplierDetailsPage.module.css";
+
+const editSchema = yup.object({
+  code: yup.string().required("Supplier code is required"),
+  name: yup.string().required("Supplier name is required"),
+  contactPerson: yup.string().required("Contact person is required"),
+  email: yup.string().email("Invalid email").required("Email is required"),
+  phone: yup.string().required("Phone is required"),
+  address: yup.string().required("Address is required"),
+  taxId: yup.string().required("Tax ID is required"),
+  paymentTerms: yup.number().required("Payment terms is required").min(1, "Must be at least 1"),
+});
+
+type EditFormData = yup.InferType<typeof editSchema>;
 
 const getStatusTag = (status: PurchaseOrderStatus) => {
   const colors: Record<PurchaseOrderStatus, string> = {
-    DRAFT: 'default',
-    SENT: 'processing',
-    RECEIVED: 'green',
-    PARTIAL: 'blue',
-    CANCELLED: 'red',
+    PENDING: "default",
+    APPROVED: "processing",
+    RECEIVED: "green",
+    CANCELLED: "red",
   };
   return <Tag color={colors[status]}>{status}</Tag>;
 };
 
 export const SupplierDetailsPage: React.FC = () => {
-  const { id: idStr } = useParams<{ id: string }>();
-  const id = idStr ? Number(idStr) : undefined;
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { suppliers, loading: supplierLoading, fetchSuppliers, deleteSupplier } = useSuppliers();
+  const {
+    suppliers,
+    loading: supplierLoading,
+    fetchSuppliers,
+    deleteSupplier,
+  } = useSuppliers();
   const { orders, loading: ordersLoading, fetchOrders } = usePurchaseOrders();
-  const [activeTab, setActiveTab] = useState('purchaseOrders');
+  const [activeTab, setActiveTab] = useState("purchaseOrders");
 
-  const supplier = suppliers.find(s => s.id === id);
+  const supplier = suppliers.find((s) => s.id === Number(id));
 
   const loadData = useCallback(async () => {
     if (id) {
-      await fetchSuppliers({ name: '' }, 1);
-      await fetchOrders({ supplierId: id }, 1);
+      await fetchSuppliers({}, 1);
+      await fetchOrders({ supplierId: Number(id) }, 1);
     }
   }, [id, fetchSuppliers, fetchOrders]);
 
@@ -39,83 +78,79 @@ export const SupplierDetailsPage: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  const handleCreatePO = () => {
-    navigate(`/purchasing/orders/new?supplier=${id}`);
-  };
+  if (supplierLoading) {
+    return <div style={{ textAlign: "center", padding: 48 }}>Loading...</div>;
+  }
 
-  const handleEdit = () => {
-    navigate(`/purchasing/suppliers/${id}/edit`);
-    message.info('Edit supplier form coming soon');
-  };
+  if (!supplier) {
+    return (
+      <div style={{ textAlign: "center", padding: 48 }}>Supplier not found</div>
+    );
+  }
 
   const handleDelete = () => {
     Modal.confirm({
-      title: 'Delete Supplier',
-      content: 'Are you sure you want to delete this supplier?',
-      okText: 'Delete',
-      okType: 'danger',
+      title: "Delete Supplier",
+      content: "Are you sure you want to delete this supplier?",
+      okText: "Delete",
+      okType: "danger",
       onOk: async () => {
-        if (id) {
-          await deleteSupplier(id);
-        }
-        navigate('/purchasing/suppliers');
+        await deleteSupplier(supplier.id);
+        navigate("/purchasing/suppliers");
       },
     });
   };
 
-  const handleBack = () => {
-    navigate('/purchasing/suppliers');
+  const handleCreatePO = () => {
+    navigate(`/purchasing/orders/new?supplier=${id}`);
   };
 
   const handleBack = () => {
-    navigate('/purchasing/suppliers');
+    navigate("/purchasing/suppliers");
   };
 
   const orderColumns = [
     {
-      title: 'PO Number',
-      dataIndex: 'poNumber',
-      key: 'poNumber',
+      title: "PO Number",
+      dataIndex: "poNumber",
+      key: "poNumber",
     },
     {
-      title: 'Date',
-      dataIndex: 'orderDate',
-      key: 'orderDate',
+      title: "Date",
+      dataIndex: "orderDate",
+      key: "orderDate",
       render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
       render: (status: PurchaseOrderStatus) => getStatusTag(status),
     },
     {
-      title: 'Total',
-      dataIndex: 'totalAmount',
-      key: 'totalAmount',
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      title: "Total",
+      dataIndex: "totalAmount",
+      key: "totalAmount",
+      render: (amount: number) => `$${(amount ?? 0).toFixed(2)}`,
     },
     {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: unknown, record: PurchaseOrder) => (
-        <Button type="text" onClick={() => handleViewOrder(record.id)}>View</Button>
+      title: "Actions",
+      key: "actions",
+      render: (_: unknown, record: any) => (
+        <Button
+          type="text"
+          onClick={() => navigate(`/purchasing/orders/${record.id}`)}
+        >
+          View
+        </Button>
       ),
     },
   ];
 
-  if (supplierLoading) {
-    return <div style={{ textAlign: 'center', padding: 48 }}>Loading...</div>;
-  }
-
-  if (!supplier) {
-    return <div style={{ textAlign: 'center', padding: 48 }}>Supplier not found</div>;
-  }
-
   const tabItems = [
     {
-      key: 'purchaseOrders',
-      label: 'Purchase Orders',
+      key: "purchaseOrders",
+      label: "Purchase Orders",
       children: (
         <div className={styles.tabContent}>
           <Table
@@ -125,6 +160,41 @@ export const SupplierDetailsPage: React.FC = () => {
             pagination={false}
             loading={ordersLoading}
           />
+        </div>
+      ),
+    },
+    {
+      key: "analytics",
+      label: "Analytics",
+      children: (
+        <div className={styles.tabContent}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Card title="Purchasing Volume">
+                <Statistic
+                  value={supplier.totalPurchased}
+                  prefix="$"
+                  precision={2}
+                />
+                <div style={{ textAlign: "center", marginTop: 16 }}>
+                  <span style={{ color: "#999" }}>Total Purchased</span>
+                </div>
+              </Card>
+            </Col>
+            <Col span={12}>
+              <Card title="Status">
+                <Tag
+                  color={supplier.status === "ACTIVE" ? "green" : "red"}
+                  style={{ fontSize: 16, padding: "4px 12px" }}
+                >
+                  {supplier.status}
+                </Tag>
+                <div style={{ textAlign: "center", marginTop: 16 }}>
+                  <span style={{ color: "#999" }}>Current Status</span>
+                </div>
+              </Card>
+            </Col>
+          </Row>
         </div>
       ),
     },
@@ -140,9 +210,20 @@ export const SupplierDetailsPage: React.FC = () => {
           <h1 className={styles.title}>{supplier.name}</h1>
         </div>
         <Space className={styles.headerActions}>
-          <Button icon={<EditOutlined />} onClick={handleEdit}>Edit</Button>
-          <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>Delete</Button>
-          <Button type="primary" icon={<ShoppingCartOutlined />} onClick={handleCreatePO}>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => message.info("Edit supplier form coming soon")}
+          >
+            Edit
+          </Button>
+          <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>
+            Delete
+          </Button>
+          <Button
+            type="primary"
+            icon={<ShoppingCartOutlined />}
+            onClick={handleCreatePO}
+          >
             Create Purchase Order
           </Button>
         </Space>
@@ -152,7 +233,8 @@ export const SupplierDetailsPage: React.FC = () => {
         <Card className={styles.infoCard}>
           <div className={styles.infoCardTitle}>Contact Information</div>
           <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Contact:</span> {supplier.contactPerson}
+            <span className={styles.infoLabel}>Contact:</span>{" "}
+            {supplier.contactPerson}
           </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Email:</span> {supplier.email}
@@ -163,30 +245,40 @@ export const SupplierDetailsPage: React.FC = () => {
         </Card>
 
         <Card className={styles.infoCard}>
-          <div className={styles.infoCardTitle}>Address</div>
-          <div className={styles.infoRow}>{supplier.address}</div>
-        </Card>
-
-        <Card className={styles.infoCard}>
           <div className={styles.infoCardTitle}>Details</div>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Payment Terms:</span> {supplier.paymentTerms}
-          </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Code:</span> {supplier.code}
           </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Tax ID:</span> {supplier.taxId}
           </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Address:</span>{" "}
+            {supplier.address}
+          </div>
+        </Card>
+
+        <Card className={styles.infoCard}>
+          <div className={styles.infoCardTitle}>Payment & Status</div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Payment Terms:</span> Net{" "}
+            {supplier.paymentTerms}
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Status:</span>{" "}
+            <Tag color={supplier.status === "ACTIVE" ? "green" : "red"}>
+              {supplier.status}
+            </Tag>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Total Purchased:</span> $
+            {(supplier.totalPurchased ?? 0).toFixed(2)}
+          </div>
         </Card>
       </div>
 
       <Card>
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={tabItems}
-        />
+        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
       </Card>
     </div>
   );
