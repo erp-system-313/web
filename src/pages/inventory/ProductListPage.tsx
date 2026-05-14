@@ -26,6 +26,11 @@ export const ProductListPage: React.FC = () => {
   const [stockStatus, setStockStatus] = useState<string>('');
 
   const filteredProducts = products.filter(p => {
+    const matchesSearch = !searchText || 
+      p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      p.sku.toLowerCase().includes(searchText.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(searchText.toLowerCase()));
+    if (!matchesSearch) return false;
     if (!stockStatus) return true;
     if (stockStatus === 'in_stock') return p.stockQuantity > 0 && p.stockQuantity > p.reorderPoint;
     if (stockStatus === 'low_stock') return p.stockQuantity > 0 && p.stockQuantity <= p.reorderPoint;
@@ -46,8 +51,8 @@ export const ProductListPage: React.FC = () => {
   }, []);
 
   const loadProducts = useCallback(async () => {
-    await fetchProducts({ ...filters, search: searchText }, 1);
-  }, [fetchProducts, filters, searchText]);
+    await fetchProducts(filters, 1);
+  }, [fetchProducts, filters]);
 
   useEffect(() => {
     loadProducts();
@@ -55,6 +60,10 @@ export const ProductListPage: React.FC = () => {
 
   const handleSearch = (value: string) => {
     setSearchText(value);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
   };
 
   const handleCategoryFilter = (categoryId: string) => {
@@ -150,7 +159,7 @@ export const ProductListPage: React.FC = () => {
 
       <Card className={styles.filterPanel}>
         <Space size="large" wrap>
-          <Input.Search placeholder="Search products..." allowClear prefix={<SearchOutlined />} onSearch={handleSearch} style={{ width: 300 }} />
+          <Input.Search placeholder="Search products..." allowClear prefix={<SearchOutlined />} value={searchText} onChange={handleSearchChange} onSearch={handleSearch} style={{ width: 300 }} />
           <Select placeholder="Category" allowClear style={{ width: 200 }} options={categories} onChange={handleCategoryFilter} />
           <Select placeholder="Stock Status" allowClear style={{ width: 150 }} options={stockStatusOptions} onChange={handleStockStatusFilter} />
         </Space>
