@@ -7,7 +7,7 @@ export interface Supplier {
   phone: string;
   address: string;
   taxId?: string;
-  paymentTerms: string;
+  paymentTerms: number;
   totalPurchased?: number;
   isActive: boolean;
   createdAt: string;

@@ -118,8 +118,6 @@ export const SalesOrderForm: React.FC = () => {
     customerId: data.customerId!,
     orderDate: toISO(data.orderDate!),
     notes: data.notes,
-    status: "DRAFT" as const,
-    taxAmount: Math.round(tax * 100) / 100,
     lines: data.lines
       .filter((line) => line.productId)
       .map((line) => ({

@@ -60,9 +60,7 @@ export type SalesOrderStatus =
 export interface CreateSalesOrderDto {
   customerId: number;
   orderDate: string;
-  status: SalesOrderStatus;
   notes?: string;
-  taxAmount?: number;
   lines: Omit<
     SalesOrderLine,
     "id" | "orderId" | "productName" | "productSku" | "lineTotal"

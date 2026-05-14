@@ -8,7 +8,7 @@ export const purchasingService = {
     const params: Record<string, string> = { page: String(page - 1), size: String(size) };
     
     if (filters.search) params.search = filters.search;
-    if (filters.isActive !== undefined) params.isActive = String(filters.isActive);
+    if (filters.isActive !== undefined) params.status = filters.isActive ? 'ACTIVE' : 'INACTIVE';
     
     const response = await api.get(`${endpoints.suppliers.list}`, { params });
     return {
