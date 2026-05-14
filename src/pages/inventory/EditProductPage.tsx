@@ -6,6 +6,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import type { Product } from '../../types/product.types';
+import type { Category } from '../../types/category.types';
+import { inventoryService } from '../../services/inventoryService';
 import styles from './EditProductPage.module.css';
 
 const basicInfoSchema = yup.object({
@@ -28,12 +30,6 @@ const inventorySchema = yup.object({
 type BasicInfoData = yup.InferType<typeof basicInfoSchema>;
 type PricingData = yup.InferType<typeof pricingSchema>;
 type InventoryData = yup.InferType<typeof inventorySchema>;
-
-const categories = [
-  { value: 'electronics', label: 'Electronics' },
-  { value: 'office', label: 'Office Supplies' },
-  { value: 'clothing', label: 'Clothing' },
-];
 
 const mockProducts: Product[] = [
   {
@@ -88,12 +84,25 @@ export const EditProductPage: React.FC = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
   const [activeTab, setActiveTab] = useState('basic');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register: registerBasic, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await inventoryService.getCategories(1, 100);
+        setCategories(result.data.map((cat: Category) => ({ value: String(cat.id), label: cat.name })));
+      } catch {
+        // ignore
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const { control: basicControl, handleSubmit: handleBasicSubmit, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
     resolver: yupResolver(basicInfoSchema),
-    mode: 'onBlur',
+    defaultValues: { name: '', sku: '', description: '', categoryId: '' },
   });
 
   const { control: pricingControl, formState: { errors: errorsPricing }, getValues: getPricingValues } = useForm<PricingData>({
@@ -136,7 +145,7 @@ export const EditProductPage: React.FC = () => {
     navigate(`/inventory/products/${id}`);
   };
 
-  const handleBasicSubmit = (data: BasicInfoData) => {
+  const onBasicSubmit = (data: BasicInfoData) => {
     setBasicData(data);
     setActiveTab('pricing');
   };
@@ -187,14 +196,12 @@ export const EditProductPage: React.FC = () => {
       key: 'basic',
       label: 'Basic Info',
       children: (
-        <form onSubmit={(e) => { e.preventDefault(); handleBasicSubmit(basicData!); }}>
+        <form onSubmit={handleBasicSubmit(onBasicSubmit)}>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Product Name *</label>
-            <Input
-              {...registerBasic('name')}
-              placeholder="Enter product name"
-              status={errorsBasic.name ? 'error' : undefined}
-            />
+            <Controller name="name" control={basicControl} render={({ field }) => (
+              <Input {...field} placeholder="Enter product name" status={errorsBasic.name ? 'error' : undefined} />
+            )} />
             {errorsBasic.name && (
               <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.name.message}</span>
             )}
@@ -202,11 +209,9 @@ export const EditProductPage: React.FC = () => {
 
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>SKU *</label>
-            <Input
-              {...registerBasic('sku')}
-              placeholder="Enter SKU"
-              status={errorsBasic.sku ? 'error' : undefined}
-            />
+            <Controller name="sku" control={basicControl} render={({ field }) => (
+              <Input {...field} placeholder="Enter SKU" status={errorsBasic.sku ? 'error' : undefined} />
+            )} />
             {errorsBasic.sku && (
               <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.sku.message}</span>
             )}
@@ -214,13 +219,9 @@ export const EditProductPage: React.FC = () => {
 
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Category *</label>
-            <Select
-              {...registerBasic('categoryId')}
-              placeholder="Select category"
-              style={{ width: '100%' }}
-              options={categories}
-              status={errorsBasic.categoryId ? 'error' : undefined}
-            />
+            <Controller name="categoryId" control={basicControl} render={({ field }) => (
+              <Select value={field.value || undefined} onChange={(value) => field.onChange(value)} onBlur={field.onBlur} placeholder="Select category" style={{ width: '100%' }} options={categories} status={errorsBasic.categoryId ? 'error' : undefined} />
+            )} />
             {errorsBasic.categoryId && (
               <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsBasic.categoryId.message}</span>
             )}
@@ -228,11 +229,9 @@ export const EditProductPage: React.FC = () => {
 
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Description</label>
-            <Input.TextArea
-              {...registerBasic('description')}
-              rows={4}
-              placeholder="Enter product description"
-            />
+            <Controller name="description" control={basicControl} render={({ field }) => (
+              <Input.TextArea {...field} rows={4} placeholder="Enter product description" />
+            )} />
           </div>
 
           <div className={styles.actions}>
