@@ -203,10 +203,10 @@ export const SupplierDetailsPage: React.FC = () => {
             <Col span={12}>
               <Card title="Status">
                 <Tag
-                  color={supplier.status === "ACTIVE" ? "green" : "red"}
+                  color={supplier.isActive ? "green" : "red"}
                   style={{ fontSize: 16, padding: "4px 12px" }}
                 >
-                  {supplier.status}
+                  {supplier.isActive ? "ACTIVE" : "INACTIVE"}
                 </Tag>
                 <div style={{ textAlign: "center", marginTop: 16 }}>
                   <span style={{ color: "#999" }}>Current Status</span>
@@ -297,8 +297,8 @@ export const SupplierDetailsPage: React.FC = () => {
           </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Status:</span>{" "}
-            <Tag color={supplier.status === "ACTIVE" ? "green" : "red"}>
-              {supplier.status}
+            <Tag color={supplier.isActive ? "green" : "red"}>
+              {supplier.isActive ? "ACTIVE" : "INACTIVE"}
             </Tag>
           </div>
           <div className={styles.infoRow}>

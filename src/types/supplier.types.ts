@@ -9,7 +9,7 @@ export interface Supplier {
   taxId: string;
   paymentTerms: number;
   totalPurchased: number;
-  status: "ACTIVE" | "INACTIVE";
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }

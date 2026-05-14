@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Modal, Select, Table, Tag, Space, Input, InputNumber, message } from "antd";
 import {
@@ -29,8 +29,8 @@ type SupplierFormData = yup.InferType<typeof supplierSchema>;
 
 const statusOptions = [
   { value: "", label: "All Statuses" },
-  { value: "ACTIVE", label: "Active" },
-  { value: "INACTIVE", label: "Inactive" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
 ];
 
 const paymentTermsLabels: Record<number, string> = {
@@ -43,7 +43,7 @@ export const SupplierListPage: React.FC = () => {
   const navigate = useNavigate();
   const { suppliers, loading, fetchSuppliers, createSupplier } = useSuppliers();
 
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>();
   const [searchText, setSearchText] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -54,18 +54,31 @@ export const SupplierListPage: React.FC = () => {
   });
 
   const loadSuppliers = useCallback(async () => {
-    await fetchSuppliers(
-      {
-        status: statusFilter || undefined,
-        search: searchText,
-      },
-      1,
-    );
-  }, [fetchSuppliers, statusFilter, searchText]);
+    await fetchSuppliers({}, 1);
+  }, [fetchSuppliers]);
 
   useEffect(() => {
     loadSuppliers();
   }, [loadSuppliers]);
+
+  const filteredSuppliers = useMemo(() => {
+    let list = suppliers;
+    if (statusFilter === "active") {
+      list = list.filter((s) => s.isActive);
+    } else if (statusFilter === "inactive") {
+      list = list.filter((s) => !s.isActive);
+    }
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      list = list.filter(
+        (s) =>
+          s.code.toLowerCase().includes(q) ||
+          s.name.toLowerCase().includes(q) ||
+          s.contactPerson.toLowerCase().includes(q),
+      );
+    }
+    return list;
+  }, [suppliers, statusFilter, searchText]);
 
   const handleViewSupplier = (id: number) => {
     navigate(`/purchasing/suppliers/${id}`);
@@ -122,10 +135,9 @@ export const SupplierListPage: React.FC = () => {
     },
     {
       title: "Status",
-      dataIndex: "status",
       key: "status",
-      render: (status: string) => (
-        <Tag color={status === "ACTIVE" ? "green" : "red"}>{status}</Tag>
+      render: (_: unknown, record: any) => (
+        <Tag color={record.isActive ? "green" : "red"}>{record.isActive ? "ACTIVE" : "INACTIVE"}</Tag>
       ),
     },
     {
@@ -179,6 +191,7 @@ export const SupplierListPage: React.FC = () => {
             placeholder="Search suppliers..."
             allowClear
             prefix={<SearchOutlined />}
+            onChange={(e) => setSearchText(e.target.value)}
             onSearch={setSearchText}
             style={{ width: 280 }}
           />
@@ -194,7 +207,7 @@ export const SupplierListPage: React.FC = () => {
 
       <Table
         columns={listColumns}
-        dataSource={suppliers}
+        dataSource={filteredSuppliers}
         rowKey="id"
         loading={loading}
         pagination={{
@@ -272,9 +285,9 @@ export const SupplierListPage: React.FC = () => {
         </form>
       </Modal>
 
-      {suppliers.length === 0 && !loading && (
+      {filteredSuppliers.length === 0 && !loading && (
         <div className={styles.emptyState}>
-          No suppliers found. Click "Add Supplier" to create one.
+          {searchText || statusFilter ? "No suppliers match your filters." : 'No suppliers found. Click "Add Supplier" to create one.'}
         </div>
       )}
     </div>
