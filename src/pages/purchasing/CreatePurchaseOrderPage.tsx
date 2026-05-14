@@ -21,6 +21,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import { useSuppliers } from "../../hooks/useSuppliers";
+import { useProducts } from "../../hooks/useProducts";
 import styles from "./CreatePurchaseOrderPage.module.css";
 
 interface LineItem {
@@ -36,25 +37,16 @@ interface LineItem {
 const schema = yup.object({
   supplierId: yup.string().required("Supplier is required"),
   orderDate: yup.string().required("Order date is required"),
-  deliveryDate: yup.string().default(""),
-  paymentTerms: yup.string().required("Payment terms is required"),
+  expectedDate: yup.string().default(""),
   notes: yup.string().default(""),
 });
 
 type FormData = yup.InferType<typeof schema>;
 
-const paymentTermsOptions = [
-  { value: "Net 30", label: "Net 30" },
-  { value: "Net 60", label: "Net 60" },
-  { value: "Net 90", label: "Net 90" },
-  { value: "COD", label: "COD" },
-  { value: "Prepaid", label: "Prepaid" },
-];
-
-const mockProducts = [
-  { value: "prod1", label: "Product A (SKU: A001)" },
-  { value: "prod2", label: "Product B (SKU: B002)" },
-  { value: "prod3", label: "Product C (SKU: C003)" },
+const productStatusOptions = [
+  { value: "", label: "All Statuses" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "INACTIVE", label: "Inactive" },
 ];
 
 export const CreatePurchaseOrderPage: React.FC = () => {
@@ -62,6 +54,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { createPurchaseOrder } = usePurchaseOrders();
   const { suppliers, fetchSuppliers } = useSuppliers();
+  const { products, loading: productsLoading, fetchProducts } = useProducts();
 
   const defaultSupplierId = searchParams.get("supplier") || "";
 
@@ -78,8 +71,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
     defaultValues: {
       supplierId: defaultSupplierId,
       orderDate: new Date().toISOString().split("T")[0],
-      deliveryDate: "",
-      paymentTerms: "Net 30",
+      expectedDate: "",
       notes: "",
     },
   });
@@ -91,7 +83,8 @@ export const CreatePurchaseOrderPage: React.FC = () => {
 
   useEffect(() => {
     fetchSuppliers({}, 1);
-  }, [fetchSuppliers]);
+    fetchProducts({}, 1);
+  }, [fetchSuppliers, fetchProducts]);
 
   const addItem = () => {
     setItems([
@@ -115,15 +108,15 @@ export const CreatePurchaseOrderPage: React.FC = () => {
     unitPrice: number,
   ) => {
     const updatedItems = [...items];
-    const product = mockProducts.find((p) => p.value === productId);
+    const product = products.find((p) => p.id === productId);
     updatedItems[index] = {
       ...updatedItems[index],
       productId,
-      productName: product?.label.split(" (")[0] || "",
-      productSku: product?.label.match(/\(SKU: (.+)\)/)?.[1] || "",
+      productName: product?.name || "",
+      productSku: product?.sku || "",
       quantity,
-      unitPrice,
-      totalPrice: quantity * unitPrice,
+      unitPrice: unitPrice || product?.unitPrice || 0,
+      totalPrice: (unitPrice || product?.unitPrice || 0) * quantity,
     };
     setItems(updatedItems);
   };
@@ -140,35 +133,27 @@ export const CreatePurchaseOrderPage: React.FC = () => {
     return { subtotal, taxAmount, shippingCost, totalAmount };
   };
 
-  const onSubmit = async (data: FormData, status: "draft" | "submitted") => {
+  const onSubmit = async (data: FormData) => {
     if (items.length === 0) {
       message.error("Please add at least one product");
       return;
     }
 
-    const totals = calculateTotals();
     setIsSubmitting(true);
 
     try {
       await createPurchaseOrder({
         supplierId: Number(data.supplierId),
-        orderDate: data.orderDate,
-        deliveryDate:
-          data.deliveryDate || new Date().toISOString().split("T")[0],
-        paymentTerms: data.paymentTerms,
+        orderDate: `${data.orderDate}T00:00:00`,
+        expectedDate: data.expectedDate || undefined,
         notes: data.notes || "",
-        status,
-        items: items.map((item) => ({
-          productId: Number(item.productId),
+        lines: items.map((item) => ({
+          productId: Number(item.productId) || 0,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           discount: 0,
           notes: "",
         })),
-        subtotal: totals.subtotal,
-        taxAmount: totals.taxAmount,
-        shippingCost: totals.shippingCost,
-        totalAmount: totals.totalAmount,
       });
       navigate("/purchasing/orders");
     } catch {
@@ -189,7 +174,13 @@ export const CreatePurchaseOrderPage: React.FC = () => {
         <Select
           placeholder="Select product"
           style={{ width: "100%" }}
-          options={mockProducts}
+          loading={productsLoading}
+          showSearch
+          optionFilterProp="label"
+          options={products.map((p) => ({
+            value: String(p.id),
+            label: `${p.name} (${p.sku})`,
+          }))}
           value={record.productId || undefined}
           onChange={(value) =>
             updateItem(
@@ -274,16 +265,9 @@ export const CreatePurchaseOrderPage: React.FC = () => {
         <h1 className={styles.title}>Create Purchase Order</h1>
         <Space className={styles.actions}>
           <Button
-            icon={<SaveOutlined />}
-            onClick={handleSubmit((data) => onSubmit(data, "draft"))}
-            loading={isSubmitting}
-          >
-            Save Draft
-          </Button>
-          <Button
             type="primary"
             icon={<SendOutlined />}
-            onClick={handleSubmit((data) => onSubmit(data, "submitted"))}
+            onClick={handleSubmit(onSubmit)}
             loading={isSubmitting}
           >
             Submit Order
@@ -383,26 +367,9 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                   Expected Delivery Date
                 </label>
                 <Controller
-                  name="deliveryDate"
+                  name="expectedDate"
                   control={control}
                   render={({ field }) => <Input type="date" {...field} />}
-                />
-              </div>
-
-              <div className={styles.formSection}>
-                <label style={{ display: "block", marginBottom: 8 }}>
-                  Payment Terms
-                </label>
-                <Controller
-                  name="paymentTerms"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      style={{ width: "100%" }}
-                      options={paymentTermsOptions}
-                    />
-                  )}
                 />
               </div>
 
