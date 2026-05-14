@@ -38,6 +38,7 @@ import CRMDashboard from "./pages/crm/Dashboard/Dashboard";
 import LeadsList from "./pages/crm/LeadsList/LeadsList";
 import { Pipeline } from "./pages/crm/Pipeline/Pipeline";
 import LeadDetails from "./pages/crm/LeadDetails/LeadDetails";
+import { TicketsList, CreateTicket, TicketDetails } from "./pages/support";
 
 export const AppRoutes = () => {
   return (
@@ -96,6 +97,11 @@ export const AppRoutes = () => {
         <Route path="/crm/leads" element={<LeadsList />} />
         <Route path="/crm/pipeline" element={<Pipeline />} />
         <Route path="/crm/leads/:id" element={<LeadDetails />} />
+
+        {/* Support routes */}
+        <Route path="/support/tickets" element={<TicketsList />} />
+        <Route path="/support/tickets/new" element={<CreateTicket />} />
+        <Route path="/support/tickets/:id" element={<TicketDetails />} />
 
         {/* Purchasing routes */}
         <Route path="/purchasing/suppliers" element={<SupplierListPage />} />
