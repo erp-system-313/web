@@ -17,6 +17,8 @@ export interface Supplier {
 export interface SupplierFilters {
   name?: string;
   search?: string;
+  status?: string;
+  isActive?: boolean;
 }
 
 export interface CreateSupplierDto {

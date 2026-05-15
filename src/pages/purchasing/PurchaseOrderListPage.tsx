@@ -32,10 +32,6 @@ const getStatusTag = (status: PurchaseOrderStatus) => {
   return <Tag color={colors[status]}>{status}</Tag>;
 };
 
-const getStatusTag = (status: PurchaseOrderStatus) => (
-  <Tag color={statusColors[status]}>{status}</Tag>
-);
-
 export const PurchaseOrderListPage: React.FC = () => {
   const navigate = useNavigate();
   const { orders, loading, fetchOrders, deleteOrder } = usePurchaseOrders();
