@@ -43,6 +43,15 @@ import LeadDetails from "./pages/crm/LeadDetails/LeadDetails";
 import { JobOpenings } from "./pages/recruitment/JobOpenings/JobOpenings";
 import { RecruitmentPipeline } from "./pages/recruitment/Pipeline/Pipeline";
 import { ApplicantDetail } from "./pages/recruitment/ApplicantDetail/ApplicantDetail";
+import {
+  TicketsList,
+  CreateTicket,
+  TicketDetails,
+  EditTicket,
+} from "./pages/support";
+import { ProjectList } from "./pages/projects/ProjectList";
+import { ProjectDetail } from "./pages/projects/ProjectDetail";
+import { Gantt } from "./pages/projects/Gantt";
 
 export const AppRoutes = () => {
   return (
@@ -109,6 +118,12 @@ export const AppRoutes = () => {
         <Route path="/recruitment/pipeline" element={<RecruitmentPipeline />} />
         <Route path="/recruitment/applicants/:id" element={<ApplicantDetail />} />
 
+        {/* Support routes */}
+        <Route path="/support/tickets" element={<TicketsList />} />
+        <Route path="/support/tickets/new" element={<CreateTicket />} />
+        <Route path="/support/tickets/:id" element={<TicketDetails />} />
+        <Route path="/support/tickets/:id/edit" element={<EditTicket />} />
+
         {/* Purchasing routes */}
         <Route path="/purchasing/suppliers" element={<SupplierListPage />} />
         <Route
@@ -136,6 +151,10 @@ export const AppRoutes = () => {
           path="/purchasing/orders/:id/edit"
           element={<PurchaseOrderListPage />}
         />
+        {/* Project routes */}
+        <Route path="/projects" element={<ProjectList />} />
+        <Route path="/projects/:id" element={<ProjectDetail />} />
+        <Route path="/projects/:id/gantt" element={<Gantt />} />
       </Route>
 
       {/* Default redirects */}

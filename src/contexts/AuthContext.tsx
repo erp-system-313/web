@@ -36,9 +36,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (response.success && response.data) {
       const { user, accessToken, refreshToken } = response.data;
       setUser(user);
-      localStorage.setItem("erp_token", accessToken);
-      localStorage.setItem("erp_refresh_token", refreshToken);
-      localStorage.setItem("erp_user", JSON.stringify(user));
+      const store = credentials.remember ? localStorage : sessionStorage;
+      store.setItem("erp_token", accessToken);
+      store.setItem("erp_refresh_token", refreshToken);
+      store.setItem("erp_user", JSON.stringify(user));
       return { success: true };
     }
 
@@ -54,6 +55,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.removeItem("erp_token");
     localStorage.removeItem("erp_refresh_token");
     localStorage.removeItem("erp_user");
+    sessionStorage.removeItem("erp_token");
+    sessionStorage.removeItem("erp_refresh_token");
+    sessionStorage.removeItem("erp_user");
   }, []);
 
   const value: AuthContextType = {

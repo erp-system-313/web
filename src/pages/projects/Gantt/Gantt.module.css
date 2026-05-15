@@ -1,0 +1,131 @@
+.container {
+  padding: 24px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px;
+}
+
+.timelineWrapper {
+  display: flex;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.taskNameCol {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-right: 1px solid #f0f0f0;
+  background: #fafafa;
+  font-weight: 600;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+.timelineArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.dateAxis {
+  position: relative;
+  height: 32px;
+  background: #fafafa;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.dateTick {
+  position: absolute;
+  top: 0;
+  font-size: 11px;
+  color: #888;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding-top: 8px;
+}
+
+.rows {
+  position: relative;
+}
+
+.taskRow {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+
+.taskRow:hover {
+  background: #fafafa;
+}
+
+.taskRow:last-child {
+  border-bottom: none;
+}
+
+.taskRow .taskNameCol {
+  background: transparent;
+  border-right: 1px solid #f0f0f0;
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  position: relative;
+  min-width: 0;
+}
+
+.barTrack {
+  flex: 1;
+  height: 24px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  min-width: 100px;
+}
+
+.taskBar {
+  position: absolute;
+  top: 2px;
+  height: 20px;
+  border-radius: 4px;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+  min-width: 12px;
+}
+
+.taskBar:hover {
+  opacity: 1;
+}
+
+.dateLabel {
+  white-space: nowrap;
+  font-size: 11px;
+  min-width: 80px;
+}
+
+.hoursLabel {
+  white-space: nowrap;
+  font-size: 11px;
+  color: #999;
+}
+
+.legend {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}

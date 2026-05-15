@@ -10,8 +10,10 @@ import {
   FileTextOutlined,
   TeamOutlined,
   SettingOutlined,
+  CustomerServiceOutlined,
   LogoutOutlined,
   SolutionOutlined,
+  ProjectOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../../contexts/AuthContext";
 import styles from "./Sidebar.module.css";
@@ -41,6 +43,12 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       icon: <DashboardOutlined />,
       label: "Dashboard",
       onClick: () => navigate("/dashboard"),
+    },
+    {
+      key: "projects",
+      icon: <ProjectOutlined />,
+      label: "Projects",
+      onClick: () => navigate("/projects"),
     },
     {
       key: "inventory",
@@ -112,6 +120,18 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           key: "accounts",
           label: "Accounts",
           onClick: () => navigate("/finance/accounts"),
+        },
+      ],
+    },
+    {
+      key: "support",
+      icon: <CustomerServiceOutlined />,
+      label: "Support",
+      children: [
+        {
+          key: "tickets",
+          label: "Tickets",
+          onClick: () => navigate("/support/tickets"),
         },
       ],
     },
@@ -206,6 +226,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/finance/invoices")) return "invoices";
     if (path.startsWith("/finance/journal")) return "journal";
     if (path.startsWith("/finance/accounts")) return "accounts";
+    if (path.startsWith("/support/tickets")) return "tickets";
     if (path.startsWith("/hr/employees")) return "employees";
     if (path.startsWith("/hr/attendance")) return "attendance";
     if (path.startsWith("/hr/departments")) return "departments";
@@ -217,6 +238,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/admin/users")) return "users";
     if (path.startsWith("/admin/settings")) return "settings";
     if (path.startsWith("/admin/audit-logs")) return "audit-logs";
+    if (path.startsWith("/projects")) return "projects";
     if (path === "/dashboard") return "dashboard";
     return "";
   };
@@ -234,6 +256,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       invoices: "finance",
       journal: "finance",
       accounts: "finance",
+      tickets: "support",
       employees: "hr",
       attendance: "hr",
       departments: "hr",
@@ -279,7 +302,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           role="button"
           tabIndex={0}
           onKeyDown={(e) => e.key === "Enter" && logout?.()}
-          style={{ display: collapsed ? 'none' : 'flex' }}
+          style={{ display: collapsed ? "none" : "flex" }}
         >
           <LogoutOutlined />
           {!collapsed && <span>Logout</span>}

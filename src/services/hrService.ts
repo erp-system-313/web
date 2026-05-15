@@ -331,9 +331,9 @@ export const hrService = {
       }
     },
 
-    reject: async (id: number): Promise<LeaveRequest> => {
+    reject: async (id: number, reason?: string): Promise<LeaveRequest> => {
       try {
-        const response = await api.put(`/v1/leave-requests/${id}/reject`);
+        const response = await api.put(`/v1/leave-requests/${id}/reject`, { reason });
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
