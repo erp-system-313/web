@@ -8,9 +8,11 @@ import {
   Button,
   Space,
   Divider,
+  message,
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEmployee } from "../../../hooks";
+import { hrService } from "../../../services/hrService";
 import styles from "./EmployeeDetails.module.css";
 
 const { Title } = Typography;
@@ -20,12 +22,18 @@ export const EmployeeDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const employeeId = id ? parseInt(id, 10) : null;
-  const { data: employee, loading, refetch } = useEmployee(employeeId);
+  const { data: employee, loading } = useEmployee(employeeId);
   const [form] = Form.useForm();
 
-  const onFinish = (values: unknown) => {
-    console.log("Form values:", values);
-    refetch();
+  const onFinish = async (values: any) => {
+    if (employeeId === null) return;
+    try {
+      await hrService.employees.update(employeeId, values);
+      message.success("Employee updated successfully");
+      navigate("/hr/employees");
+    } catch {
+      message.error("Failed to update employee");
+    }
   };
 
   const handleCancel = () => {

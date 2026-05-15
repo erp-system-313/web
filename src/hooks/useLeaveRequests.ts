@@ -120,11 +120,11 @@ export const useRejectLeaveRequest = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reject = useCallback(async (id: number) => {
+  const reject = useCallback(async (id: number, reason?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await hrService.leave.reject(id);
+      const result = await hrService.leave.reject(id, reason);
       return result;
     } catch (err) {
       setError(

@@ -9,8 +9,9 @@ import {
   Tag,
   Modal,
   message,
+  Input,
 } from "antd";
-import { PlusOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { PlusOutlined, CheckOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
 import {
   useLeaveRequests,
   useLeaveBalances,
@@ -34,10 +35,20 @@ export const LeaveRequests: React.FC = () => {
   const { data: requests, loading, refetch } = useLeaveRequests();
   const { data: balances } = useLeaveBalances();
   const { create, loading: creating } = useCreateLeaveRequest();
-  const { approve, loading: approving } = useApproveLeaveRequest();
-  const { reject, loading: rejecting } = useRejectLeaveRequest();
+  const { approve } = useApproveLeaveRequest();
+  const { reject } = useRejectLeaveRequest();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rejectModal, setRejectModal] = useState<{ id: number; open: boolean; reason: string }>({
+    id: 0,
+    open: false,
+    reason: "",
+  });
+  const [reasonModal, setReasonModal] = useState<{ open: boolean; reason: string }>({
+    open: false,
+    reason: "",
+  });
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   const {
     register,
@@ -65,22 +76,28 @@ export const LeaveRequests: React.FC = () => {
   };
 
   const handleApprove = async (id: number) => {
+    setActionLoading(id);
     try {
       await approve(id);
       message.success("Leave request approved");
       refetch();
     } catch {
       message.error("Failed to approve");
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const handleReject = async (id: number) => {
+  const handleReject = async (id: number, reason: string) => {
+    setActionLoading(id);
     try {
-      await reject(id);
+      await reject(id, reason);
       message.success("Leave request rejected");
       refetch();
     } catch {
       message.error("Failed to reject");
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -134,6 +151,8 @@ export const LeaveRequests: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
+      width: 200,
+      align: "center",
       render: (_: unknown, record: LeaveRequest) => (
         <Space>
           {record.status === "PENDING" && (
@@ -142,7 +161,7 @@ export const LeaveRequests: React.FC = () => {
                 type="link"
                 icon={<CheckOutlined />}
                 onClick={() => handleApprove(record.id)}
-                loading={approving}
+                loading={actionLoading === record.id}
               >
                 Approve
               </Button>
@@ -150,12 +169,21 @@ export const LeaveRequests: React.FC = () => {
                 type="link"
                 danger
                 icon={<CloseOutlined />}
-                onClick={() => handleReject(record.id)}
-                loading={rejecting}
+                onClick={() => setRejectModal({ id: record.id, open: true, reason: "" })}
+                loading={actionLoading === record.id}
               >
                 Reject
               </Button>
             </>
+          )}
+          {record.status === "REJECTED" && record.rejectionReason && (
+            <Button
+              type="link"
+              icon={<EyeOutlined />}
+              onClick={() => setReasonModal({ open: true, reason: record.rejectionReason! })}
+            >
+              View Reason
+            </Button>
           )}
         </Space>
       ),
@@ -312,6 +340,39 @@ export const LeaveRequests: React.FC = () => {
               </Button>
             </div>
           </form>
+        </Modal>
+
+        <Modal
+          title="Reject Leave Request"
+          open={rejectModal.open}
+          onCancel={() => setRejectModal({ ...rejectModal, open: false })}
+          onOk={async () => {
+            await handleReject(rejectModal.id, rejectModal.reason);
+            setRejectModal({ id: 0, open: false, reason: "" });
+          }}
+          confirmLoading={actionLoading === rejectModal.id}
+          okText="Reject"
+          okButtonProps={{ danger: true }}
+        >
+          <div style={{ marginTop: 16 }}>
+            <label>Reason for rejection</label>
+            <Input.TextArea
+              rows={4}
+              placeholder="Enter rejection reason..."
+              value={rejectModal.reason}
+              onChange={(e) => setRejectModal({ ...rejectModal, reason: e.target.value })}
+              style={{ marginTop: 8 }}
+            />
+          </div>
+        </Modal>
+
+        <Modal
+          title="Rejection Reason"
+          open={reasonModal.open}
+          onCancel={() => setReasonModal({ open: false, reason: "" })}
+          footer={<Button onClick={() => setReasonModal({ open: false, reason: "" })}>Close</Button>}
+        >
+          <p style={{ marginTop: 16 }}>{reasonModal.reason}</p>
         </Modal>
       </Card>
     </div>
