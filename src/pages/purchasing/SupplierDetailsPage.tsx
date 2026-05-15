@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Tabs, Table, Tag, Space, message, Modal } from 'antd';
 import { EditOutlined, DeleteOutlined, ShoppingCartOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import type { PurchaseOrder, PurchaseOrderStatus } from '../../types/purchaseOrder.types';
+import type { PurchaseOrderStatus } from '../../types/purchaseOrder.types';
 import { useSuppliers } from '../../hooks/useSuppliers';
 import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
 import styles from './SupplierDetailsPage.module.css';
@@ -67,8 +67,8 @@ export const SupplierDetailsPage: React.FC = () => {
     navigate('/purchasing/suppliers');
   };
 
-  const handleViewOrder = (orderId: number) => {
-    navigate(`/purchasing/orders/${orderId}`);
+  const handleBack = () => {
+    navigate('/purchasing/suppliers');
   };
 
   const orderColumns = [
