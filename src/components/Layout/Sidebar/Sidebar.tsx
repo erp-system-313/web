@@ -12,6 +12,7 @@ import {
   SettingOutlined,
   CustomerServiceOutlined,
   LogoutOutlined,
+  ApartmentOutlined,
   SolutionOutlined,
   ProjectOutlined,
 } from "@ant-design/icons";
@@ -98,6 +99,28 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           key: "purchase-orders",
           label: "Orders",
           onClick: () => navigate("/purchasing/orders"),
+        },
+      ],
+    },
+    {
+      key: "crm",
+      icon: <ApartmentOutlined />,
+      label: "CRM",
+      children: [
+        {
+          key: "crm-dashboard",
+          label: "Dashboard",
+          onClick: () => navigate("/crm"),
+        },
+        {
+          key: "crm-leads",
+          label: "Leads",
+          onClick: () => navigate("/crm/leads"),
+        },
+        {
+          key: "crm-pipeline",
+          label: "Pipeline",
+          onClick: () => navigate("/crm/pipeline"),
         },
       ],
     },
@@ -268,6 +291,9 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/sales/customers")) return "customers";
     if (path.startsWith("/purchasing/suppliers")) return "suppliers";
     if (path.startsWith("/purchasing/orders")) return "purchase-orders";
+    if (path.startsWith("/crm/leads")) return "crm-leads";
+    if (path.startsWith("/crm/pipeline")) return "crm-pipeline";
+    if (path.startsWith("/crm")) return "crm-dashboard";
     if (path.startsWith("/finance/invoices")) return "invoices";
     if (path.startsWith("/finance/journal")) return "journal";
     if (path.startsWith("/finance/accounts")) return "accounts";
@@ -303,6 +329,9 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       customers: "sales",
       suppliers: "purchasing",
       "purchase-orders": "purchasing",
+      "crm-dashboard": "crm",
+      "crm-leads": "crm",
+      "crm-pipeline": "crm",
       invoices: "finance",
       journal: "finance",
       accounts: "finance",
