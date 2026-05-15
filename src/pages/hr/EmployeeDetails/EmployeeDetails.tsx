@@ -10,10 +10,13 @@ import {
   Space,
   Divider,
   message,
+  Descriptions,
+  Tag,
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEmployee, useDepartments, useJobPositions } from "../../../hooks";
 import { hrService } from "../../../services/hrService";
+import { usersService } from "../../../services/usersService";
 import type { Contract } from "../../../types/hr";
 import styles from "./EmployeeDetails.module.css";
 
@@ -28,6 +31,8 @@ export const EmployeeDetails: React.FC = () => {
   const { data: departments } = useDepartments();
   const { data: positions } = useJobPositions();
   const [contract, setContract] = useState<Contract | null>(null);
+  const [userAccounts, setUserAccounts] = useState<{ id: number; fullName: string; email: string }[]>([]);
+  const [linkedUser, setLinkedUser] = useState<{ fullName: string; email: string } | null>(null);
   const [form] = Form.useForm();
   const watchedDept = Form.useWatch("departmentId", form);
 
@@ -39,6 +44,22 @@ export const EmployeeDetails: React.FC = () => {
       }).catch(() => setContract(null));
     }
   }, [employeeId]);
+
+  useEffect(() => {
+    usersService.getAll({ page: 0, size: 200, isActive: true }).then((res) => {
+      setUserAccounts(
+        (res.content ?? []).map((u) => ({ id: u.id, fullName: u.fullName, email: u.email }))
+      );
+    }).catch(() => setUserAccounts([]));
+  }, []);
+
+  useEffect(() => {
+    if (employee?.userId) {
+      usersService.getById(employee.userId).then((u) => {
+        setLinkedUser({ fullName: u.fullName, email: u.email });
+      }).catch(() => setLinkedUser(null));
+    }
+  }, [employee?.userId]);
 
   const onFinish = async (values: any) => {
     if (employeeId === null) return;
@@ -160,14 +181,33 @@ export const EmployeeDetails: React.FC = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item label="Salary" name="salary">
-              <InputNumber style={{ width: "100%" }} prefix="$" disabled />
+            <Form.Item label="Salary (from Contract)">
+              <InputNumber
+                style={{ width: "100%" }}
+                prefix="$"
+                value={contract?.wage ?? employee?.salary}
+                disabled
+              />
             </Form.Item>
-            {contract?.wage != null && (
-              <Form.Item label="Contract Wage">
-                <InputNumber style={{ width: "100%" }} prefix="$" value={contract.wage} disabled />
+            {linkedUser && (
+              <Form.Item label="Linked User">
+                <Input value={`${linkedUser.fullName} (${linkedUser.email})`} disabled />
               </Form.Item>
             )}
+            <Form.Item name="userId" label="Link User Account">
+              <Select
+                placeholder="Link to user account (optional)"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                }
+                options={userAccounts.map((u) => ({
+                  value: u.id,
+                  label: `${u.fullName} (${u.email})`,
+                }))}
+              />
+            </Form.Item>
 
             <Form.Item label="Status" name="status">
               <Select>

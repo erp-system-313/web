@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   Card,
@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import { useEmployees, useDepartments, useJobPositions } from "../../../hooks";
 import { ImportModal } from "../../../components/common/ImportModal";
 import { hrService } from "../../../services/hrService";
+import { usersService } from "../../../services/usersService";
 import type { Employee, EmployeeStatus } from "../../../types/hr";
 import type { ImportFieldMapping } from "../../../utils/csv";
 import styles from "./EmployeesList.module.css";
@@ -44,6 +45,17 @@ export const EmployeesList: React.FC = () => {
   const [form] = Form.useForm();
   const watchedDept = Form.useWatch("departmentId", form);
   const [importOpen, setImportOpen] = useState(false);
+  const [userAccounts, setUserAccounts] = useState<{ id: number; fullName: string; email: string }[]>([]);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      usersService.getAll({ page: 0, size: 200, isActive: true }).then((res) => {
+        setUserAccounts(
+          (res.content ?? []).map((u) => ({ id: u.id, fullName: u.fullName, email: u.email }))
+        );
+      }).catch(() => setUserAccounts([]));
+    }
+  }, [isModalOpen]);
 
   const handleImport = async (data: Record<string, string>[], mappings: ImportFieldMapping[]) => {
     let success = 0;
@@ -263,6 +275,23 @@ export const EmployeesList: React.FC = () => {
           </Form.Item>
           <Form.Item name="phone" label="Phone" rules={[{ pattern: /^[0-9+\-() ]+$/, message: "Only numbers and phone symbols allowed" }]}>
             <Input placeholder="Enter phone number" maxLength={15} />
+          </Form.Item>
+          <Form.Item name="address" label="Address">
+            <Input placeholder="Enter address" />
+          </Form.Item>
+          <Form.Item name="userId" label="User Account">
+            <Select
+              placeholder="Link to user account (optional)"
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
+              options={userAccounts.map((u) => ({
+                value: u.id,
+                label: `${u.fullName} (${u.email})`,
+              }))}
+            />
           </Form.Item>
           <Form.Item
             name="hireDate"
