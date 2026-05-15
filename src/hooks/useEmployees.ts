@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { hrService } from "../services/hrService";
-import type { Employee, EmployeeStatus, CreateEmployeeDto, UpdateEmployeeDto } from "../types/hr";
+import type { Employee, CreateEmployeeDto, UpdateEmployeeDto } from "../types/hr";
 
 interface EmployeeFilters {
   search?: string;
   departmentId?: number;
-  status?: EmployeeStatus;
+  status?: string;
 }
 
 export const useEmployees = (filters?: EmployeeFilters) => {

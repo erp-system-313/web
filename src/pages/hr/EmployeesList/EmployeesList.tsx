@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Table,
   Card,
+  Tag,
   Typography,
   Button,
   Space,
@@ -29,7 +30,7 @@ const { Title } = Typography;
 const { Option } = Select;
 
 export const EmployeesList: React.FC = () => {
-  const [statusFilter, setStatusFilter] = useState<EmployeeStatus | undefined>();
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
   const {
     data: employees,
@@ -38,7 +39,7 @@ export const EmployeesList: React.FC = () => {
     refetch,
     createEmployee,
     deleteEmployee,
-  } = useEmployees(statusFilter ? { status: statusFilter } : undefined);
+  } = useEmployees({ status: statusFilter });
   const { data: departments } = useDepartments();
   const { data: positions } = useJobPositions();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -177,6 +178,20 @@ export const EmployeesList: React.FC = () => {
       render: (v: string) => v || "-",
     },
     {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (v: EmployeeStatus) => {
+        const colorMap: Record<EmployeeStatus, string> = {
+          ACTIVE: "green",
+          INACTIVE: "default",
+          ON_LEAVE: "orange",
+          TERMINATED: "red",
+        };
+        return <Tag color={colorMap[v] || "default"}>{v?.replace("_", " ")}</Tag>;
+      },
+    },
+    {
       title: "Actions",
       key: "actions",
       render: (_: unknown, record: Employee) => (
@@ -199,12 +214,11 @@ export const EmployeesList: React.FC = () => {
         <Title level={3}>Employee List</Title>
         <Space>
           <Select
-            allowClear
-            placeholder="All Statuses"
-            style={{ width: 140 }}
+            style={{ width: 160 }}
             value={statusFilter}
             onChange={(v) => setStatusFilter(v)}
             options={[
+              { value: "ALL", label: "All Statuses" },
               { value: "ACTIVE", label: "Active" },
               { value: "INACTIVE", label: "Inactive" },
               { value: "ON_LEAVE", label: "On Leave" },
