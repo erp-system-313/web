@@ -87,6 +87,10 @@ setInterval(
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const url = config.url || "";
+    if (url.includes("/auth/")) {
+      return config;
+    }
     const token = getTokenFromAny("erp_token") || getTokenFromAny("token");
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;

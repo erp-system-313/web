@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, Button, Descriptions, Table, Space, Typography } from "antd";
+import { Card, Button, Descriptions, Table, Typography } from "antd";
 import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { StatusBadge, TabPanel } from "../../../components/common";
@@ -21,7 +21,6 @@ export const CustomerDetails: React.FC = () => {
 
   const {
     data: customer,
-    contacts,
     salesHistory,
     loading,
     error,
@@ -35,6 +34,7 @@ export const CustomerDetails: React.FC = () => {
     return <div className={styles.container}>Customer not found</div>;
   }
 
+<<<<<<< HEAD
   const contactColumns: ColumnsType<CustomerContact> = [
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Role", dataIndex: "role", key: "role" },
@@ -56,6 +56,8 @@ export const CustomerDetails: React.FC = () => {
     },
   ];
 
+=======
+>>>>>>> origin/main
   const orderColumns: ColumnsType<SalesOrder> = [
     {
       title: "Order #",
@@ -123,23 +125,6 @@ export const CustomerDetails: React.FC = () => {
             {(customer.paymentTerms ?? "NET_30").replace("_", " ")}
           </Descriptions.Item>
         </Descriptions>
-      ),
-    },
-    {
-      label: `Contacts (${contacts.length})`,
-      key: "contacts",
-      children: (
-        <div>
-          <div className={styles.sectionHeader}>
-            <Button type="primary">Add Contact</Button>
-          </div>
-          <Table
-            dataSource={contacts}
-            columns={contactColumns}
-            rowKey="id"
-            pagination={false}
-          />
-        </div>
       ),
     },
     {

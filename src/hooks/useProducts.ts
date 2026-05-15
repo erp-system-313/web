@@ -12,13 +12,13 @@ interface UseProductsReturn {
   loading: boolean;
   total: number;
   fetchProducts: (filters: ProductFilters, page: number) => Promise<void>;
-  getProduct: (id: string) => Promise<Product | null>;
+  getProduct: (id: number) => Promise<Product | null>;
   createProduct: (data: CreateProductDto) => Promise<Product>;
   updateProduct: (
-    id: string,
+    id: number,
     data: Partial<CreateProductDto>,
   ) => Promise<Product>;
-  deleteProduct: (id: string) => Promise<void>;
+  deleteProduct: (id: number) => Promise<void>;
   searchProducts: (query: string) => Promise<Product[]>;
 }
 
@@ -44,7 +44,7 @@ export const useProducts = (): UseProductsReturn => {
   );
 
   const getProduct = useCallback(
-    async (id: string): Promise<Product | null> => {
+    async (id: number): Promise<Product | null> => {
       try {
         return await inventoryService.getProduct(id);
       } catch (error) {
@@ -70,7 +70,7 @@ export const useProducts = (): UseProductsReturn => {
   );
 
   const updateProduct = useCallback(
-    async (id: string, data: Partial<CreateProductDto>): Promise<Product> => {
+    async (id: number, data: Partial<CreateProductDto>): Promise<Product> => {
       try {
         const product = await inventoryService.updateProduct(id, data);
         message.success("Product updated successfully");
@@ -83,7 +83,7 @@ export const useProducts = (): UseProductsReturn => {
     [],
   );
 
-  const deleteProduct = useCallback(async (id: string): Promise<void> => {
+  const deleteProduct = useCallback(async (id: number): Promise<void> => {
     try {
       await inventoryService.deleteProduct(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));

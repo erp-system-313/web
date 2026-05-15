@@ -9,28 +9,29 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../contexts/AuthContext";
-import type { PurchaseOrderStatus } from "../../types/purchaseOrder.types";
+import type { PurchaseOrder, PurchaseOrderStatus } from "../../types/purchaseOrder.types";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import styles from "./PurchaseOrderListPage.module.css";
 
 const statusOptions = [
-  { value: "", label: "All Statuses" },
-  { value: "PENDING", label: "Pending" },
-  { value: "APPROVED", label: "Approved" },
-  { value: "RECEIVED", label: "Received" },
-  { value: "CANCELLED", label: "Cancelled" },
+  { value: '', label: 'All Statuses' },
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SENT', label: 'Sent' },
+  { value: 'RECEIVED', label: 'Received' },
+  { value: 'PARTIAL', label: 'Partial' },
+  { value: 'CANCELLED', label: 'Cancelled' },
 ];
 
-const statusColors: Record<PurchaseOrderStatus, string> = {
-  PENDING: "default",
-  APPROVED: "processing",
-  RECEIVED: "green",
-  CANCELLED: "red",
+const getStatusTag = (status: PurchaseOrderStatus) => {
+  const colors: Record<PurchaseOrderStatus, string> = {
+    DRAFT: 'default',
+    SENT: 'processing',
+    RECEIVED: 'green',
+    PARTIAL: 'blue',
+    CANCELLED: 'red',
+  };
+  return <Tag color={colors[status]}>{status}</Tag>;
 };
-
-const getStatusTag = (status: PurchaseOrderStatus) => (
-  <Tag color={statusColors[status]}>{status}</Tag>
-);
 
 export const PurchaseOrderListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,19 +40,14 @@ export const PurchaseOrderListPage: React.FC = () => {
   const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const { orders, loading, fetchOrders, deleteOrder } = usePurchaseOrders();
 
-  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | "">(
-    "",
-  );
-  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | ''>('');
+  const [searchText, setSearchText] = useState('');
 
   const loadOrders = useCallback(async () => {
-    await fetchOrders(
-      {
-        status: statusFilter || undefined,
-        search: searchText,
-      },
-      1,
-    );
+    await fetchOrders({
+      status: statusFilter || undefined,
+      search: searchText,
+    }, 1);
   }, [fetchOrders, statusFilter, searchText]);
 
   useEffect(() => {
@@ -62,8 +58,12 @@ export const PurchaseOrderListPage: React.FC = () => {
     setSearchText(value);
   };
 
+  const handleStatusFilter = (status: string) => {
+    setStatusFilter(status as PurchaseOrderStatus | '');
+  };
+
   const handleCreatePO = () => {
-    navigate("/purchasing/orders/new");
+    navigate('/purchasing/orders/new');
   };
 
   const handleViewOrder = (id: number) => {
@@ -76,10 +76,10 @@ export const PurchaseOrderListPage: React.FC = () => {
 
   const handleDeleteOrder = (id: number) => {
     Modal.confirm({
-      title: "Delete Purchase Order",
-      content: "Are you sure you want to delete this purchase order?",
-      okText: "Delete",
-      okType: "danger",
+      title: 'Delete Purchase Order',
+      content: 'Are you sure you want to delete this purchase order?',
+      okText: 'Delete',
+      okType: 'danger',
       onOk: async () => {
         await deleteOrder(id);
       },
@@ -88,64 +88,50 @@ export const PurchaseOrderListPage: React.FC = () => {
 
   const columns = [
     {
-      title: "PO Number",
-      dataIndex: "poNumber",
-      key: "poNumber",
+      title: 'PO Number',
+      dataIndex: 'poNumber',
+      key: 'poNumber',
       render: (poNumber: string) => <strong>{poNumber}</strong>,
     },
     {
-      title: "Supplier",
-      dataIndex: "supplierName",
-      key: "supplierName",
+      title: 'Supplier',
+      dataIndex: 'supplierName',
+      key: 'supplierName',
     },
     {
-      title: "Order Date",
-      dataIndex: "orderDate",
-      key: "orderDate",
+      title: 'Order Date',
+      dataIndex: 'orderDate',
+      key: 'orderDate',
       render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
-      title: "Delivery Date",
-      dataIndex: "deliveryDate",
-      key: "deliveryDate",
-      render: (date: string) =>
-        date ? new Date(date).toLocaleDateString() : "-",
+      title: 'Expected Date',
+      dataIndex: 'expectedDate',
+      key: 'expectedDate',
+      render: (date: string) => date ? new Date(date).toLocaleDateString() : '-',
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
       render: (status: PurchaseOrderStatus) => getStatusTag(status),
     },
     {
-      title: "Total",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (amount: number) => `$${(amount ?? 0).toFixed(2)}`,
+      title: 'Total',
+      dataIndex: 'totalAmount',
+      key: 'totalAmount',
+      render: (amount: number) => `$${amount.toFixed(2)}`,
     },
     {
-      title: "Actions",
-      key: "actions",
-      render: (_: unknown, record: any) => (
+      title: 'Actions',
+      key: 'actions',
+      render: (_: unknown, record: PurchaseOrder) => (
         <Space className={styles.tableActions}>
-          <Button
-            type="text"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewOrder(record.id)}
-          />
-          {record.status === "PENDING" && isAdminOrManager && (
+          <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewOrder(record.id)} />
+          {record.status === "DRAFT" && isAdminOrManager && (
             <>
-              <Button
-                type="text"
-                icon={<EditOutlined />}
-                onClick={() => handleEditOrder(record.id)}
-              />
-              <Button
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => handleDeleteOrder(record.id)}
-              />
+              <Button type="text" icon={<EditOutlined />} onClick={() => handleEditOrder(record.id)} />
+              <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDeleteOrder(record.id)} />
             </>
           )}
         </Space>
@@ -178,10 +164,7 @@ export const PurchaseOrderListPage: React.FC = () => {
             allowClear
             style={{ width: 150 }}
             options={statusOptions}
-            onChange={(value) =>
-              setStatusFilter(value as PurchaseOrderStatus | "")
-            }
-            value={statusFilter || undefined}
+            onChange={handleStatusFilter}
           />
         </Space>
       </Card>
@@ -200,8 +183,7 @@ export const PurchaseOrderListPage: React.FC = () => {
 
       {orders.length === 0 && !loading && (
         <div className={styles.emptyState}>
-          No purchase orders found. Click "Create Purchase Order" to get
-          started.
+          No purchase orders found. Click "Create Purchase Order" to get started.
         </div>
       )}
     </div>
