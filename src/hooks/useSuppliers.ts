@@ -1,11 +1,7 @@
-import { useState, useCallback } from "react";
-import { message } from "antd";
-import { purchasingService } from "../services/purchasingService";
-import type {
-  Supplier,
-  CreateSupplierDto,
-  SupplierFilters,
-} from "../types/supplier.types";
+import { useState, useCallback } from 'react';
+import { message } from 'antd';
+import { purchasingService } from '../services/purchasingService';
+import type { Supplier, CreateSupplierDto, SupplierFilters } from '../types/supplier.types';
 
 interface UseSuppliersReturn {
   suppliers: Supplier[];
@@ -23,21 +19,18 @@ export const useSuppliers = (): UseSuppliersReturn => {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
 
-  const fetchSuppliers = useCallback(
-    async (filters: SupplierFilters, _page: number) => {
-      setLoading(true);
-      try {
-        const result = await purchasingService.getSuppliers(filters);
-        setSuppliers(result.data);
-        setTotal(result.total);
-      } catch (error) {
-        message.error("Failed to fetch suppliers");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const fetchSuppliers = useCallback(async (filters: SupplierFilters, _page: number) => {
+    setLoading(true);
+    try {
+      const result = await purchasingService.getSuppliers(filters);
+      setSuppliers(result.data);
+      setTotal(result.total);
+    } catch (error) {
+      message.error('Failed to fetch suppliers');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const getSupplier = useCallback(async (id: number): Promise<Supplier | null> => {
     try {
@@ -48,19 +41,16 @@ export const useSuppliers = (): UseSuppliersReturn => {
     }
   }, []);
 
-  const createSupplier = useCallback(
-    async (data: CreateSupplierDto): Promise<Supplier> => {
-      try {
-        const supplier = await purchasingService.createSupplier(data);
-        message.success("Supplier created successfully");
-        return supplier;
-      } catch (error) {
-        message.error("Failed to create supplier");
-        throw error;
-      }
-    },
-    [],
-  );
+  const createSupplier = useCallback(async (data: CreateSupplierDto): Promise<Supplier> => {
+    try {
+      const supplier = await purchasingService.createSupplier(data);
+      message.success('Supplier created successfully');
+      return supplier;
+    } catch (error) {
+      message.error('Failed to create supplier');
+      throw error;
+    }
+  }, []);
 
   const updateSupplier = useCallback(async (id: number, data: Partial<CreateSupplierDto>): Promise<Supplier> => {
     try {
@@ -77,10 +67,10 @@ export const useSuppliers = (): UseSuppliersReturn => {
   const deleteSupplier = useCallback(async (id: number): Promise<void> => {
     try {
       await purchasingService.deleteSupplier(id);
-      setSuppliers((prev) => prev.filter((s) => s.id !== id));
-      message.success("Supplier deleted successfully");
+      setSuppliers(prev => prev.filter(s => s.id !== id));
+      message.success('Supplier deleted successfully');
     } catch (error) {
-      message.error("Failed to delete supplier");
+      message.error('Failed to delete supplier');
       throw error;
     }
   }, []);

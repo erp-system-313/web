@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  hrService,
-  type LeaveRequest,
-  type LeaveBalance,
-} from "../services/hrService";
-import type { CreateLeaveRequestDto } from "../types/hr";
+import { hrService } from "../services/hrService";
+import type { LeaveRequest, LeaveBalance, CreateLeaveRequestDto } from "../types/hr";
 
 interface LeaveRequestFilters {
   employeeId?: number;
@@ -120,11 +116,11 @@ export const useRejectLeaveRequest = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reject = useCallback(async (id: number) => {
+  const reject = useCallback(async (id: number, reason?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await hrService.leave.reject(id);
+      const result = await hrService.leave.reject(id, reason);
       return result;
     } catch (err) {
       setError(
@@ -137,4 +133,29 @@ export const useRejectLeaveRequest = () => {
   }, []);
 
   return { reject, loading, error };
+};
+
+export const useAllocateLeave = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const allocate = useCallback(async (data: {
+    employeeId: number;
+    type: string;
+    totalDays: number;
+    year: number;
+  }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await hrService.leave.allocate(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to allocate leave");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { allocate, loading, error };
 };

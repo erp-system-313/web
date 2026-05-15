@@ -8,9 +8,11 @@ import {
   Button,
   Space,
   Divider,
+  message,
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
-import { useEmployee } from "../../../hooks";
+import { useEmployee, useDepartments, useJobPositions } from "../../../hooks";
+import { hrService } from "../../../services/hrService";
 import styles from "./EmployeeDetails.module.css";
 
 const { Title } = Typography;
@@ -20,12 +22,20 @@ export const EmployeeDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const employeeId = id ? parseInt(id, 10) : null;
-  const { data: employee, loading, refetch } = useEmployee(employeeId);
+  const { data: employee, loading } = useEmployee(employeeId);
+  const { data: departments } = useDepartments();
+  const { data: positions } = useJobPositions();
   const [form] = Form.useForm();
 
-  const onFinish = (values: unknown) => {
-    console.log("Form values:", values);
-    refetch();
+  const onFinish = async (values: any) => {
+    if (employeeId === null) return;
+    try {
+      await hrService.employees.update(employeeId, values);
+      message.success("Employee updated successfully");
+      navigate("/hr/employees");
+    } catch {
+      message.error("Failed to update employee");
+    }
   };
 
   const handleCancel = () => {
@@ -69,8 +79,8 @@ export const EmployeeDetails: React.FC = () => {
             lastName: employee.lastName,
             email: employee.email,
             phone: employee.phone,
-            department: employee.department,
-            position: employee.position,
+            departmentId: employee.departmentId,
+            positionId: employee.positionId,
             hireDate: employee.hireDate,
             salary: employee.salary,
             status: employee.status,
@@ -110,12 +120,20 @@ export const EmployeeDetails: React.FC = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item label="Department" name="department">
-              <Input />
+            <Form.Item label="Department" name="departmentId">
+              <Select placeholder="Select department" allowClear>
+                {departments.map((d) => (
+                  <Option key={d.id} value={d.id}>{d.name}</Option>
+                ))}
+              </Select>
             </Form.Item>
 
-            <Form.Item label="Position" name="position">
-              <Input />
+            <Form.Item label="Position" name="positionId">
+              <Select placeholder="Select position" allowClear>
+                {positions.map((p) => (
+                  <Option key={p.id} value={p.id}>{p.title}</Option>
+                ))}
+              </Select>
             </Form.Item>
 
             <Form.Item label="Hire Date" name="hireDate">

@@ -4,24 +4,16 @@ import type { Supplier, CreateSupplierDto, SupplierFilters } from '../types/supp
 import type { PurchaseOrder, CreatePurchaseOrderDto, PurchaseOrderFilters } from '../types/purchaseOrder.types';
 
 export const purchasingService = {
-  async getSuppliers(
-    filters: SupplierFilters = {},
-    page = 1,
-    size = 20,
-  ): Promise<{ data: Supplier[]; total: number }> {
-    const params: Record<string, string> = {
-      page: String(page - 1),
-      size: String(size),
-    };
-
-    if (filters.status) params.status = filters.status;
+  async getSuppliers(filters: SupplierFilters = {}, page = 1, size = 20): Promise<{ data: Supplier[]; total: number }> {
+    const params: Record<string, string> = { page: String(page - 1), size: String(size) };
+    
     if (filters.search) params.search = filters.search;
     if (filters.isActive !== undefined) params.status = filters.isActive ? 'ACTIVE' : 'INACTIVE';
     
     const response = await api.get(`${endpoints.suppliers.list}`, { params });
     return {
       data: response.data.data.content || [],
-      total: response.data.data.totalElements || 0,
+      total: response.data.data.totalElements || 0
     };
   },
 
@@ -48,17 +40,15 @@ export const purchasingService = {
     const params: Record<string, string | number> = {};
     params.page = String(page - 1);
     params.size = String(size);
-
+    
     if (filters.status) params.status = filters.status;
-    if (filters.supplierId) params.supplierId = String(filters.supplierId);
+    if (filters.supplierId) params.supplierId = filters.supplierId;
     if (filters.search) params.search = filters.search;
-
-    const response = await api.get(`${endpoints.purchaseOrders.list}`, {
-      params,
-    });
+    
+    const response = await api.get(`${endpoints.purchaseOrders.list}`, { params });
     return {
       data: response.data.data.content || [],
-      total: response.data.data.totalElements || 0,
+      total: response.data.data.totalElements || 0
     };
   },
 
@@ -67,9 +57,7 @@ export const purchasingService = {
     return response.data.data;
   },
 
-  async createPurchaseOrder(
-    data: CreatePurchaseOrderDto,
-  ): Promise<PurchaseOrder> {
+  async createPurchaseOrder(data: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
     const response = await api.post(endpoints.purchaseOrders.list, data);
     return response.data.data;
   },

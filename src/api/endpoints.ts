@@ -117,7 +117,26 @@ export const endpoints = {
     opportunities: "/v1/crm/opportunities",
     opportunityStage: (id: number) => `/v1/crm/opportunities/${id}/stage`,
   },
+  support: {
+    list: "/v1/support/tickets",
+    getById: (id: number) => `/v1/support/tickets/${id}`,
+    create: "/v1/support/tickets",
+    update: (id: number) => `/v1/support/tickets/${id}`,
+    delete: (id: number) => `/v1/support/tickets/${id}`,
+    addComment: (id: number) => `/v1/support/tickets/${id}/comments`,
+  },
   dashboard: {
     stats: "/v1/dashboard/stats",
+  },
+  roles: {
+    list: "/v1/roles",
+    getById: (id: number) => `/v1/roles/${id}`,
+    create: "/v1/roles",
+    update: (id: number) => `/v1/roles/${id}`,
+    delete: (id: number) => `/v1/roles/${id}`,
+    permissions: (id: number) => `/v1/roles/${id}/permissions`,
+  },
+  permissions: {
+    list: "/v1/permissions",
   },
 };

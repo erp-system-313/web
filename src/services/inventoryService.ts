@@ -15,7 +15,7 @@ export const inventoryService = {
     const response = await api.get(endpoints.products.list, { params });
     return {
       data: response.data.data.content || [],
-      total: response.data.data.totalElements || 0,
+      total: response.data.data.totalElements || 0
     };
   },
 
@@ -43,19 +43,13 @@ export const inventoryService = {
     await api.delete(endpoints.products.delete(id));
   },
 
-  async getCategories(
-    page = 1,
-    size = 20,
-  ): Promise<{ data: Category[]; total: number }> {
-    const params: Record<string, string> = {
-      page: String(page - 1),
-      size: String(size),
-    };
-
+  async getCategories(page = 1, size = 20): Promise<{ data: Category[]; total: number }> {
+    const params: Record<string, string> = { page: String(page - 1), size: String(size) };
+    
     const response = await api.get(endpoints.categories.list, { params });
     return {
       data: response.data.data.content || [],
-      total: response.data.data.totalElements || 0,
+      total: response.data.data.totalElements || 0
     };
   },
 

@@ -1,0 +1,81 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendar {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dayHeader {
+  padding: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  color: #666;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.emptyDay {
+  min-height: 100px;
+  background: #fafafa;
+  border-right: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dayCell {
+  min-height: 100px;
+  padding: 4px;
+  border-right: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dayNumber {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.leaveItems {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.leaveItem {
+  font-size: 11px;
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.moreText {
+  font-size: 11px;
+  color: #999;
+}
+
+.legend {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

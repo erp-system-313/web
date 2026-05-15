@@ -1,0 +1,155 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.post {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.postHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  flex-shrink: 0;
+  background: #1677ff;
+}
+
+.headerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timestamp {
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.title {
+  margin-bottom: 12px !important;
+}
+
+.description {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+}
+
+.metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metaLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.editableTag {
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #d9d9d9 !important;
+  padding-right: 4px !important;
+}
+
+.editableTag::after {
+  content: "▾";
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.commentsSection {
+  margin-top: 8px;
+}
+
+.commentsHeading {
+  margin-bottom: 16px !important;
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.comment {
+  display: flex;
+  gap: 12px;
+}
+
+.commentAvatar {
+  flex-shrink: 0;
+  background: #87a9d4;
+}
+
+.commentBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.commentMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.commentMessage {
+  white-space: pre-wrap;
+}
+
+.noComments {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.addComment {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.commentButton {
+  align-self: flex-end;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+}

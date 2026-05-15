@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  hrService,
-  type CreateEmployeeRequest,
-  type UpdateEmployeeRequest,
-} from "../services/hrService";
-import type { Employee, EmployeeStatus } from "../types/hr";
+import { hrService } from "../services/hrService";
+import type { Employee, EmployeeStatus, CreateEmployeeDto, UpdateEmployeeDto } from "../types/hr";
 
 interface EmployeeFilters {
   search?: string;
@@ -39,7 +35,7 @@ export const useEmployees = (filters?: EmployeeFilters) => {
   }, [fetchEmployees]);
 
   const createEmployee = useCallback(
-    async (employee: CreateEmployeeRequest) => {
+    async (employee: CreateEmployeeDto) => {
       const newEmployee = await hrService.employees.create(employee);
       await fetchEmployees();
       return newEmployee;
@@ -48,7 +44,7 @@ export const useEmployees = (filters?: EmployeeFilters) => {
   );
 
   const updateEmployee = useCallback(
-    async (id: number, employee: UpdateEmployeeRequest) => {
+    async (id: number, employee: UpdateEmployeeDto) => {
       const updated = await hrService.employees.update(id, employee);
       await fetchEmployees();
       return updated;

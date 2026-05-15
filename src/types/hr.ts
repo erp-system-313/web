@@ -1,5 +1,28 @@
 export type EmployeeStatus = "ACTIVE" | "INACTIVE" | "ON_LEAVE" | "TERMINATED";
 
+export interface Department {
+  id: number;
+  name: string;
+  parentId?: number;
+  parentName?: string;
+  managerId?: number;
+  managerName?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface JobPosition {
+  id: number;
+  title: string;
+  departmentId?: number;
+  departmentName?: string;
+  description?: string;
+  expectedEmployees?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Employee {
   id: number;
   employeeCode: string;
@@ -9,7 +32,11 @@ export interface Employee {
   email: string;
   phone?: string;
   department: string;
+  departmentId?: number;
+  departmentName?: string;
   position: string;
+  positionId?: number;
+  positionName?: string;
   hireDate: string;
   terminationDate?: string;
   salary?: number;
@@ -25,10 +52,12 @@ export interface CreateEmployeeDto {
   lastName: string;
   email: string;
   phone?: string;
-  department?: string;
-  position?: string;
-  hireDate: string;
+  departmentId?: number;
+  positionId?: number;
+  hireDate?: string;
   salary?: number;
+  address?: string;
+  userId?: number;
 }
 
 export interface UpdateEmployeeDto extends Partial<CreateEmployeeDto> {
@@ -37,7 +66,7 @@ export interface UpdateEmployeeDto extends Partial<CreateEmployeeDto> {
 
 export interface EmployeeFilters {
   search?: string;
-  department?: string;
+  departmentId?: number;
   status?: EmployeeStatus;
 }
 
@@ -57,6 +86,7 @@ export interface Attendance {
   checkOut?: string;
   status: AttendanceStatus;
   notes?: string;
+  createdAt: string;
 }
 
 export interface AttendanceFilters {
@@ -116,4 +146,30 @@ export interface LeaveBalance {
   usedDays: number;
   remainingDays: number;
   year: number;
+}
+
+export type ContractType = "PERMANENT" | "INTERNSHIP" | "FIXED_TERM" | "CONTRACTOR";
+export type ContractStatus = "ACTIVE" | "EXPIRED" | "TERMINATED";
+
+export interface Contract {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  type: ContractType;
+  startDate: string;
+  endDate?: string;
+  wage?: number;
+  benefits?: string;
+  status: ContractStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateContractDto {
+  employeeId: number;
+  type: ContractType;
+  startDate: string;
+  endDate?: string;
+  wage?: number;
+  benefits?: string;
 }
