@@ -34,7 +34,6 @@ export const CustomerDetails: React.FC = () => {
     return <div className={styles.container}>Customer not found</div>;
   }
 
-<<<<<<< HEAD
   const contactColumns: ColumnsType<CustomerContact> = [
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Role", dataIndex: "role", key: "role" },
@@ -55,9 +54,6 @@ export const CustomerDetails: React.FC = () => {
       ),
     },
   ];
-
-=======
->>>>>>> origin/main
   const orderColumns: ColumnsType<SalesOrder> = [
     {
       title: "Order #",
