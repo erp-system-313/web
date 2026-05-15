@@ -41,11 +41,6 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   const [items, setItems] = useState<LineItem[]>([]);
   const [productSearchResults, setProductSearchResults] = useState<Product[]>([]);
 
-  const defaultSupplierId = searchParams.get("supplier") || "";
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [items, setItems] = useState<LineItem[]>([]);
-
   const {
     control,
     handleSubmit,
