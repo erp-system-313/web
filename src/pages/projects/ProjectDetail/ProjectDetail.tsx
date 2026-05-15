@@ -1,18 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { Card, Descriptions, Tag, Button, Space, Spin, Table, Modal, Form, Input, DatePicker, message, Popconfirm, Select, Empty } from 'antd';
 import { ArrowLeftOutlined, BarChartOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useProject, useProjectTasks, useProjectStages } from '../../../hooks/useProjects';
 import { projectService } from '../../../services/projectService';
+import { hrService } from '../../../services/hrService';
+import { salesService } from '../../../services/salesService';
 import { PROJECT_STATE_LABELS, PROJECT_STATE_COLORS } from '../../../types/project';
 import type { ProjectState, CreateTaskRequest, UpdateTaskRequest, ProjectTask } from '../../../types/project';
+import type { Employee } from '../../../types/hr';
+import type { Customer } from '../../../types/sales';
 import styles from './ProjectDetail.module.css';
 
 const STATE_TRANSITIONS: Record<ProjectState, ProjectState[]> = {
-  PLANNING: ['IN_PROGRESS'],
-  IN_PROGRESS: ['ON_HOLD', 'COMPLETED'],
-  ON_HOLD: ['IN_PROGRESS', 'CANCELLED'],
+  PLANNING: ['ACTIVE'],
+  ACTIVE: ['ON_HOLD', 'COMPLETED'],
+  ON_HOLD: ['ACTIVE', 'CANCELLED'],
   COMPLETED: [],
   CANCELLED: [],
 };
@@ -24,6 +28,8 @@ export const ProjectDetail: React.FC = () => {
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form] = Form.useForm();
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   const [editingTask, setEditingTask] = useState<ProjectTask | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -33,6 +39,20 @@ export const ProjectDetail: React.FC = () => {
   const { data: project, loading, refetch: refetchProject } = useProject(projectId);
   const { data: tasks, loading: tasksLoading, refetch: refetchTasks } = useProjectTasks(projectId);
   const { data: stages } = useProjectStages(projectId);
+
+  useEffect(() => {
+    if (project?.customerId) {
+      salesService.customers.getById(project.customerId).then((c) => setCustomer(c));
+    }
+  }, [project?.customerId]);
+
+  useEffect(() => {
+    if (taskModalOpen || editModalOpen) {
+      hrService.employees.getAll({ page: 0, size: 200, status: 'ACTIVE' }).then((res) => {
+        setEmployees(res.content ?? []);
+      });
+    }
+  }, [taskModalOpen, editModalOpen]);
 
   const handleStateChange = async (newState: ProjectState) => {
     if (!projectId) return;
@@ -156,6 +176,15 @@ export const ProjectDetail: React.FC = () => {
         );
       },
     },
+    {
+      title: 'Assignee',
+      key: 'assignee',
+      width: 150,
+      render: (_: unknown, record: ProjectTask) => {
+        const emp = employees.find((e) => e.id === record.assignedTo);
+        return emp?.fullName || '-';
+      },
+    },
     { title: 'Due Date', dataIndex: 'dueDate', key: 'dueDate', render: (d: string | null) => d || '-' },
     {
       title: 'Est. Hours',
@@ -219,6 +248,7 @@ export const ProjectDetail: React.FC = () => {
           <Descriptions.Item label="Budget">{project.budget ? `$${project.budget.toLocaleString()}` : '-'}</Descriptions.Item>
           <Descriptions.Item label="Start Date">{project.dateStart || '-'}</Descriptions.Item>
           <Descriptions.Item label="End Date">{project.dateEnd || '-'}</Descriptions.Item>
+          <Descriptions.Item label="Customer">{customer?.name || project.customerId || '-'}</Descriptions.Item>
           <Descriptions.Item label="Created">{project.createdAt ? new Date(project.createdAt).toLocaleDateString() : '-'}</Descriptions.Item>
         </Descriptions>
       </Card>
@@ -265,8 +295,19 @@ export const ProjectDetail: React.FC = () => {
           <Form.Item name="dueDate" label="Due Date">
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="estimatedHours" label="Estimated Hours">
+          <Form.Item name="estimatedHours" label="Estimated Hours" rules={[{ type: 'number', min: 0, message: 'Hours must be positive' }]}>
             <Input type="number" min={0} />
+          </Form.Item>
+          <Form.Item name="assignedTo" label="Assignee">
+            <Select
+              placeholder="Select employee"
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
+              options={employees.map((e) => ({ value: e.id, label: e.fullName }))}
+            />
           </Form.Item>
           <Form.Item name="stageId" label="Stage">
             <Select
@@ -299,11 +340,22 @@ export const ProjectDetail: React.FC = () => {
           <Form.Item name="dueDate" label="Due Date">
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="estimatedHours" label="Estimated Hours">
+          <Form.Item name="estimatedHours" label="Estimated Hours" rules={[{ type: 'number', min: 0, message: 'Hours must be positive' }]}>
             <Input type="number" min={0} />
           </Form.Item>
-          <Form.Item name="actualHours" label="Actual Hours">
+          <Form.Item name="actualHours" label="Actual Hours" rules={[{ type: 'number', min: 0, message: 'Hours must be positive' }]}>
             <Input type="number" min={0} />
+          </Form.Item>
+          <Form.Item name="assignedTo" label="Assignee">
+            <Select
+              placeholder="Select employee"
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
+              options={employees.map((e) => ({ value: e.id, label: e.fullName }))}
+            />
           </Form.Item>
           <Form.Item name="stageId" label="Stage">
             <Select

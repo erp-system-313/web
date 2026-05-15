@@ -234,6 +234,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
   ].filter((item) => {
     if (!item) return false;
     const key = item.key as string;
+    if (key === "projects" && !isVisible(["admin", "manager"])) return false;
     if (key === "inventory" && !isVisible(["admin", "manager"])) return false;
     if (key === "hr" && !isVisible(["admin", "manager"])) return false;
     if (key === "recruitment" && !isVisible(["admin", "manager", "hr"])) return false;

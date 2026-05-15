@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, Table, Button, Input, Select, Space, Modal, Form, message, Tag, DatePicker, Empty } from 'antd';
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useProjects } from '../../../hooks/useProjects';
 import { projectService } from '../../../services/projectService';
+import { salesService } from '../../../services/salesService';
 import { PROJECT_STATE_LABELS, PROJECT_STATE_COLORS } from '../../../types/project';
 import type { ProjectState, CreateProjectRequest } from '../../../types/project';
+import type { Customer } from '../../../types/sales';
 import styles from './ProjectList.module.css';
 
 export const ProjectList: React.FC = () => {
@@ -15,10 +17,19 @@ export const ProjectList: React.FC = () => {
   const [stateFilter, setStateFilter] = useState<ProjectState | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
   const { data, total, loading, refetch } = useProjects(page, size, stateFilter, search || undefined);
+
+  useEffect(() => {
+    if (modalOpen) {
+      salesService.customers.getAll({ page: 0, size: 200, isActive: true }).then((res) => {
+        setCustomers(res.items);
+      });
+    }
+  }, [modalOpen]);
 
   const handleCreate = async (values: CreateProjectRequest) => {
     setCreating(true);
@@ -148,7 +159,18 @@ export const ProjectList: React.FC = () => {
           <Form.Item name="dateEnd" label="End Date">
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="budget" label="Budget">
+          <Form.Item name="customerId" label="Customer">
+            <Select
+              placeholder="Select customer"
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
+              options={customers.map((c) => ({ value: c.id, label: c.name }))}
+            />
+          </Form.Item>
+          <Form.Item name="budget" label="Budget" rules={[{ type: 'number', min: 0, message: 'Budget must be positive' }]}>
             <Input type="number" prefix="$" min={0} />
           </Form.Item>
           <Form.Item>

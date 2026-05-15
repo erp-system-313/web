@@ -1,4 +1,4 @@
-export type ProjectState = 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED';
+export type ProjectState = 'PLANNING' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED';
 
 export interface Project {
   id: number;
@@ -75,7 +75,7 @@ export interface GanttItem {
 
 export const PROJECT_STATE_LABELS: Record<ProjectState, string> = {
   PLANNING: 'Planning',
-  IN_PROGRESS: 'In Progress',
+  ACTIVE: 'Active',
   ON_HOLD: 'On Hold',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
@@ -83,7 +83,7 @@ export const PROJECT_STATE_LABELS: Record<ProjectState, string> = {
 
 export const PROJECT_STATE_COLORS: Record<ProjectState, string> = {
   PLANNING: 'blue',
-  IN_PROGRESS: 'processing',
+  ACTIVE: 'processing',
   ON_HOLD: 'warning',
   COMPLETED: 'success',
   CANCELLED: 'default',
