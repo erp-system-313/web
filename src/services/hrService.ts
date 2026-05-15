@@ -287,6 +287,8 @@ export const hrService = {
       size?: number;
       employeeId?: number;
       status?: string;
+      startDate?: string;
+      endDate?: string;
     }) => {
       try {
         const response = await api.get("/v1/leave-requests", { params });
@@ -316,6 +318,20 @@ export const hrService = {
     }): Promise<LeaveRequest> => {
       try {
         const response = await api.post("/v1/leave-requests", data);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    allocate: async (data: {
+      employeeId: number;
+      type: string;
+      totalDays: number;
+      year: number;
+    }): Promise<LeaveBalance> => {
+      try {
+        const response = await api.post("/v1/leave-balances", data);
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));

@@ -162,8 +162,18 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
         },
         {
           key: "leave",
-          label: "Leave",
+          label: "Leave Requests",
           onClick: () => navigate("/hr/leave"),
+        },
+        {
+          key: "leave-allocations",
+          label: "Leave Allocations",
+          onClick: () => navigate("/hr/leave/allocations"),
+        },
+        {
+          key: "leave-calendar",
+          label: "Leave Calendar",
+          onClick: () => navigate("/hr/leave/calendar"),
         },
       ],
     },
@@ -231,6 +241,8 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/hr/attendance")) return "attendance";
     if (path.startsWith("/hr/departments")) return "departments";
     if (path.startsWith("/hr/job-positions")) return "job-positions";
+    if (path.startsWith("/hr/leave/allocations")) return "leave-allocations";
+    if (path.startsWith("/hr/leave/calendar")) return "leave-calendar";
     if (path.startsWith("/hr/leave")) return "leave";
     if (path.startsWith("/recruitment/jobs")) return "recruitment-jobs";
     if (path.startsWith("/recruitment/pipeline")) return "recruitment-pipeline";
@@ -262,6 +274,8 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       departments: "hr",
       "job-positions": "hr",
       leave: "hr",
+      "leave-allocations": "hr",
+      "leave-calendar": "hr",
       "recruitment-jobs": "recruitment",
       "recruitment-pipeline": "recruitment",
       users: "admin",

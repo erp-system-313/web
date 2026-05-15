@@ -138,3 +138,28 @@ export const useRejectLeaveRequest = () => {
 
   return { reject, loading, error };
 };
+
+export const useAllocateLeave = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const allocate = useCallback(async (data: {
+    employeeId: number;
+    type: string;
+    totalDays: number;
+    year: number;
+  }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await hrService.leave.allocate(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to allocate leave");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { allocate, loading, error };
+};

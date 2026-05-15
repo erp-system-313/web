@@ -6,6 +6,8 @@ import AttendancePage from "./pages/hr/Attendance/Attendance";
 import LeaveRequestsPage from "./pages/hr/LeaveRequests/LeaveRequests";
 import { Departments } from "./pages/hr/Departments/Departments";
 import { JobPositions } from "./pages/hr/JobPositions/JobPositions";
+import { LeaveAllocations } from "./pages/hr/LeaveAllocations/LeaveAllocations";
+import { LeaveCalendar } from "./pages/hr/LeaveCalendar/LeaveCalendar";
 import LoginPage from "./pages/auth/Login/Login";
 import DashboardPage from "./pages/common/Dashboard/Dashboard";
 import ProfilePage from "./pages/common/Profile/Profile";
@@ -69,6 +71,8 @@ export const AppRoutes = () => {
         <Route path="/hr/employees/:id" element={<EmployeeDetails />} />
         <Route path="/hr/attendance" element={<AttendancePage />} />
         <Route path="/hr/leave" element={<LeaveRequestsPage />} />
+        <Route path="/hr/leave/allocations" element={<LeaveAllocations />} />
+        <Route path="/hr/leave/calendar" element={<LeaveCalendar />} />
         <Route path="/hr/departments" element={<Departments />} />
         <Route path="/hr/job-positions" element={<JobPositions />} />
 

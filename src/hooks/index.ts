@@ -12,6 +12,7 @@ export {
   useCreateLeaveRequest,
   useApproveLeaveRequest,
   useRejectLeaveRequest,
+  useAllocateLeave,
 } from "./useLeaveRequests";
 export { useDepartments, useCreateDepartment, useUpdateDepartment, useDeleteDepartment } from "./useDepartments";
 export { useJobPositions, useCreateJobPosition, useUpdateJobPosition, useDeleteJobPosition } from "./useJobPositions";
