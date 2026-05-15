@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 import { useEmployees, useDepartments, useJobPositions } from "../../../hooks";
 import { ImportModal } from "../../../components/common/ImportModal";
 import { hrService } from "../../../services/hrService";
-import type { Employee } from "../../../types/hr";
+import type { Employee, EmployeeStatus } from "../../../types/hr";
 import type { ImportFieldMapping } from "../../../utils/csv";
 import styles from "./EmployeesList.module.css";
 
@@ -26,6 +26,8 @@ const { Title } = Typography;
 const { Option } = Select;
 
 export const EmployeesList: React.FC = () => {
+  const [statusFilter, setStatusFilter] = useState<EmployeeStatus | undefined>();
+
   const {
     data: employees,
     loading,
@@ -33,7 +35,7 @@ export const EmployeesList: React.FC = () => {
     refetch,
     createEmployee,
     deleteEmployee,
-  } = useEmployees();
+  } = useEmployees(statusFilter ? { status: statusFilter } : undefined);
   const { data: departments } = useDepartments();
   const { data: positions } = useJobPositions();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -155,6 +157,19 @@ export const EmployeesList: React.FC = () => {
       <div className={styles.header}>
         <Title level={3}>Employee List</Title>
         <Space>
+          <Select
+            allowClear
+            placeholder="All Statuses"
+            style={{ width: 140 }}
+            value={statusFilter}
+            onChange={(v) => setStatusFilter(v)}
+            options={[
+              { value: "ACTIVE", label: "Active" },
+              { value: "INACTIVE", label: "Inactive" },
+              { value: "ON_LEAVE", label: "On Leave" },
+              { value: "TERMINATED", label: "Terminated" },
+            ]}
+          />
           <Button icon={<UploadOutlined />} onClick={() => setImportOpen(true)}>Import CSV</Button>
           <Button
             type="primary"

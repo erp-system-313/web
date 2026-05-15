@@ -28,7 +28,7 @@ export const useEmployees = (filters?: EmployeeFilters) => {
     } finally {
       setLoading(false);
     }
-  }, [filters?.search, filters?.department, filters?.status]);
+  }, [filters?.search, filters?.departmentId, filters?.status]);
 
   useEffect(() => {
     fetchEmployees();
