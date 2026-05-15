@@ -11,6 +11,7 @@ import {
   TeamOutlined,
   SettingOutlined,
   LogoutOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../../contexts/AuthContext";
 import styles from "./Sidebar.module.css";
@@ -130,9 +131,36 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           onClick: () => navigate("/hr/attendance"),
         },
         {
+          key: "departments",
+          label: "Departments",
+          onClick: () => navigate("/hr/departments"),
+        },
+        {
+          key: "job-positions",
+          label: "Job Positions",
+          onClick: () => navigate("/hr/job-positions"),
+        },
+        {
           key: "leave",
           label: "Leave",
           onClick: () => navigate("/hr/leave"),
+        },
+      ],
+    },
+    {
+      key: "recruitment",
+      icon: <SolutionOutlined />,
+      label: "Recruitment",
+      children: [
+        {
+          key: "recruitment-jobs",
+          label: "Job Openings",
+          onClick: () => navigate("/recruitment/jobs"),
+        },
+        {
+          key: "recruitment-pipeline",
+          label: "Pipeline",
+          onClick: () => navigate("/recruitment/pipeline"),
         },
       ],
     },
@@ -180,7 +208,12 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/finance/accounts")) return "accounts";
     if (path.startsWith("/hr/employees")) return "employees";
     if (path.startsWith("/hr/attendance")) return "attendance";
+    if (path.startsWith("/hr/departments")) return "departments";
+    if (path.startsWith("/hr/job-positions")) return "job-positions";
     if (path.startsWith("/hr/leave")) return "leave";
+    if (path.startsWith("/recruitment/jobs")) return "recruitment-jobs";
+    if (path.startsWith("/recruitment/pipeline")) return "recruitment-pipeline";
+    if (path.startsWith("/recruitment/applicants")) return "recruitment-pipeline";
     if (path.startsWith("/admin/users")) return "users";
     if (path.startsWith("/admin/settings")) return "settings";
     if (path.startsWith("/admin/audit-logs")) return "audit-logs";
@@ -203,7 +236,11 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       accounts: "finance",
       employees: "hr",
       attendance: "hr",
+      departments: "hr",
+      "job-positions": "hr",
       leave: "hr",
+      "recruitment-jobs": "recruitment",
+      "recruitment-pipeline": "recruitment",
       users: "admin",
       settings: "admin",
       "audit-logs": "admin",

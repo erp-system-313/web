@@ -4,6 +4,8 @@ import { EmployeesList } from "./pages/hr/EmployeesList/EmployeesList";
 import { EmployeeDetails } from "./pages/hr/EmployeeDetails/EmployeeDetails";
 import AttendancePage from "./pages/hr/Attendance/Attendance";
 import LeaveRequestsPage from "./pages/hr/LeaveRequests/LeaveRequests";
+import { Departments } from "./pages/hr/Departments/Departments";
+import { JobPositions } from "./pages/hr/JobPositions/JobPositions";
 import LoginPage from "./pages/auth/Login/Login";
 import DashboardPage from "./pages/common/Dashboard/Dashboard";
 import ProfilePage from "./pages/common/Profile/Profile";
@@ -38,6 +40,9 @@ import CRMDashboard from "./pages/crm/Dashboard/Dashboard";
 import LeadsList from "./pages/crm/LeadsList/LeadsList";
 import { Pipeline } from "./pages/crm/Pipeline/Pipeline";
 import LeadDetails from "./pages/crm/LeadDetails/LeadDetails";
+import { JobOpenings } from "./pages/recruitment/JobOpenings/JobOpenings";
+import { RecruitmentPipeline } from "./pages/recruitment/Pipeline/Pipeline";
+import { ApplicantDetail } from "./pages/recruitment/ApplicantDetail/ApplicantDetail";
 
 export const AppRoutes = () => {
   return (
@@ -55,6 +60,8 @@ export const AppRoutes = () => {
         <Route path="/hr/employees/:id" element={<EmployeeDetails />} />
         <Route path="/hr/attendance" element={<AttendancePage />} />
         <Route path="/hr/leave" element={<LeaveRequestsPage />} />
+        <Route path="/hr/departments" element={<Departments />} />
+        <Route path="/hr/job-positions" element={<JobPositions />} />
 
         {/* Admin routes */}
         <Route path="/admin/users" element={<UsersListPage />} />
@@ -96,6 +103,11 @@ export const AppRoutes = () => {
         <Route path="/crm/leads" element={<LeadsList />} />
         <Route path="/crm/pipeline" element={<Pipeline />} />
         <Route path="/crm/leads/:id" element={<LeadDetails />} />
+
+        {/* Recruitment routes */}
+        <Route path="/recruitment/jobs" element={<JobOpenings />} />
+        <Route path="/recruitment/pipeline" element={<RecruitmentPipeline />} />
+        <Route path="/recruitment/applicants/:id" element={<ApplicantDetail />} />
 
         {/* Purchasing routes */}
         <Route path="/purchasing/suppliers" element={<SupplierListPage />} />
