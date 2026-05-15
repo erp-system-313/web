@@ -80,11 +80,9 @@ export const LeadDetails: React.FC = () => {
         </Space>
         <Space>
           <Button icon={<EditOutlined />} onClick={handleEdit}>Edit</Button>
-          {lead.status !== 'CONVERTED' && (
-            <Button type="primary" icon={<SwapOutlined />} onClick={handleConvert}>
-              Convert to Customer
-            </Button>
-          )}
+          <Button type="primary" icon={<SwapOutlined />} onClick={handleConvert}>
+            Convert to Customer
+          </Button>
         </Space>
       </div>
 
