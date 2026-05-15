@@ -202,6 +202,22 @@ export const hrService = {
         throw new Error(handleApiError(error));
       }
     },
+
+    markAttendance: async (data: {
+      employeeId: number;
+      date: string;
+      status: string;
+      checkIn?: string;
+      checkOut?: string;
+      notes?: string;
+    }): Promise<Attendance> => {
+      try {
+        const response = await api.post("/v1/attendance/manual", data);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
   },
 
   leave: {

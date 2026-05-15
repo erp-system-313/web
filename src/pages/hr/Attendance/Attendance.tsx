@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from "react";
-import { Card, Typography, Table, Button, Space, Tag, message, Select, Modal, Row, Col, Statistic } from "antd";
-import { ClockCircleOutlined, CheckCircleOutlined, LeftOutlined, RightOutlined, ReloadOutlined } from "@ant-design/icons";
+import { Card, Typography, Table, Button, Space, Tag, message, Select, Modal, Row, Col, Statistic, DatePicker, Input } from "antd";
+import { ClockCircleOutlined, CheckCircleOutlined, MinusCircleOutlined, LeftOutlined, RightOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useAttendance, useClockIn, useClockOut, useEmployees } from "../../../hooks";
 import { hrService } from "../../../services/hrService";
 import { AuthContext } from "../../../contexts/AuthContext";
@@ -23,6 +23,11 @@ export const AttendancePage: React.FC = () => {
   const [clockAction, setClockAction] = useState<"in" | "out" | null>(null);
   const [targetEmployeeId, setTargetEmployeeId] = useState<number | undefined>(undefined);
   const [clockedInEmployees, setClockedInEmployees] = useState<{ employeeId: number; employeeName: string }[]>([]);
+  const [clockInStatus, setClockInStatus] = useState<string>("PRESENT");
+  const [absentOpen, setAbsentOpen] = useState(false);
+  const [absentEmployeeId, setAbsentEmployeeId] = useState<number | undefined>();
+  const [absentDate, setAbsentDate] = useState(dayjs());
+  const [absentNotes, setAbsentNotes] = useState("");
 
   const todayStr = dayjs().format("YYYY-MM-DD");
   const startDate = currentMonth.startOf("month").format("YYYY-MM-DD");
@@ -52,6 +57,7 @@ export const AttendancePage: React.FC = () => {
         .then(setClockedInEmployees)
         .catch(() => setClockedInEmployees([]));
       setTargetEmployeeId(undefined);
+      setClockInStatus("PRESENT");
       setClockAction("in");
     } else {
       try {
@@ -93,7 +99,16 @@ export const AttendancePage: React.FC = () => {
     }
     try {
       if (clockAction === "in") {
-        await clockIn(targetEmployeeId);
+        if (clockInStatus === "PRESENT") {
+          await clockIn(targetEmployeeId);
+        } else {
+          await hrService.attendance.markAttendance({
+            employeeId: targetEmployeeId,
+            date: todayStr,
+            status: clockInStatus,
+            checkIn: dayjs().toISOString(),
+          });
+        }
       } else {
         await clockOut(targetEmployeeId);
       }
@@ -102,6 +117,29 @@ export const AttendancePage: React.FC = () => {
       refetch();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to record attendance";
+      message.error(msg);
+    }
+  };
+
+  const handleMarkAbsent = async () => {
+    if (!absentEmployeeId) {
+      message.error("Please select an employee");
+      return;
+    }
+    try {
+      await hrService.attendance.markAttendance({
+        employeeId: absentEmployeeId,
+        date: absentDate.format("YYYY-MM-DD"),
+        status: "ABSENT",
+        notes: absentNotes || undefined,
+      });
+      message.success("Marked as absent");
+      setAbsentOpen(false);
+      setAbsentEmployeeId(undefined);
+      setAbsentNotes("");
+      refetch();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to mark absent";
       message.error(msg);
     }
   };
@@ -226,23 +264,77 @@ export const AttendancePage: React.FC = () => {
             >
               Clock Out
             </Button>
+            {isAdminOrManager && (
+              <Button
+                icon={<MinusCircleOutlined />}
+                onClick={() => {
+                  setAbsentEmployeeId(undefined);
+                  setAbsentDate(dayjs());
+                  setAbsentNotes("");
+                  setAbsentOpen(true);
+                }}
+                size="large"
+              >
+                Mark Absent
+              </Button>
+            )}
           </Space>
         </div>
 
         <Modal
-          title={clockAction === "in" ? "Select Employee to Clock In" : "Select Employee to Clock Out"}
+          title="Mark Absent"
+          open={absentOpen}
+          onCancel={() => setAbsentOpen(false)}
+          onOk={handleMarkAbsent}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <Select
+              placeholder="Select employee..."
+              value={absentEmployeeId}
+              onChange={setAbsentEmployeeId}
+              options={employees.map((e) => ({ value: e.id, label: e.fullName }))}
+            />
+            <DatePicker
+              style={{ width: "100%" }}
+              value={absentDate}
+              onChange={(d) => d && setAbsentDate(d)}
+            />
+            <Input.TextArea
+              placeholder="Notes (optional)"
+              value={absentNotes}
+              onChange={(e) => setAbsentNotes(e.target.value)}
+              rows={2}
+            />
+          </div>
+        </Modal>
+
+        <Modal
+          title={clockAction === "in" ? "Clock In Employee" : "Clock Out Employee"}
           open={!!clockAction}
           onCancel={() => setClockAction(null)}
           onOk={handleConfirmClock}
           confirmLoading={clockAction === "in" ? clockingIn : clockingOut}
         >
-          <Select
-            style={{ width: "100%" }}
-            placeholder="Select employee..."
-            value={targetEmployeeId}
-            onChange={setTargetEmployeeId}
-            options={clockAction === "out" ? clockOutOptions : clockInOptions}
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <Select
+              placeholder="Select employee..."
+              value={targetEmployeeId}
+              onChange={setTargetEmployeeId}
+              options={clockAction === "out" ? clockOutOptions : clockInOptions}
+            />
+            {clockAction === "in" && (
+              <Select
+                placeholder="Status"
+                value={clockInStatus}
+                onChange={setClockInStatus}
+                options={[
+                  { value: "PRESENT", label: "Present" },
+                  { value: "LATE", label: "Late" },
+                  { value: "HALF_DAY", label: "Half Day" },
+                ]}
+              />
+            )}
+          </div>
         </Modal>
 
         {isAdminOrManager && (
