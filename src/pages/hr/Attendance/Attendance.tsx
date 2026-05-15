@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { Card, Typography, Table, Button, Space, Tag, message, Select, Modal, Row, Col, Statistic } from "antd";
-import { ClockCircleOutlined, CheckCircleOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { ClockCircleOutlined, CheckCircleOutlined, LeftOutlined, RightOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useAttendance, useClockIn, useClockOut, useEmployees } from "../../../hooks";
 import { hrService } from "../../../services/hrService";
 import { AuthContext } from "../../../contexts/AuthContext";
@@ -119,8 +119,16 @@ export const AttendancePage: React.FC = () => {
     .filter((e) => !clockedInEmployees.some((c) => c.employeeId === e.id))
     .map((e) => ({ value: e.id, label: e.fullName }));
 
+  const statusLabel = (s: string) =>
+    s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
   const columns = [
-    { title: "Date", dataIndex: "date", key: "date" },
+    {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (v: string) => v ? dayjs(v).format("DD/MM/YYYY") : "-",
+    },
     {
       title: "Employee",
       dataIndex: "employeeName",
@@ -145,7 +153,7 @@ export const AttendancePage: React.FC = () => {
       render: (status: string) => {
         const color =
           status === "PRESENT" ? "green" : status === "LATE" ? "orange" : status === "HALF_DAY" ? "purple" : "red";
-        return <Tag color={color}>{status}</Tag>;
+        return <Tag color={color}>{statusLabel(status)}</Tag>;
       },
     },
   ];
@@ -171,28 +179,25 @@ export const AttendancePage: React.FC = () => {
               {currentMonth.format("MMMM YYYY")}
             </span>
             <Button icon={<RightOutlined />} onClick={() => setCurrentMonth(currentMonth.add(1, "month"))} />
+            <Button icon={<ReloadOutlined />} onClick={refetch} />
           </Space>
         </div>
 
         {isAdminOrManager && (
           <Row gutter={[16, 16]} className={styles.summaryRow}>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={8} md={6}>
               <Card size="small"><Statistic title="Total" value={records.length} /></Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={8} md={6}>
               <Card size="small"><Statistic title="Present" value={presentCount} valueStyle={{ color: "#52c41a" }} /></Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={8} md={6}>
               <Card size="small"><Statistic title="Absent" value={absentCount} valueStyle={{ color: "#ff4d4f" }} /></Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={8} md={6}>
               <Card size="small"><Statistic title="Late" value={lateCount} valueStyle={{ color: "#faad14" }} /></Card>
             </Col>
-          </Row>
-        )}
-        {isAdminOrManager && halfDayCount > 0 && (
-          <Row gutter={[16, 16]} style={{ marginTop: 0 }}>
-            <Col xs={12} sm={6} offset={18}>
+            <Col xs={12} sm={8} md={6}>
               <Card size="small"><Statistic title="Half Day" value={halfDayCount} valueStyle={{ color: "#722ed1" }} /></Card>
             </Col>
           </Row>
