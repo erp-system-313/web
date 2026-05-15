@@ -37,7 +37,7 @@ export const LeadDetails: React.FC = () => {
     if (!id) return;
     try {
       await crmService.convertLead(Number(id));
-      message.success('Lead converted to customer');
+      message.success('Lead converted');
       if (lead) setLead({ ...lead, status: 'CONVERTED' });
     } catch {
       message.error('Failed to convert lead');
@@ -81,7 +81,7 @@ export const LeadDetails: React.FC = () => {
         <Space>
           <Button icon={<EditOutlined />} onClick={handleEdit}>Edit</Button>
           <Button type="primary" icon={<SwapOutlined />} onClick={handleConvert}>
-            Convert to Customer
+            Convert to Lead
           </Button>
         </Space>
       </div>
