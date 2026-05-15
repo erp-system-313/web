@@ -12,10 +12,13 @@ const { Title } = Typography;
 export const AttendancePage: React.FC = () => {
   const authContext = useContext(AuthContext);
   const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
-  const isAdmin = userRole === "admin";
+  const isAdminOrManager = userRole === "admin" || userRole === "manager";
+  const currentEmployeeId = authContext?.user?.employeeId;
 
   const [currentMonth, setCurrentMonth] = useState(dayjs());
-  const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(undefined);
+  const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(
+    isAdminOrManager ? undefined : currentEmployeeId
+  );
   const [todayCheckedIn, setTodayCheckedIn] = useState(false);
   const [clockAction, setClockAction] = useState<"in" | "out" | null>(null);
   const [targetEmployeeId, setTargetEmployeeId] = useState<number | undefined>(undefined);
@@ -25,29 +28,26 @@ export const AttendancePage: React.FC = () => {
   const startDate = currentMonth.startOf("month").format("YYYY-MM-DD");
   const endDate = currentMonth.endOf("month").format("YYYY-MM-DD");
 
-  const { data: records, loading, refetch } = useAttendance({
-    employeeId: selectedEmployee,
-    startDate,
-    endDate,
-  });
+  const { data: records, loading, refetch } = useAttendance(
+    isAdminOrManager
+      ? { employeeId: selectedEmployee, startDate, endDate }
+      : { employeeId: currentEmployeeId, startDate, endDate }
+  );
   const { data: employees } = useEmployees();
   const { clockIn, loading: clockingIn } = useClockIn();
   const { clockOut, loading: clockingOut } = useClockOut();
 
   useEffect(() => {
-    if (!isAdmin && authContext?.user?.employeeId) {
+    if (!isAdminOrManager && currentEmployeeId) {
       const todayRecord = records.find(
-        (r) =>
-          r.date === todayStr &&
-          r.employeeId === authContext.user!.employeeId &&
-          r.checkIn
+        (r) => r.date === todayStr && r.employeeId === currentEmployeeId && r.checkIn
       );
       setTodayCheckedIn(!!todayRecord && !todayRecord.checkOut);
     }
-  }, [records, isAdmin, authContext?.user?.employeeId, todayStr]);
+  }, [records, isAdminOrManager, currentEmployeeId, todayStr]);
 
   const openClockIn = async () => {
-    if (isAdmin) {
+    if (isAdminOrManager) {
       await hrService.attendance.getClockedInEmployees()
         .then(setClockedInEmployees)
         .catch(() => setClockedInEmployees([]));
@@ -67,7 +67,7 @@ export const AttendancePage: React.FC = () => {
   };
 
   const openClockOut = async () => {
-    if (isAdmin) {
+    if (isAdminOrManager) {
       await hrService.attendance.getClockedInEmployees()
         .then(setClockedInEmployees)
         .catch(() => setClockedInEmployees([]));
@@ -156,7 +156,7 @@ export const AttendancePage: React.FC = () => {
         <div className={styles.header}>
           <Title level={3}>Attendance</Title>
           <Space>
-            {isAdmin && (
+            {isAdminOrManager && (
               <Select
                 allowClear
                 placeholder="All Employees"
@@ -174,21 +174,23 @@ export const AttendancePage: React.FC = () => {
           </Space>
         </div>
 
-        <Row gutter={[16, 16]} className={styles.summaryRow}>
-          <Col xs={12} sm={6}>
-            <Card size="small"><Statistic title="Total" value={records.length} /></Card>
-          </Col>
-          <Col xs={12} sm={6}>
-            <Card size="small"><Statistic title="Present" value={presentCount} valueStyle={{ color: "#52c41a" }} /></Card>
-          </Col>
-          <Col xs={12} sm={6}>
-            <Card size="small"><Statistic title="Absent" value={absentCount} valueStyle={{ color: "#ff4d4f" }} /></Card>
-          </Col>
-          <Col xs={12} sm={6}>
-            <Card size="small"><Statistic title="Late" value={lateCount} valueStyle={{ color: "#faad14" }} /></Card>
-          </Col>
-        </Row>
-        {halfDayCount > 0 && (
+        {isAdminOrManager && (
+          <Row gutter={[16, 16]} className={styles.summaryRow}>
+            <Col xs={12} sm={6}>
+              <Card size="small"><Statistic title="Total" value={records.length} /></Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card size="small"><Statistic title="Present" value={presentCount} valueStyle={{ color: "#52c41a" }} /></Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card size="small"><Statistic title="Absent" value={absentCount} valueStyle={{ color: "#ff4d4f" }} /></Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card size="small"><Statistic title="Late" value={lateCount} valueStyle={{ color: "#faad14" }} /></Card>
+            </Col>
+          </Row>
+        )}
+        {isAdminOrManager && halfDayCount > 0 && (
           <Row gutter={[16, 16]} style={{ marginTop: 0 }}>
             <Col xs={12} sm={6} offset={18}>
               <Card size="small"><Statistic title="Half Day" value={halfDayCount} valueStyle={{ color: "#722ed1" }} /></Card>
@@ -203,7 +205,7 @@ export const AttendancePage: React.FC = () => {
               icon={<ClockCircleOutlined />}
               onClick={openClockIn}
               loading={clockingIn}
-              disabled={!isAdmin && todayCheckedIn}
+              disabled={!isAdminOrManager && todayCheckedIn}
               size="large"
             >
               Clock In
@@ -214,7 +216,7 @@ export const AttendancePage: React.FC = () => {
               icon={<CheckCircleOutlined />}
               onClick={openClockOut}
               loading={clockingOut}
-              disabled={!isAdmin && !todayCheckedIn}
+              disabled={!isAdminOrManager && !todayCheckedIn}
               size="large"
             >
               Clock Out
@@ -238,16 +240,18 @@ export const AttendancePage: React.FC = () => {
           />
         </Modal>
 
-        <div className={styles.tableSection}>
-          <Title level={5}>Attendance Records</Title>
-          <Table
-            dataSource={records}
-            columns={columns}
-            rowKey="id"
-            loading={loading}
-            pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} records` }}
-          />
-        </div>
+        {isAdminOrManager && (
+          <div className={styles.tableSection}>
+            <Title level={5}>Attendance Records</Title>
+            <Table
+              dataSource={records}
+              columns={columns}
+              rowKey="id"
+              loading={loading}
+              pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} records` }}
+            />
+          </div>
+        )}
       </Card>
     </div>
   );
