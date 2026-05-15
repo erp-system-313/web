@@ -1,45 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Card, Select, Input, InputNumber, Table, Space, message, AutoComplete as AntAutoComplete } from 'antd';
-import { PlusOutlined, DeleteOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { inventoryService } from '../../services/inventoryService';
-import type { Product } from '../../types/product.types';
-import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
-import { useSuppliers } from '../../hooks/useSuppliers';
-import styles from './CreatePurchaseOrderPage.module.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Button,
+  Card,
+  Select,
+  Input,
+  InputNumber,
+  Table,
+  Space,
+  message,
+} from "antd";
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  SendOutlined,
+} from "@ant-design/icons";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
+import { useSuppliers } from "../../hooks/useSuppliers";
+import { useProducts } from "../../hooks/useProducts";
+import styles from "./CreatePurchaseOrderPage.module.css";
+
+interface LineItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productSku: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
 
 const schema = yup.object({
-  supplierId: yup.number().required('Supplier is required'),
-  orderDate: yup.string().required('Order date is required'),
-  expectedDate: yup.string().default(''),
-  notes: yup.string().default(''),
+  supplierId: yup.string().required("Supplier is required"),
+  orderDate: yup.string().required("Order date is required"),
+  expectedDate: yup.string().default(""),
+  notes: yup.string().default(""),
 });
 
 type FormData = yup.InferType<typeof schema>;
 
-interface LineItem {
-  tempId: number;
-  productId: number | undefined;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  lineTotal: number;
-}
+const today = new Date().toISOString().split("T")[0];
 
 export const CreatePurchaseOrderPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { createPurchaseOrder } = usePurchaseOrders();
   const { suppliers, fetchSuppliers } = useSuppliers();
+  const { products, loading: productsLoading, fetchProducts } = useProducts();
 
-  const defaultSupplierId = searchParams.get('supplier') ? Number(searchParams.get('supplier')) : undefined;
+  const defaultSupplierId = searchParams.get("supplier") || "";
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [items, setItems] = useState<LineItem[]>([]);
-  const [productSearchResults, setProductSearchResults] = useState<Product[]>([]);
 
   const {
     control,
@@ -50,9 +65,9 @@ export const CreatePurchaseOrderPage: React.FC = () => {
     resolver: yupResolver(schema),
     defaultValues: {
       supplierId: defaultSupplierId,
-      orderDate: new Date().toISOString().split('T')[0],
-      expectedDate: '',
-      notes: '',
+      orderDate: new Date().toISOString().split("T")[0],
+      expectedDate: "",
+      notes: "",
     },
   });
 
@@ -63,73 +78,41 @@ export const CreatePurchaseOrderPage: React.FC = () => {
 
   useEffect(() => {
     fetchSuppliers({}, 1);
-  }, [fetchSuppliers]);
-
-  const searchProducts = async (query: string) => {
-    try {
-      const result = await inventoryService.getProducts({ search: query });
-      setProductSearchResults(result.data);
-    } catch {
-      setProductSearchResults([]);
-    }
-  };
-
-  useEffect(() => {
-    searchProducts('');
-  }, []);
+    fetchProducts({}, 1);
+  }, [fetchSuppliers, fetchProducts]);
 
   const addItem = () => {
-    let nextId = 1;
-    if (items.length > 0) {
-      nextId = Math.max(...items.map(i => i.tempId)) + 1;
-    }
     setItems([
       ...items,
       {
-        tempId: nextId,
-        productId: undefined,
-        productName: '',
+        id: Date.now().toString(),
+        productId: "",
+        productName: "",
+        productSku: "",
         quantity: 1,
         unitPrice: 0,
-        lineTotal: 0,
+        totalPrice: 0,
       },
     ]);
   };
 
-  const handleProductSelect = (index: number, productId: number | null, product?: Product) => {
+  const updateItem = (
+    index: number,
+    productId: string,
+    quantity: number,
+    unitPrice: number,
+  ) => {
     const updatedItems = [...items];
-    if (productId && product) {
-      updatedItems[index] = {
-        ...updatedItems[index],
-        productId,
-        productName: product.name,
-        quantity: updatedItems[index].quantity,
-        unitPrice: product.unitPrice,
-        lineTotal: product.unitPrice * updatedItems[index].quantity,
-      };
-    } else {
-      updatedItems[index] = {
-        ...updatedItems[index],
-        productId: undefined,
-        productName: '',
-        unitPrice: 0,
-        lineTotal: 0,
-      };
-    }
-    setItems(updatedItems);
-  };
-
-  const updateQuantity = (index: number, quantity: number) => {
-    const updatedItems = [...items];
-    updatedItems[index].quantity = quantity;
-    updatedItems[index].lineTotal = updatedItems[index].unitPrice * quantity;
-    setItems(updatedItems);
-  };
-
-  const updateUnitPrice = (index: number, unitPrice: number) => {
-    const updatedItems = [...items];
-    updatedItems[index].unitPrice = unitPrice;
-    updatedItems[index].lineTotal = unitPrice * updatedItems[index].quantity;
+    const product = products.find((p) => String(p.id) === productId);
+    updatedItems[index] = {
+      ...updatedItems[index],
+      productId,
+      productName: product?.name || "",
+      productSku: product?.sku || "",
+      quantity,
+      unitPrice: unitPrice || product?.unitPrice || 0,
+      totalPrice: (unitPrice || product?.unitPrice || 0) * quantity,
+    };
     setItems(updatedItems);
   };
 
@@ -138,7 +121,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   };
 
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
     const taxAmount = subtotal * 0.1;
     const shippingCost = 50;
     const totalAmount = subtotal + taxAmount + shippingCost;
@@ -151,28 +134,23 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       return;
     }
 
-    const hasInvalid = items.some(i => !i.productId);
-    if (hasInvalid) {
-      message.error('Please select a product for all line items');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
       await createPurchaseOrder({
-        supplierId: data.supplierId,
-        orderDate: new Date(data.orderDate).toISOString(),
-        expectedDate: data.expectedDate || new Date().toISOString().split('T')[0],
-        notes: data.notes || '',
-        items: items.map(i => ({
-          productId: i.productId!,
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
+        supplierId: Number(data.supplierId),
+        orderDate: `${data.orderDate}T00:00:00`,
+        expectedDate: data.expectedDate || undefined,
+        notes: data.notes || "",
+        lines: items.map((item) => ({
+          productId: Number(item.productId) || 0,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          discount: 0,
+          notes: "",
         })),
       });
-      message.success('Purchase order created successfully');
-      navigate('/purchasing/orders');
+      navigate("/purchasing/orders");
     } catch {
       message.error("Failed to create purchase order");
     } finally {
@@ -182,31 +160,31 @@ export const CreatePurchaseOrderPage: React.FC = () => {
 
   const totals = calculateTotals();
 
-  const productOptions = productSearchResults.map(p => ({
-    value: p.id,
-    label: `${p.name} (${p.sku})`,
-  }));
-
   const itemColumns = [
     {
-      title: 'Product',
-      dataIndex: 'productId',
-      key: 'productId',
-      width: 250,
+      title: "Product",
+      dataIndex: "productId",
+      key: "productId",
       render: (_: unknown, record: LineItem, index: number) => (
-        <AntAutoComplete
-          style={{ width: '100%' }}
-          placeholder="Search product..."
-          value={record.productId ?? undefined}
-          options={productOptions}
-          onSelect={(value) => {
-            const product = productSearchResults.find(p => p.id === value);
-            handleProductSelect(index, value as number, product);
-          }}
-          onSearch={searchProducts}
-          onFocus={() => searchProducts('')}
-          allowClear
-          filterOption={false}
+        <Select
+          placeholder="Select product"
+          style={{ width: "100%" }}
+          loading={productsLoading}
+          showSearch
+          optionFilterProp="label"
+          options={products.map((p) => ({
+            value: String(p.id),
+            label: `${p.name} (${p.sku})`,
+          }))}
+          value={record.productId || undefined}
+          onChange={(value) =>
+            updateItem(
+              index,
+              value,
+              items[index]?.quantity || 1,
+              items[index]?.unitPrice || 0,
+            )
+          }
         />
       ),
     },
@@ -218,9 +196,16 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       render: (_: unknown, record: LineItem, index: number) => (
         <InputNumber
           min={1}
-          value={record.quantity}
-          onChange={(value) => updateQuantity(index, value || 1)}
-          style={{ width: '100%' }}
+          value={record.quantity || 1}
+          onChange={(value) =>
+            updateItem(
+              index,
+              items[index]?.productId,
+              value || 1,
+              items[index]?.unitPrice || 0,
+            )
+          }
+          style={{ width: "100%" }}
         />
       ),
     },
@@ -234,16 +219,23 @@ export const CreatePurchaseOrderPage: React.FC = () => {
           min={0}
           precision={2}
           prefix="$"
-          value={record.unitPrice}
-          onChange={(value) => updateUnitPrice(index, value || 0)}
-          style={{ width: '100%' }}
+          value={record.unitPrice || 0}
+          onChange={(value) =>
+            updateItem(
+              index,
+              items[index]?.productId,
+              items[index]?.quantity || 1,
+              value || 0,
+            )
+          }
+          style={{ width: "100%" }}
         />
       ),
     },
     {
-      title: 'Total',
-      dataIndex: 'lineTotal',
-      key: 'lineTotal',
+      title: "Total",
+      dataIndex: "totalPrice",
+      key: "totalPrice",
       width: 120,
       render: (total: number) => `$${total.toFixed(2)}`,
     },
@@ -252,7 +244,12 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       key: "actions",
       width: 80,
       render: (_: unknown, _record: LineItem, index: number) => (
-        <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeItem(index)} />
+        <Button
+          type="text"
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() => removeItem(index)}
+        />
       ),
     },
   ];
@@ -262,13 +259,6 @@ export const CreatePurchaseOrderPage: React.FC = () => {
       <div className={styles.header}>
         <h1 className={styles.title}>Create Purchase Order</h1>
         <Space className={styles.actions}>
-          <Button
-            icon={<SaveOutlined />}
-            onClick={handleSubmit(onSubmit)}
-            loading={isSubmitting}
-          >
-            Save Draft
-          </Button>
           <Button
             type="primary"
             icon={<SendOutlined />}
@@ -295,10 +285,12 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                   <Select
                     {...field}
                     placeholder="Choose a supplier..."
-                    style={{ width: '100%' }}
-                    options={suppliers.map(s => ({ value: s.id, label: s.name }))}
-                    status={errors.supplierId ? 'error' : undefined}
-                    onFocus={() => fetchSuppliers({}, 1)}
+                    style={{ width: "100%" }}
+                    options={suppliers.map((s) => ({
+                      value: String(s.id),
+                      label: `${s.name} (${s.code})`,
+                    }))}
+                    status={errors.supplierId ? "error" : undefined}
                   />
                 )}
               />
@@ -340,7 +332,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
             <Table
               columns={itemColumns}
               dataSource={items}
-              rowKey="tempId"
+              rowKey="id"
               pagination={false}
               className={styles.itemsTable}
               locale={{
@@ -361,7 +353,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                 <Controller
                   name="orderDate"
                   control={control}
-                  render={({ field }) => <Input type="date" {...field} />}
+                  render={({ field }) => <Input type="date" min={today} {...field} />}
                 />
               </div>
 
@@ -372,12 +364,14 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                 <Controller
                   name="expectedDate"
                   control={control}
-                  render={({ field }) => <Input type="date" {...field} />}
+                  render={({ field }) => <Input type="date" min={today} {...field} />}
                 />
               </div>
 
               <div className={styles.formSection}>
-                <label style={{ display: 'block', marginBottom: 8 }}>Notes</label>
+                <label style={{ display: "block", marginBottom: 8 }}>
+                  Notes
+                </label>
                 <Controller
                   name="notes"
                   control={control}

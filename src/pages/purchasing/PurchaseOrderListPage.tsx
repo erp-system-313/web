@@ -28,6 +28,8 @@ const getStatusTag = (status: PurchaseOrderStatus) => {
     RECEIVED: 'green',
     PARTIAL: 'blue',
     CANCELLED: 'red',
+    PENDING: 'default',
+    APPROVED: 'processing',
   };
   return <Tag color={colors[status]}>{status}</Tag>;
 };
