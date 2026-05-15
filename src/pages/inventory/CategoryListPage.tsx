@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Modal, Input, Select, Card, Tree, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import type { Category, CreateCategoryDto } from '../../types/category.types';
@@ -11,7 +11,7 @@ import styles from './CategoryListPage.module.css';
 const schema = yup.object({
   name: yup.string().required('Category name is required'),
   description: yup.string().default(''),
-  parentId: yup.string().nullable().default(null),
+  parentId: yup.number().nullable().default(null),
 });
 
 type CategoryFormData = yup.InferType<typeof schema>;
@@ -22,7 +22,7 @@ export const CategoryListPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormData>({
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormData>({
     resolver: yupResolver(schema),
     defaultValues: { name: '', description: '', parentId: null },
   });
@@ -36,7 +36,7 @@ export const CategoryListPage: React.FC = () => {
   }, [loadCategories]);
 
   const onSubmit = async (data: CategoryFormData) => {
-    const categoryData: CreateCategoryDto = { name: data.name, description: data.description || '', parentId: data.parentId || null };
+    const categoryData: CreateCategoryDto = { name: data.name, description: data.description || '', parentId: data.parentId };
     if (editingCategory) {
       await updateCategory(editingCategory.id, categoryData);
     } else {
@@ -57,7 +57,7 @@ export const CategoryListPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     await deleteCategory(id);
   };
 
@@ -67,7 +67,6 @@ export const CategoryListPage: React.FC = () => {
       title: (
         <Space>
           <span>{cat.name}</span>
-          <span style={{ color: '#999', fontSize: 12 }}>({cat.productCount} products)</span>
           <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(cat)} />
           <Popconfirm title="Delete this category?" onConfirm={() => handleDelete(cat.id)} okText="Delete" okType="danger">
             <Button type="text" size="small" danger icon={<DeleteOutlined />} />
@@ -79,7 +78,6 @@ export const CategoryListPage: React.FC = () => {
         title: (
           <Space>
             <span>{child.name}</span>
-            <span style={{ color: '#999', fontSize: 12 }}>({child.productCount} products)</span>
             <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(child)} />
             <Popconfirm title="Delete this category?" onConfirm={() => handleDelete(child.id)} okText="Delete" okType="danger">
               <Button type="text" size="small" danger icon={<DeleteOutlined />} />
@@ -113,16 +111,22 @@ export const CategoryListPage: React.FC = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Category Name *</label>
-            <Input {...register('name')} status={errors.name ? 'error' : undefined} />
+            <Controller name="name" control={control} render={({ field }) => (
+              <Input {...field} status={errors.name ? 'error' : undefined} />
+            )} />
             {errors.name && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errors.name.message}</span>}
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Description</label>
-            <Input.TextArea {...register('description')} rows={3} />
+            <Controller name="description" control={control} render={({ field }) => (
+              <Input.TextArea {...field} rows={3} />
+            )} />
           </div>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Parent Category</label>
-            <Select {...register('parentId')} placeholder="None (Top Level)" allowClear style={{ width: '100%' }} options={parentCategoryOptions} />
+            <Controller name="parentId" control={control} render={({ field }) => (
+              <Select {...field} onChange={(value) => field.onChange(value ?? null)} placeholder="None (Top Level)" allowClear style={{ width: '100%' }} options={parentCategoryOptions} />
+            )} />
           </div>
           <div className={styles.formActions}>
             <Button onClick={handleCloseModal}>Cancel</Button>

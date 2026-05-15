@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { salesService } from "../services/salesService";
-import type { Customer, CustomerContact, SalesOrder } from "../types/sales";
+import type { Customer, SalesOrder } from "../types/sales";
 
 export const useCustomer = (id?: number) => {
   const [data, setData] = useState<Customer | null>(null);
@@ -32,10 +32,11 @@ export const useCustomer = (id?: number) => {
 
   return {
     data,
-    contacts: [] as CustomerContact[],
     salesHistory,
     loading,
     error,
     refetch: fetchCustomer,
   };
 };
+
+export default useCustomer;

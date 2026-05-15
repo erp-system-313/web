@@ -20,7 +20,7 @@ export const useCustomers = (filters?: CustomerFilters) => {
     } finally {
       setLoading(false);
     }
-  }, [filters?.search, filters?.isActive]);
+  }, [filters?.search, filters?.isActive, filters?.creditLimitMin, filters?.creditLimitMax, filters?.page, filters?.size]);
 
   useEffect(() => {
     fetchCustomers();

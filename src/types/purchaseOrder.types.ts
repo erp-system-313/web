@@ -39,21 +39,15 @@ export interface PurchaseOrder {
 export interface CreatePurchaseOrderDto {
   supplierId: number;
   orderDate: string;
-  deliveryDate: string;
-  paymentTerms: string;
+  expectedDate?: string;
   notes: string;
-  status: string;
-  items: Array<{
+  lines: Array<{
     productId: number;
     quantity: number;
     unitPrice: number;
     discount: number;
     notes: string;
   }>;
-  subtotal: number;
-  taxAmount: number;
-  shippingCost: number;
-  totalAmount: number;
 }
 
 export interface PurchaseOrderFilters {

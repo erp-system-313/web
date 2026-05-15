@@ -34,22 +34,9 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
         const result = await purchasingService.getPurchaseOrders(filters);
         setOrders(result.data);
         setTotal(result.total);
-      } catch (error) {
-        message.error("Failed to fetch purchase orders");
+      } catch {
       } finally {
         setLoading(false);
-      }
-    },
-    [],
-  );
-
-  const getOrder = useCallback(
-    async (id: number): Promise<PurchaseOrder | null> => {
-      try {
-        return await purchasingService.getPurchaseOrder(id);
-      } catch (error) {
-        message.error("Failed to fetch purchase order");
-        return null;
       }
     },
     [],

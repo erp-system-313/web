@@ -39,7 +39,7 @@ export const CreateProductPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register: registerBasic, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
+  const { register: registerBasic, handleSubmit: submitBasic, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
     resolver: yupResolver(basicInfoSchema),
     mode: 'onBlur',
   });
@@ -99,7 +99,7 @@ export const CreateProductPage: React.FC = () => {
       key: 'basic',
       label: 'Basic Info',
       children: (
-        <form onSubmit={(e) => { e.preventDefault(); handleBasicSubmit(basicData!); }}>
+        <form onSubmit={submitBasic(handleBasicSubmit)}>
           <div className={styles.formItem}>
             <label style={{ display: 'block', marginBottom: 8 }}>Product Name *</label>
             <Input {...registerBasic('name')} placeholder="Enter product name" status={errorsBasic.name ? 'error' : undefined} />
