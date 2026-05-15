@@ -49,6 +49,7 @@ export const EmployeesList: React.FC = () => {
   const [form] = Form.useForm();
   const watchedDept = Form.useWatch("departmentId", form);
   const emailVal = Form.useWatch("email", form);
+  const userIdVal = Form.useWatch("userId", form);
   const [importOpen, setImportOpen] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
   const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
@@ -93,8 +94,14 @@ export const EmployeesList: React.FC = () => {
 
   const handleOk = async () => {
     try {
-      const values = await form.validateFields();
+      await form.validateFields();
+    } catch {
+      message.error("Please fix the validation errors before submitting");
+      return;
+    }
+    try {
       setCreating(true);
+      const values = form.getFieldsValue();
 
       const employeeData: Record<string, any> = {
         firstName: values.firstName,
@@ -331,6 +338,7 @@ export const EmployeesList: React.FC = () => {
               placeholder="Link to existing user (optional)"
               allowClear
               showSearch
+              disabled={createAccount}
               filterOption={(input, option) =>
                 (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
@@ -357,7 +365,16 @@ export const EmployeesList: React.FC = () => {
             />
           )}
           <Form.Item name="_createAccount" valuePropName="checked">
-            <Checkbox onChange={(e) => setCreateAccount(e.target.checked)}>
+            <Checkbox
+              disabled={!!userIdVal}
+              onChange={(e) => {
+                setCreateAccount(e.target.checked);
+                if (e.target.checked) {
+                  form.setFieldValue("userId", undefined);
+                  setSelectedUserEmail(null);
+                }
+              }}
+            >
               Create user account for this employee
             </Checkbox>
           </Form.Item>
