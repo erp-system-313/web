@@ -4,7 +4,7 @@ import type { Employee, EmployeeStatus, CreateEmployeeDto, UpdateEmployeeDto } f
 
 interface EmployeeFilters {
   search?: string;
-  department?: string;
+  departmentId?: number;
   status?: EmployeeStatus;
 }
 

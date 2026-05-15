@@ -1,7 +1,8 @@
-import { useState, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Card, Typography, Table, Button, Space, Tag, message, Select, Row, Col, Statistic } from "antd";
 import { ClockCircleOutlined, CheckCircleOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useAttendance, useClockIn, useClockOut, useEmployees } from "../../../hooks";
+import { hrService } from "../../../services/hrService";
 import { AuthContext } from "../../../contexts/AuthContext";
 import dayjs from "dayjs";
 import styles from "./Attendance.module.css";
@@ -16,6 +17,12 @@ export const AttendancePage: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(undefined);
   const [todayCheckedIn, setTodayCheckedIn] = useState(false);
+
+  useEffect(() => {
+    hrService.attendance.getClockedInStatus()
+      .then((res) => setTodayCheckedIn(res.isClockedIn))
+      .catch(() => setTodayCheckedIn(false));
+  }, []);
 
   const startDate = currentMonth.startOf("month").format("YYYY-MM-DD");
   const endDate = currentMonth.endOf("month").format("YYYY-MM-DD");
