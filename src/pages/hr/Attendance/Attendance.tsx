@@ -160,17 +160,12 @@ export const AttendancePage: React.FC = () => {
   const statusLabel = (s: string) =>
     s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  const columns = [
+  const baseColumns = [
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
       render: (v: string) => v ? dayjs(v).format("DD/MM/YYYY") : "-",
-    },
-    {
-      title: "Employee",
-      dataIndex: "employeeName",
-      key: "employeeName",
     },
     {
       title: "Check In",
@@ -195,6 +190,18 @@ export const AttendancePage: React.FC = () => {
       },
     },
   ];
+
+  const columns = isAdminOrManager
+    ? [
+        ...baseColumns.slice(0, 1),
+        {
+          title: "Employee",
+          dataIndex: "employeeName",
+          key: "employeeName",
+        },
+        ...baseColumns.slice(1),
+      ]
+    : baseColumns;
 
   return (
     <div className={styles.container}>
@@ -337,18 +344,16 @@ export const AttendancePage: React.FC = () => {
           </div>
         </Modal>
 
-        {isAdminOrManager && (
-          <div className={styles.tableSection}>
-            <Title level={5}>Attendance Records</Title>
-            <Table
-              dataSource={records}
-              columns={columns}
-              rowKey="id"
-              loading={loading}
-              pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} records` }}
-            />
-          </div>
-        )}
+        <div className={styles.tableSection}>
+          <Title level={5}>{isAdminOrManager ? "Attendance Records" : "My Attendance"}</Title>
+          <Table
+            dataSource={records}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} records` }}
+          />
+        </div>
       </Card>
     </div>
   );

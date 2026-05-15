@@ -12,6 +12,7 @@ import {
   Select,
   DatePicker,
   Checkbox,
+  Alert,
   message,
   Spin,
 } from "antd";
@@ -47,10 +48,12 @@ export const EmployeesList: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [form] = Form.useForm();
   const watchedDept = Form.useWatch("departmentId", form);
+  const emailVal = Form.useWatch("email", form);
   const [importOpen, setImportOpen] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
   const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
   const [userAccounts, setUserAccounts] = useState<{ id: number; fullName: string; email: string }[]>([]);
+  const [selectedUserEmail, setSelectedUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -62,6 +65,7 @@ export const EmployeesList: React.FC = () => {
       adminService.roles.getAll().then((res) => {
         setRoles(res.map((r: { id: number; name: string }) => ({ id: r.id, name: r.name })));
       }).catch(() => setRoles([]));
+      setSelectedUserEmail(null);
     }
   }, [isModalOpen]);
 
@@ -330,12 +334,28 @@ export const EmployeesList: React.FC = () => {
               filterOption={(input, option) =>
                 (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
+              onChange={(val) => {
+                const user = userAccounts.find((u) => u.id === val);
+                setSelectedUserEmail(user?.email ?? null);
+                if (user?.email && !form.getFieldValue("email")) {
+                  form.setFieldValue("email", user.email);
+                }
+              }}
               options={userAccounts.map((u) => ({
                 value: u.id,
                 label: `${u.fullName} (${u.email})`,
               }))}
             />
           </Form.Item>
+          {selectedUserEmail && emailVal && selectedUserEmail !== emailVal && (
+            <Alert
+              type="warning"
+              showIcon
+              message={`Linked user uses "${selectedUserEmail}" but employee email is "${emailVal}". ` +
+                `The employee email is used for HR communication; the user email is used for login.`}
+              style={{ marginBottom: 16 }}
+            />
+          )}
           <Form.Item name="_createAccount" valuePropName="checked">
             <Checkbox onChange={(e) => setCreateAccount(e.target.checked)}>
               Create user account for this employee

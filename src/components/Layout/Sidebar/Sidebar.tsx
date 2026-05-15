@@ -14,7 +14,6 @@ import {
   LogoutOutlined,
   SolutionOutlined,
   ProjectOutlined,
-  ThunderboltOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../../contexts/AuthContext";
 import styles from "./Sidebar.module.css";
@@ -137,28 +136,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       ],
     },
     {
-      key: "crm",
-      icon: <ThunderboltOutlined />,
-      label: "CRM",
-      children: [
-        {
-          key: "crm-dashboard",
-          label: "Dashboard",
-          onClick: () => navigate("/crm"),
-        },
-        {
-          key: "crm-leads",
-          label: "Leads",
-          onClick: () => navigate("/crm/leads"),
-        },
-        {
-          key: "crm-pipeline",
-          label: "Pipeline",
-          onClick: () => navigate("/crm/pipeline"),
-        },
-      ],
-    },
-    {
       key: "hr",
       icon: <TeamOutlined />,
       label: "HR",
@@ -168,6 +145,16 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
               key: "attendance",
               label: "Attendance",
               onClick: () => navigate("/hr/attendance"),
+            },
+            {
+              key: "leave",
+              label: "Leave Requests",
+              onClick: () => navigate("/hr/leave"),
+            },
+            {
+              key: "leave-allocations",
+              label: "Leave Balances",
+              onClick: () => navigate("/hr/leave/allocations"),
             },
           ]
         : [
@@ -301,9 +288,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/admin/roles")) return "roles";
     if (path.startsWith("/admin/settings")) return "settings";
     if (path.startsWith("/admin/audit-logs")) return "audit-logs";
-    if (path.startsWith("/crm/leads")) return "crm-leads";
-    if (path.startsWith("/crm/pipeline")) return "crm-pipeline";
-    if (path.startsWith("/crm")) return "crm-dashboard";
     if (path.startsWith("/projects")) return "projects";
     if (path === "/dashboard") return "dashboard";
     return "";
@@ -323,9 +307,6 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       journal: "finance",
       accounts: "finance",
       tickets: "support",
-      "crm-dashboard": "crm",
-      "crm-leads": "crm",
-      "crm-pipeline": "crm",
       "hr-overview": "hr",
       employees: "hr",
       attendance: "hr",
