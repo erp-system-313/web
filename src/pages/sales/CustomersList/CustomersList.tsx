@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Space, Select, Modal, message } from "antd";
 import {
@@ -10,6 +10,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { DataTable, StatusBadge } from "../../../components/common";
 import { useCustomers } from "../../../hooks";
+import { AuthContext } from "../../../contexts/AuthContext";
 import type { Customer, CustomerFilters } from "../../../types/sales";
 import styles from "./CustomersList.module.css";
 
@@ -17,6 +18,9 @@ const { confirm } = Modal;
 
 export const CustomersList: React.FC = () => {
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
+  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<boolean | undefined>();
 
@@ -98,12 +102,14 @@ export const CustomersList: React.FC = () => {
             onClick={() => navigate(`/sales/customers/${record.id}`)}
           />
           <Button type="text" icon={<EditOutlined />} />
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record)}
-          />
+          {isAdminOrManager && (
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+            />
+          )}
         </Space>
       ),
     },

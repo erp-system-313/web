@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Tag,
@@ -22,6 +22,7 @@ import {
 } from "@ant-design/icons";
 import { useTicket } from "../../../hooks/useSupport";
 import { supportService } from "../../../services/supportService";
+import { AuthContext } from "../../../contexts/AuthContext";
 import type { TicketPriority, TicketStatus } from "../../../types/support";
 import styles from "./TicketDetails.module.css";
 
@@ -59,6 +60,9 @@ function timeAgo(dateStr: string): string {
 export const TicketDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
+  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const ticketId = Number(id);
   const { data: ticket, loading, error, refetch } = useTicket(ticketId);
   const [comment, setComment] = useState("");
@@ -164,7 +168,7 @@ export const TicketDetails: React.FC = () => {
               Edit
             </Button>
           )}
-          {isEditable && (
+          {isEditable && isAdminOrManager && (
             <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>
               Delete
             </Button>

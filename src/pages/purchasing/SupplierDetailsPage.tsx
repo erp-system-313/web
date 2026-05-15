@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -19,6 +19,7 @@ import {
   ShoppingCartOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
+import { AuthContext } from "../../contexts/AuthContext";
 import type { PurchaseOrderStatus } from "../../types/purchaseOrder.types";
 import { useSuppliers } from "../../hooks/useSuppliers";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
@@ -37,6 +38,9 @@ const getStatusTag = (status: PurchaseOrderStatus) => {
 export const SupplierDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
+  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const {
     suppliers,
     loading: supplierLoading,
@@ -197,16 +201,20 @@ export const SupplierDetailsPage: React.FC = () => {
           >
             Edit
           </Button>
-          <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>
-            Delete
-          </Button>
-          <Button
-            type="primary"
-            icon={<ShoppingCartOutlined />}
-            onClick={handleCreatePO}
-          >
-            Create Purchase Order
-          </Button>
+          {isAdminOrManager && (
+            <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>
+              Delete
+            </Button>
+          )}
+          {isAdminOrManager && (
+            <Button
+              type="primary"
+              icon={<ShoppingCartOutlined />}
+              onClick={handleCreatePO}
+            >
+              Create Purchase Order
+            </Button>
+          )}
         </Space>
       </div>
 

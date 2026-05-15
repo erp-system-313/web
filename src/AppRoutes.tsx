@@ -107,18 +107,14 @@ export const AppRoutes = () => {
         <Route path="/sales/customers" element={<CustomersList />} />
         <Route path="/sales/customers/:id" element={<CustomerDetails />} />
 
-        {/* Inventory routes */}
-        <Route path="/inventory/products" element={<ProductListPage />} />
-        <Route path="/inventory/products/new" element={<CreateProductPage />} />
-        <Route
-          path="/inventory/products/:id"
-          element={<ProductDetailsPage />}
-        />
-        <Route
-          path="/inventory/products/:id/edit"
-          element={<EditProductPage />}
-        />
-        <Route path="/inventory/categories" element={<CategoryListPage />} />
+        {/* Inventory routes — admin/manager only */}
+        <Route element={<RequireRole roles={["ADMIN", "MANAGER"]} />}>
+          <Route path="/inventory/products" element={<ProductListPage />} />
+          <Route path="/inventory/products/new" element={<CreateProductPage />} />
+          <Route path="/inventory/products/:id" element={<ProductDetailsPage />} />
+          <Route path="/inventory/products/:id/edit" element={<EditProductPage />} />
+          <Route path="/inventory/categories" element={<CategoryListPage />} />
+        </Route>
 
         {/* CRM routes */}
         <Route path="/crm" element={<CRMDashboard />} />
@@ -126,10 +122,12 @@ export const AppRoutes = () => {
         <Route path="/crm/pipeline" element={<Pipeline />} />
         <Route path="/crm/leads/:id" element={<LeadDetails />} />
 
-        {/* Recruitment routes */}
-        <Route path="/recruitment/jobs" element={<JobOpenings />} />
-        <Route path="/recruitment/pipeline" element={<RecruitmentPipeline />} />
-        <Route path="/recruitment/applicants/:id" element={<ApplicantDetail />} />
+        {/* Recruitment routes — admin/manager/hr only */}
+        <Route element={<RequireRole roles={["ADMIN", "MANAGER", "HR"]} />}>
+          <Route path="/recruitment/jobs" element={<JobOpenings />} />
+          <Route path="/recruitment/pipeline" element={<RecruitmentPipeline />} />
+          <Route path="/recruitment/applicants/:id" element={<ApplicantDetail />} />
+        </Route>
 
         {/* Support routes */}
         <Route path="/support/tickets" element={<TicketsList />} />
