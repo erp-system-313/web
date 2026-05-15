@@ -356,6 +356,62 @@ export const hrService = {
       }
     },
   },
+
+  contracts: {
+    getAll: async (params?: {
+      page?: number;
+      size?: number;
+      employeeId?: number;
+      status?: string;
+    }) => {
+      try {
+        const response = await api.get("/v1/contracts", { params });
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    create: async (data: {
+      employeeId: number;
+      type: string;
+      startDate: string;
+      endDate?: string;
+      wage?: number;
+      benefits?: string;
+    }) => {
+      try {
+        const response = await api.post("/v1/contracts", data);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    update: async (id: number, data: {
+      type?: string;
+      startDate?: string;
+      endDate?: string;
+      wage?: number;
+      benefits?: string;
+      status?: string;
+    }) => {
+      try {
+        const response = await api.put(`/v1/contracts/${id}`, data);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    delete: async (id: number): Promise<void> => {
+      try {
+        await api.delete(`/v1/contracts/${id}`);
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+  },
 };
 
 export default hrService;

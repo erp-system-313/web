@@ -144,3 +144,29 @@ export interface LeaveBalance {
   remainingDays: number;
   year: number;
 }
+
+export type ContractType = "PERMANENT" | "INTERNSHIP" | "FIXED_TERM" | "CONTRACTOR";
+export type ContractStatus = "ACTIVE" | "EXPIRED" | "TERMINATED";
+
+export interface Contract {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  type: ContractType;
+  startDate: string;
+  endDate?: string;
+  wage?: number;
+  benefits?: string;
+  status: ContractStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateContractDto {
+  employeeId: number;
+  type: ContractType;
+  startDate: string;
+  endDate?: string;
+  wage?: number;
+  benefits?: string;
+}

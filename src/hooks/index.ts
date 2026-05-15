@@ -16,6 +16,7 @@ export {
 } from "./useLeaveRequests";
 export { useDepartments, useCreateDepartment, useUpdateDepartment, useDeleteDepartment } from "./useDepartments";
 export { useJobPositions, useCreateJobPosition, useUpdateJobPosition, useDeleteJobPosition } from "./useJobPositions";
+export { useContracts, useCreateContract, useUpdateContract, useDeleteContract } from "./useContracts";
 export { useJobOpenings, useRecruitmentStages, useApplicant, useCreateJobOpening, useUpdateJobOpening, useDeleteJobOpening } from "./useRecruitment";
 export { useInvoices } from "./useInvoices";
 export { useInvoice } from "./useInvoice";

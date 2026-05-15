@@ -180,6 +180,11 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           label: "Leave Calendar",
           onClick: () => navigate("/hr/leave/calendar"),
         },
+        {
+          key: "contracts",
+          label: "Contracts",
+          onClick: () => navigate("/hr/contracts"),
+        },
       ],
     },
     {
@@ -255,6 +260,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/hr/leave/allocations")) return "leave-allocations";
     if (path.startsWith("/hr/leave/calendar")) return "leave-calendar";
     if (path.startsWith("/hr/leave")) return "leave";
+    if (path.startsWith("/hr/contracts")) return "contracts";
     if (path.startsWith("/recruitment/jobs")) return "recruitment-jobs";
     if (path.startsWith("/recruitment/pipeline")) return "recruitment-pipeline";
     if (path.startsWith("/recruitment/applicants")) return "recruitment-pipeline";
@@ -289,6 +295,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       leave: "hr",
       "leave-allocations": "hr",
       "leave-calendar": "hr",
+      contracts: "hr",
       "recruitment-jobs": "recruitment",
       "recruitment-pipeline": "recruitment",
       users: "admin",

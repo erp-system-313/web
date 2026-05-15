@@ -9,6 +9,7 @@ import { JobPositions } from "./pages/hr/JobPositions/JobPositions";
 import { LeaveAllocations } from "./pages/hr/LeaveAllocations/LeaveAllocations";
 import { LeaveCalendar } from "./pages/hr/LeaveCalendar/LeaveCalendar";
 import { HRDashboard } from "./pages/hr/HRDashboard/HRDashboard";
+import { Contracts } from "./pages/hr/Contracts/Contracts";
 import LoginPage from "./pages/auth/Login/Login";
 import DashboardPage from "./pages/common/Dashboard/Dashboard";
 import ProfilePage from "./pages/common/Profile/Profile";
@@ -78,6 +79,7 @@ export const AppRoutes = () => {
         <Route path="/hr/leave/calendar" element={<LeaveCalendar />} />
         <Route path="/hr/departments" element={<Departments />} />
         <Route path="/hr/job-positions" element={<JobPositions />} />
+        <Route path="/hr/contracts" element={<Contracts />} />
 
         {/* Admin routes */}
         <Route path="/admin/users" element={<UsersListPage />} />
