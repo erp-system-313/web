@@ -91,7 +91,7 @@ export const EmployeesList: React.FC = () => {
       const values = await form.validateFields();
       setCreating(true);
 
-      const employeeData = {
+      const employeeData: Record<string, any> = {
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
@@ -102,10 +102,12 @@ export const EmployeesList: React.FC = () => {
         hireDate: values.hireDate
           ? values.hireDate.format("YYYY-MM-DD")
           : undefined,
-        userId: values.userId,
       };
+      if (!values._createAccount && values.userId) {
+        employeeData.userId = values.userId;
+      }
 
-      const newEmployee = await createEmployee(employeeData);
+      const newEmployee = await createEmployee(employeeData as any);
 
       if (values._createAccount) {
         await usersService.create({
