@@ -44,6 +44,9 @@ import {
   TicketDetails,
   EditTicket,
 } from "./pages/support";
+import { ProjectList } from "./pages/projects/ProjectList";
+import { ProjectDetail } from "./pages/projects/ProjectDetail";
+import { Gantt } from "./pages/projects/Gantt";
 
 export const AppRoutes = () => {
   return (
@@ -136,6 +139,10 @@ export const AppRoutes = () => {
           path="/purchasing/orders/:id/edit"
           element={<PurchaseOrderListPage />}
         />
+        {/* Project routes */}
+        <Route path="/projects" element={<ProjectList />} />
+        <Route path="/projects/:id" element={<ProjectDetail />} />
+        <Route path="/projects/:id/gantt" element={<Gantt />} />
       </Route>
 
       {/* Default redirects */}

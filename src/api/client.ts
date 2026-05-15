@@ -25,7 +25,10 @@ function removeFromAll(key: string) {
 }
 
 function setOnStorage(key: string, value: string) {
-  const store = getStorageWithKey("erp_token") || getStorageWithKey("erp_refresh_token") || localStorage;
+  const store =
+    getStorageWithKey("erp_token") ||
+    getStorageWithKey("erp_refresh_token") ||
+    localStorage;
   store.setItem(key, value);
 }
 
@@ -54,6 +57,34 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
+const doRefresh = async (): Promise<string | null> => {
+  const refreshToken = localStorage.getItem("erp_refresh_token");
+  if (!refreshToken) return null;
+  try {
+    const response = await axios.post("/api/v1/auth/refresh", { refreshToken });
+    const data = response.data;
+    if (data.success && data.data) {
+      localStorage.setItem("erp_token", data.data.accessToken);
+      localStorage.setItem(
+        "erp_refresh_token",
+        data.data.refreshToken || refreshToken,
+      );
+      return data.data.accessToken;
+    }
+  } catch {
+    // refresh failed
+  }
+  return null;
+};
+
+// Proactively refresh token every 10 minutes to prevent expiry
+setInterval(
+  () => {
+    doRefresh();
+  },
+  10 * 60 * 1000,
+);
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getTokenFromAny("erp_token") || getTokenFromAny("token");
@@ -74,7 +105,10 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      (error.response?.status === 401 || error.response?.status === 403) &&
+      !originalRequest._retry
+    ) {
       if (isRefreshing) {
         return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -88,8 +122,8 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       const refreshToken = getTokenFromAny("erp_refresh_token");
-
       if (!refreshToken) {
+        processQueue(error, null);
         isRefreshing = false;
         removeFromAll("erp_token");
         removeFromAll("erp_refresh_token");

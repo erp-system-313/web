@@ -12,6 +12,7 @@ import {
   SettingOutlined,
   CustomerServiceOutlined,
   LogoutOutlined,
+  ProjectOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../../contexts/AuthContext";
 import styles from "./Sidebar.module.css";
@@ -41,6 +42,12 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       icon: <DashboardOutlined />,
       label: "Dashboard",
       onClick: () => navigate("/dashboard"),
+    },
+    {
+      key: "projects",
+      icon: <ProjectOutlined />,
+      label: "Projects",
+      onClick: () => navigate("/projects"),
     },
     {
       key: "inventory",
@@ -198,6 +205,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/admin/users")) return "users";
     if (path.startsWith("/admin/settings")) return "settings";
     if (path.startsWith("/admin/audit-logs")) return "audit-logs";
+    if (path.startsWith("/projects")) return "projects";
     if (path === "/dashboard") return "dashboard";
     return "";
   };
