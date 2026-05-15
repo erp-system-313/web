@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Card, Typography, Table, Button, Space, Tag, message, Select, Row, Col, Statistic } from "antd";
 import { ClockCircleOutlined, CheckCircleOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useAttendance, useClockIn, useClockOut, useEmployees } from "../../../hooks";
+import { AuthContext } from "../../../contexts/AuthContext";
 import dayjs from "dayjs";
 import styles from "./Attendance.module.css";
 
 const { Title } = Typography;
 
 export const AttendancePage: React.FC = () => {
+  const authContext = useContext(AuthContext);
+  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
+  const canViewAll = userRole === "admin" || userRole === "manager";
+
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(undefined);
   const [todayCheckedIn, setTodayCheckedIn] = useState(false);
@@ -88,14 +93,16 @@ export const AttendancePage: React.FC = () => {
         <div className={styles.header}>
           <Title level={3}>Attendance</Title>
           <Space>
-            <Select
-              allowClear
-              placeholder="All Employees"
-              style={{ width: 200 }}
-              value={selectedEmployee}
-              onChange={(v) => setSelectedEmployee(v)}
-              options={employees.map((e) => ({ value: e.id, label: e.fullName }))}
-            />
+            {canViewAll && (
+              <Select
+                allowClear
+                placeholder="All Employees"
+                style={{ width: 200 }}
+                value={selectedEmployee}
+                onChange={(v) => setSelectedEmployee(v)}
+                options={employees.map((e) => ({ value: e.id, label: e.fullName }))}
+              />
+            )}
             <Button icon={<LeftOutlined />} onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))} />
             <span style={{ fontWeight: 500, minWidth: 140, textAlign: "center", display: "inline-block" }}>
               {currentMonth.format("MMMM YYYY")}

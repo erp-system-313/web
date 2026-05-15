@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import { Card, Form, Input, Button, Typography, Avatar, Divider, message } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons';
 import { AuthContext } from '../../../contexts/AuthContext';
+import { authService } from '../../../services/authService';
 import styles from './Profile.module.css';
 
 const { Title, Text } = Typography;
@@ -9,13 +10,38 @@ const { Title, Text } = Typography;
 export const ProfilePage: React.FC = () => {
   const { user } = useContext(AuthContext) || {};
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const onFinish = () => {
+  const onFinish = async (values: { firstName: string; lastName: string; phone?: string }) => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await authService.updateProfile(values);
       message.success('Profile updated successfully');
+    } catch {
+      message.error('Failed to update profile');
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  };
+
+  const onFinishPassword = async (values: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => {
+    if (values.newPassword !== values.confirmPassword) {
+      message.error('Passwords do not match');
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      await authService.changePassword(values);
+      message.success('Password changed successfully');
+    } catch {
+      message.error('Failed to change password');
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   return (
@@ -80,7 +106,7 @@ export const ProfilePage: React.FC = () => {
         <Divider />
 
         <Title level={4}>Change Password</Title>
-        <Form layout="vertical">
+        <Form layout="vertical" onFinish={onFinishPassword}>
           <Form.Item
             label="Current Password"
             name="currentPassword"
@@ -106,7 +132,9 @@ export const ProfilePage: React.FC = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button type="default">Change Password</Button>
+            <Button type="primary" htmlType="submit" loading={passwordLoading}>
+              Change Password
+            </Button>
           </Form.Item>
         </Form>
       </Card>

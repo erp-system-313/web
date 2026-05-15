@@ -55,6 +55,7 @@ import {
   EditTicket,
 } from "./pages/support";
 import { ProjectList } from "./pages/projects/ProjectList";
+import { RequireRole } from "./components/common/RequireRole";
 import { ProjectDetail } from "./pages/projects/ProjectDetail";
 import { Gantt } from "./pages/projects/Gantt";
 
@@ -82,10 +83,12 @@ export const AppRoutes = () => {
         <Route path="/hr/contracts" element={<Contracts />} />
 
         {/* Admin routes */}
-        <Route path="/admin/users" element={<UsersListPage />} />
-        <Route path="/admin/roles" element={<RolesList />} />
-        <Route path="/admin/settings" element={<SettingsPage />} />
-        <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+        <Route element={<RequireRole roles={["ADMIN"]} />}>
+          <Route path="/admin/users" element={<UsersListPage />} />
+          <Route path="/admin/roles" element={<RolesList />} />
+          <Route path="/admin/settings" element={<SettingsPage />} />
+          <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+        </Route>
 
         {/* Finance routes */}
         <Route path="/finance/invoices" element={<InvoicesList />} />
