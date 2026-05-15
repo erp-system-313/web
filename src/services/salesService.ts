@@ -7,6 +7,7 @@ import type {
   UpdateSalesOrderDto,
   PaginatedResponse,
 } from "../types/sales";
+import type { Product } from "../types/product.types";
 import { apiClient } from "../api/client";
 import { endpoints } from "../api/endpoints";
 
@@ -111,6 +112,22 @@ export const salesService = {
       } catch (error) {
         console.error(`Failed to delete customer ${id}:`, error);
         return false;
+      }
+    },
+
+    search: async (query: string): Promise<Customer[]> => {
+      try {
+        const params = new URLSearchParams();
+        params.append("search", query);
+        params.append("page", "0");
+        params.append("size", "20");
+        const response = await apiClient.get<ApiResponse<PageResponse<Customer>>>(
+          endpoints.customers.list, { params }
+        );
+        return response.data.data.content;
+      } catch (error) {
+        console.error("Failed to search customers:", error);
+        return [];
       }
     },
   },
@@ -228,13 +245,13 @@ export const salesService = {
   },
 
   products: {
-    search: async (query: string): Promise<Customer[]> => {
+    search: async (query: string): Promise<Product[]> => {
       try {
         const params = new URLSearchParams();
         params.append("search", query);
 
         const response = await apiClient.get<
-          ApiResponse<PageResponse<Customer>>
+          ApiResponse<PageResponse<Product>>
         >(endpoints.products.list, { params });
         return response.data.data.content;
       } catch (error) {

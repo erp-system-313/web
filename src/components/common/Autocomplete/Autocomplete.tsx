@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { AutoComplete } from "antd";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { AutoComplete, Spin } from "antd";
 import type { SelectProps } from "antd";
 import styles from "./Autocomplete.module.css";
 
@@ -31,23 +31,39 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
 }) => {
   const [options, setOptions] = useState<SelectProps["options"]>([]);
   const [searchValue, setSearchValue] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const loadOptions = useCallback(async () => {
-    const results = await fetchOptions(searchValue);
-    const mapped: SelectProps["options"] = (
-      results as Record<string, unknown>[]
-    ).map((item) => ({
-      value: String(item.id),
-      label: displayFormatter(item),
-      id: item.id as number,
-      data: item,
-    }));
-    setOptions(mapped);
-  }, [searchValue, fetchOptions, displayFormatter]);
+  const fetchOptionsRef = useRef(fetchOptions);
+  fetchOptionsRef.current = fetchOptions;
+
+  const displayFormatterRef = useRef(displayFormatter);
+  displayFormatterRef.current = displayFormatter;
+
+  const loadOptions = useCallback(async (query: string) => {
+    setLoading(true);
+    try {
+      const results = await fetchOptionsRef.current(query);
+      const mapped: SelectProps["options"] = (
+        results as Record<string, unknown>[]
+      ).map((item) => ({
+        value: String(item.id),
+        label: displayFormatterRef.current(item),
+        id: item.id as number,
+        data: item,
+      }));
+      setOptions(mapped);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    loadOptions();
-  }, [loadOptions]);
+    loadOptions(searchValue);
+  }, [loadOptions, searchValue]);
+
+  const handleFocus = () => {
+    loadOptions(searchValue);
+  };
 
   const handleSelect = (val: string) => {
     const selected = options?.find((opt) => opt.value === val);
@@ -64,6 +80,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
 
   const handleClear = () => {
     setSearchValue("");
+    setOptions([]);
     onChange?.(null);
   };
 
@@ -75,11 +92,13 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
       onSelect={handleSelect}
       onSearch={setSearchValue}
       onChange={setSearchValue}
+      onFocus={handleFocus}
       onClear={handleClear}
       placeholder={placeholder}
       disabled={disabled}
       allowClear={allowClear}
       filterOption={false}
+      notFoundContent={loading ? <Spin size="small" /> : undefined}
     />
   );
 };

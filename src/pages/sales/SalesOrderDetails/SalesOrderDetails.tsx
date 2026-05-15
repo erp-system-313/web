@@ -154,14 +154,7 @@ export const SalesOrderDetails: React.FC = () => {
               <Descriptions.Item label="Order Date">
                 {new Date(order.orderDate).toLocaleDateString()}
               </Descriptions.Item>
-              <Descriptions.Item label="Required Date">
-                {order.requiredDate
-                  ? new Date(order.requiredDate).toLocaleDateString()
-                  : "-"}
-              </Descriptions.Item>
-              <Descriptions.Item label="Payment Terms">
-                {order.paymentTerms || "-"}
-              </Descriptions.Item>
+
             </Descriptions>
           </Card>
 
@@ -202,22 +195,13 @@ export const SalesOrderDetails: React.FC = () => {
             />
           </Card>
 
-          {(order.notes || order.shippingAddress) && (
+          {order.notes && (
             <Card title="Additional Information" className={styles.card}>
-              {order.notes && (
-                <Descriptions column={1}>
-                  <Descriptions.Item label="Notes">
-                    {order.notes}
-                  </Descriptions.Item>
-                </Descriptions>
-              )}
-              {order.shippingAddress && (
-                <Descriptions column={1}>
-                  <Descriptions.Item label="Shipping Address">
-                    {order.shippingAddress}
-                  </Descriptions.Item>
-                </Descriptions>
-              )}
+              <Descriptions column={1}>
+                <Descriptions.Item label="Notes">
+                  {order.notes}
+                </Descriptions.Item>
+              </Descriptions>
             </Card>
           )}
         </Col>
