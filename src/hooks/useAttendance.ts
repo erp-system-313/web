@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { hrService, type Attendance } from "../services/hrService";
+import { hrService } from "../services/hrService";
+import type { Attendance } from "../types/hr";
 
 interface AttendanceFilters {
   employeeId?: number;

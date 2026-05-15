@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  hrService,
-  type LeaveRequest,
-  type LeaveBalance,
-} from "../services/hrService";
-import type { CreateLeaveRequestDto } from "../types/hr";
+import { hrService } from "../services/hrService";
+import type { LeaveRequest, LeaveBalance, CreateLeaveRequestDto } from "../types/hr";
 
 interface LeaveRequestFilters {
   employeeId?: number;

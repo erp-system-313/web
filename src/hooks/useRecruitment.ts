@@ -79,45 +79,60 @@ export const useApplicant = (id: number | null) => {
 
 export const useCreateJobOpening = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const create = useCallback(async (data: Partial<JobOpening>) => {
     setLoading(true);
+    setError(null);
     try {
       return await recruitmentService.jobOpenings.create(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create job opening");
+      throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  return { create, loading };
+  return { create, loading, error };
 };
 
 export const useUpdateJobOpening = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const update = useCallback(async (id: number, data: Partial<JobOpening>) => {
     setLoading(true);
+    setError(null);
     try {
       return await recruitmentService.jobOpenings.update(id, data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update job opening");
+      throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  return { update, loading };
+  return { update, loading, error };
 };
 
 export const useDeleteJobOpening = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const deleteJo = useCallback(async (id: number) => {
     setLoading(true);
+    setError(null);
     try {
       await recruitmentService.jobOpenings.delete(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete job opening");
+      throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  return { delete: deleteJo, loading };
+  return { delete: deleteJo, loading, error };
 };

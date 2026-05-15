@@ -1,102 +1,14 @@
 import { apiClient as api, handleApiError } from "../api/client";
 import type {
-  EmployeeStatus,
-  AttendanceStatus,
-  LeaveType,
-  LeaveStatus,
+  Employee,
+  Attendance,
+  LeaveRequest,
+  LeaveBalance,
+  CreateEmployeeDto,
+  UpdateEmployeeDto,
   Department,
   JobPosition,
 } from "../types/hr";
-
-export interface Employee {
-  id: number;
-  employeeCode: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  email: string;
-  phone?: string;
-  department: string;
-  departmentId?: number;
-  departmentName?: string;
-  position: string;
-  positionId?: number;
-  positionName?: string;
-  hireDate: string;
-  terminationDate?: string;
-  salary?: number;
-  status: EmployeeStatus;
-  address?: string;
-  userId?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateEmployeeRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  departmentId?: number;
-  positionId?: number;
-  hireDate?: string;
-  salary?: number;
-  address?: string;
-  userId?: number;
-}
-
-export interface UpdateEmployeeRequest {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  departmentId?: number;
-  positionId?: number;
-  phone?: string;
-  salary?: number;
-  address?: string;
-  status?: string;
-}
-
-export interface Attendance {
-  id: number;
-  employeeId: number;
-  employeeName: string;
-  date: string;
-  checkIn?: string;
-  checkOut?: string;
-  status: AttendanceStatus;
-  notes?: string;
-  createdAt: string;
-}
-
-export interface LeaveRequest {
-  id: number;
-  employeeId: number;
-  employeeName: string;
-  startDate: string;
-  endDate: string;
-  totalDays: number;
-  type: LeaveType;
-  status: LeaveStatus;
-  reason: string;
-  rejectionReason?: string;
-  approvedById?: number;
-  approvedByName?: string;
-  approvedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface LeaveBalance {
-  id: number;
-  employeeId: number;
-  employeeName: string;
-  type: LeaveType;
-  totalDays: number;
-  usedDays: number;
-  remainingDays: number;
-  year: number;
-}
 
 export const hrService = {
   employees: {
@@ -124,7 +36,7 @@ export const hrService = {
       }
     },
 
-    create: async (data: CreateEmployeeRequest): Promise<Employee> => {
+    create: async (data: CreateEmployeeDto): Promise<Employee> => {
       try {
         const response = await api.post("/v1/employees", data);
         return response.data.data;
@@ -135,7 +47,7 @@ export const hrService = {
 
     update: async (
       id: number,
-      data: UpdateEmployeeRequest,
+      data: UpdateEmployeeDto,
     ): Promise<Employee> => {
       try {
         const response = await api.put(`/v1/employees/${id}`, data);

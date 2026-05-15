@@ -54,8 +54,10 @@ export interface CreateEmployeeDto {
   phone?: string;
   departmentId?: number;
   positionId?: number;
-  hireDate: string;
+  hireDate?: string;
   salary?: number;
+  address?: string;
+  userId?: number;
 }
 
 export interface UpdateEmployeeDto extends Partial<CreateEmployeeDto> {
@@ -84,6 +86,7 @@ export interface Attendance {
   checkOut?: string;
   status: AttendanceStatus;
   notes?: string;
+  createdAt: string;
 }
 
 export interface AttendanceFilters {
