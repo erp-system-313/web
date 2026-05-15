@@ -10,3 +10,4 @@ export { PageHeader } from "./PageHeader";
 export { Breadcrumbs } from "./Breadcrumbs";
 export { ConfirmModal } from "./ConfirmModal";
 export { EmptyState } from "./EmptyState";
+export { RequireRole } from "./RequireRole";

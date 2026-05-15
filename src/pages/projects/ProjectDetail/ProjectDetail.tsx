@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { Card, Descriptions, Tag, Button, Space, Spin, Table, Modal, Form, Input, DatePicker, message, Popconfirm, Select, Empty } from 'antd';
 import { ArrowLeftOutlined, BarChartOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useProject, useProjectTasks, useProjectStages } from '../../../hooks/useProjects';
 import { projectService } from '../../../services/projectService';
+import { AuthContext } from '../../../contexts/AuthContext';
 import { PROJECT_STATE_LABELS, PROJECT_STATE_COLORS } from '../../../types/project';
 import type { ProjectState, CreateTaskRequest, UpdateTaskRequest, ProjectTask } from '../../../types/project';
 import styles from './ProjectDetail.module.css';
@@ -20,6 +21,9 @@ const STATE_TRANSITIONS: Record<ProjectState, ProjectState[]> = {
 export const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
+  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const projectId = id ? Number(id) : null;
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -185,16 +189,18 @@ export const ProjectDetail: React.FC = () => {
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/projects')}>
           Back to Projects
         </Button>
-        <Popconfirm title="Delete this project?" onConfirm={handleDeleteProject}>
-          <Button danger icon={<DeleteOutlined />}>Delete Project</Button>
-        </Popconfirm>
+        {isAdminOrManager && (
+          <Popconfirm title="Delete this project?" onConfirm={handleDeleteProject}>
+            <Button danger icon={<DeleteOutlined />}>Delete Project</Button>
+          </Popconfirm>
+        )}
       </Space>
 
       <Card
         title={project.name}
         extra={
           <Space>
-            {availableTransitions.map((state) => (
+            {isAdminOrManager && availableTransitions.map((state) => (
               <Popconfirm
                 key={state}
                 title={`Move to ${PROJECT_STATE_LABELS[state]}?`}

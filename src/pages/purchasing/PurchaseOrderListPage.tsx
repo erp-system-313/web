@@ -1,10 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Card, Select, Table, Tag, Space, Input, Modal } from 'antd';
-import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-import type { PurchaseOrder, PurchaseOrderStatus } from '../../types/purchaseOrder.types';
-import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
-import styles from './PurchaseOrderListPage.module.css';
+import React, { useState, useEffect, useCallback, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button, Card, Select, Table, Tag, Space, Input, Modal } from "antd";
+import {
+  PlusOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import { AuthContext } from "../../contexts/AuthContext";
+import type { PurchaseOrder, PurchaseOrderStatus } from "../../types/purchaseOrder.types";
+import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
+import styles from "./PurchaseOrderListPage.module.css";
 
 const statusOptions = [
   { value: '', label: 'All Statuses' },
@@ -28,6 +35,9 @@ const getStatusTag = (status: PurchaseOrderStatus) => {
 
 export const PurchaseOrderListPage: React.FC = () => {
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
+  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const { orders, loading, fetchOrders, deleteOrder } = usePurchaseOrders();
 
   const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | ''>('');
@@ -118,7 +128,7 @@ export const PurchaseOrderListPage: React.FC = () => {
       render: (_: unknown, record: PurchaseOrder) => (
         <Space className={styles.tableActions}>
           <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewOrder(record.id)} />
-          {record.status === 'DRAFT' && (
+          {record.status === "DRAFT" && isAdminOrManager && (
             <>
               <Button type="text" icon={<EditOutlined />} onClick={() => handleEditOrder(record.id)} />
               <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDeleteOrder(record.id)} />
@@ -133,9 +143,11 @@ export const PurchaseOrderListPage: React.FC = () => {
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Purchase Orders</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreatePO}>
-          Create Purchase Order
-        </Button>
+        {isAdminOrManager && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreatePO}>
+            Create Purchase Order
+          </Button>
+        )}
       </div>
 
       <Card className={styles.filterBar}>
