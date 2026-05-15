@@ -14,6 +14,7 @@ import {
   LogoutOutlined,
   SolutionOutlined,
   ProjectOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../../contexts/AuthContext";
 import styles from "./Sidebar.module.css";
@@ -136,10 +137,32 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       ],
     },
     {
+      key: "crm",
+      icon: <ThunderboltOutlined />,
+      label: "CRM",
+      children: [
+        {
+          key: "crm-dashboard",
+          label: "Dashboard",
+          onClick: () => navigate("/crm"),
+        },
+        {
+          key: "crm-leads",
+          label: "Leads",
+          onClick: () => navigate("/crm/leads"),
+        },
+        {
+          key: "crm-pipeline",
+          label: "Pipeline",
+          onClick: () => navigate("/crm/pipeline"),
+        },
+      ],
+    },
+    {
       key: "hr",
       icon: <TeamOutlined />,
       label: "HR",
-      children: userRole === "staff"
+      children: userRole === "staff" || userRole === "user"
         ? [
             {
               key: "attendance",
@@ -243,7 +266,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (!item) return false;
     const key = item.key as string;
     if (key === "inventory" && !isVisible(["admin", "manager"])) return false;
-    if (key === "hr" && !isVisible(["admin", "manager", "staff"])) return false;
+    if (key === "hr" && !isVisible(["admin", "manager", "staff", "user"])) return false;
     if (key === "recruitment" && !isVisible(["admin", "manager", "hr"])) return false;
     if (key === "admin" && !isVisible(["admin"])) return false;
     return true;
@@ -278,6 +301,9 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/admin/roles")) return "roles";
     if (path.startsWith("/admin/settings")) return "settings";
     if (path.startsWith("/admin/audit-logs")) return "audit-logs";
+    if (path.startsWith("/crm/leads")) return "crm-leads";
+    if (path.startsWith("/crm/pipeline")) return "crm-pipeline";
+    if (path.startsWith("/crm")) return "crm-dashboard";
     if (path.startsWith("/projects")) return "projects";
     if (path === "/dashboard") return "dashboard";
     return "";
@@ -297,6 +323,9 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       journal: "finance",
       accounts: "finance",
       tickets: "support",
+      "crm-dashboard": "crm",
+      "crm-leads": "crm",
+      "crm-pipeline": "crm",
       "hr-overview": "hr",
       employees: "hr",
       attendance: "hr",
