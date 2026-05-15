@@ -9,6 +9,7 @@ import {
   Input,
   Modal,
   Form,
+  Select,
   message,
   Spin,
 } from "antd";
@@ -25,6 +26,7 @@ import {
   useUpdateUser,
   useDeleteUser,
 } from "../../../hooks/useUsers";
+import { useRoles } from "../../../hooks/useAdmin";
 import styles from "./Users.module.css";
 
 const { Title } = Typography;
@@ -51,6 +53,7 @@ export const UsersListPage: React.FC = () => {
   const { create, loading: creating } = useCreateUser();
   const { update, loading: updating } = useUpdateUser();
   const { remove, loading: deleting } = useDeleteUser();
+  const { data: roles } = useRoles();
 
   const filteredUsers = users.filter((u) => {
     if (!search) return true;
@@ -263,13 +266,14 @@ export const UsersListPage: React.FC = () => {
           )}
           <Form.Item
             name="roleId"
-            label="Role ID"
-            rules={[{ required: true, message: "Please enter role ID" }]}
+            label="Role"
+            rules={[{ required: true, message: "Please select a role" }]}
           >
-            <Input
-              type="number"
-              placeholder="Enter role ID (1=ADMIN, 2=MANAGER, 3=STAFF)"
-            />
+            <Select placeholder="Select role">
+              {roles.map((r) => (
+                <Select.Option key={r.id} value={r.id}>{r.name}</Select.Option>
+              ))}
+            </Select>
           </Form.Item>
         </Form>
       </Modal>

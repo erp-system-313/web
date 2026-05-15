@@ -4,12 +4,19 @@ import { EmployeesList } from "./pages/hr/EmployeesList/EmployeesList";
 import { EmployeeDetails } from "./pages/hr/EmployeeDetails/EmployeeDetails";
 import AttendancePage from "./pages/hr/Attendance/Attendance";
 import LeaveRequestsPage from "./pages/hr/LeaveRequests/LeaveRequests";
+import { Departments } from "./pages/hr/Departments/Departments";
+import { JobPositions } from "./pages/hr/JobPositions/JobPositions";
+import { LeaveAllocations } from "./pages/hr/LeaveAllocations/LeaveAllocations";
+import { LeaveCalendar } from "./pages/hr/LeaveCalendar/LeaveCalendar";
+import { HRDashboard } from "./pages/hr/HRDashboard/HRDashboard";
+import { Contracts } from "./pages/hr/Contracts/Contracts";
 import LoginPage from "./pages/auth/Login/Login";
 import DashboardPage from "./pages/common/Dashboard/Dashboard";
 import ProfilePage from "./pages/common/Profile/Profile";
 import UsersListPage from "./pages/admin/Users/Users";
 import SettingsPage from "./pages/admin/Settings/Settings";
 import AuditLogsPage from "./pages/admin/AuditLogs/AuditLogs";
+import { RolesList } from "./pages/admin/Roles/Roles";
 import {
   InvoicesList,
   InvoiceForm,
@@ -38,6 +45,9 @@ import CRMDashboard from "./pages/crm/Dashboard/Dashboard";
 import LeadsList from "./pages/crm/LeadsList/LeadsList";
 import { Pipeline } from "./pages/crm/Pipeline/Pipeline";
 import LeadDetails from "./pages/crm/LeadDetails/LeadDetails";
+import { JobOpenings } from "./pages/recruitment/JobOpenings/JobOpenings";
+import { RecruitmentPipeline } from "./pages/recruitment/Pipeline/Pipeline";
+import { ApplicantDetail } from "./pages/recruitment/ApplicantDetail/ApplicantDetail";
 import {
   TicketsList,
   CreateTicket,
@@ -60,13 +70,20 @@ export const AppRoutes = () => {
         <Route path="/profile" element={<ProfilePage />} />
 
         {/* HR routes */}
+        <Route path="/hr" element={<HRDashboard />} />
         <Route path="/hr/employees" element={<EmployeesList />} />
         <Route path="/hr/employees/:id" element={<EmployeeDetails />} />
         <Route path="/hr/attendance" element={<AttendancePage />} />
         <Route path="/hr/leave" element={<LeaveRequestsPage />} />
+        <Route path="/hr/leave/allocations" element={<LeaveAllocations />} />
+        <Route path="/hr/leave/calendar" element={<LeaveCalendar />} />
+        <Route path="/hr/departments" element={<Departments />} />
+        <Route path="/hr/job-positions" element={<JobPositions />} />
+        <Route path="/hr/contracts" element={<Contracts />} />
 
         {/* Admin routes */}
         <Route path="/admin/users" element={<UsersListPage />} />
+        <Route path="/admin/roles" element={<RolesList />} />
         <Route path="/admin/settings" element={<SettingsPage />} />
         <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
 
@@ -105,6 +122,11 @@ export const AppRoutes = () => {
         <Route path="/crm/leads" element={<LeadsList />} />
         <Route path="/crm/pipeline" element={<Pipeline />} />
         <Route path="/crm/leads/:id" element={<LeadDetails />} />
+
+        {/* Recruitment routes */}
+        <Route path="/recruitment/jobs" element={<JobOpenings />} />
+        <Route path="/recruitment/pipeline" element={<RecruitmentPipeline />} />
+        <Route path="/recruitment/applicants/:id" element={<ApplicantDetail />} />
 
         {/* Support routes */}
         <Route path="/support/tickets" element={<TicketsList />} />

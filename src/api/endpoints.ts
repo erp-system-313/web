@@ -128,4 +128,15 @@ export const endpoints = {
   dashboard: {
     stats: "/v1/dashboard/stats",
   },
+  roles: {
+    list: "/v1/roles",
+    getById: (id: number) => `/v1/roles/${id}`,
+    create: "/v1/roles",
+    update: (id: number) => `/v1/roles/${id}`,
+    delete: (id: number) => `/v1/roles/${id}`,
+    permissions: (id: number) => `/v1/roles/${id}/permissions`,
+  },
+  permissions: {
+    list: "/v1/permissions",
+  },
 };

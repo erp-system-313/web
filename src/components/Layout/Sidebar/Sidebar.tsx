@@ -12,6 +12,7 @@ import {
   SettingOutlined,
   CustomerServiceOutlined,
   LogoutOutlined,
+  SolutionOutlined,
   ProjectOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../../contexts/AuthContext";
@@ -140,6 +141,11 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       label: "HR",
       children: [
         {
+          key: "hr-overview",
+          label: "Overview",
+          onClick: () => navigate("/hr"),
+        },
+        {
           key: "employees",
           label: "Employees",
           onClick: () => navigate("/hr/employees"),
@@ -150,9 +156,51 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           onClick: () => navigate("/hr/attendance"),
         },
         {
+          key: "departments",
+          label: "Departments",
+          onClick: () => navigate("/hr/departments"),
+        },
+        {
+          key: "job-positions",
+          label: "Job Positions",
+          onClick: () => navigate("/hr/job-positions"),
+        },
+        {
           key: "leave",
-          label: "Leave",
+          label: "Leave Requests",
           onClick: () => navigate("/hr/leave"),
+        },
+        {
+          key: "leave-allocations",
+          label: "Leave Allocations",
+          onClick: () => navigate("/hr/leave/allocations"),
+        },
+        {
+          key: "leave-calendar",
+          label: "Leave Calendar",
+          onClick: () => navigate("/hr/leave/calendar"),
+        },
+        {
+          key: "contracts",
+          label: "Contracts",
+          onClick: () => navigate("/hr/contracts"),
+        },
+      ],
+    },
+    {
+      key: "recruitment",
+      icon: <SolutionOutlined />,
+      label: "Recruitment",
+      children: [
+        {
+          key: "recruitment-jobs",
+          label: "Job Openings",
+          onClick: () => navigate("/recruitment/jobs"),
+        },
+        {
+          key: "recruitment-pipeline",
+          label: "Pipeline",
+          onClick: () => navigate("/recruitment/pipeline"),
         },
       ],
     },
@@ -165,6 +213,11 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           key: "users",
           label: "Users",
           onClick: () => navigate("/admin/users"),
+        },
+        {
+          key: "roles",
+          label: "Roles",
+          onClick: () => navigate("/admin/roles"),
         },
         {
           key: "settings",
@@ -199,10 +252,20 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/finance/journal")) return "journal";
     if (path.startsWith("/finance/accounts")) return "accounts";
     if (path.startsWith("/support/tickets")) return "tickets";
+    if (path === "/hr") return "hr-overview";
     if (path.startsWith("/hr/employees")) return "employees";
     if (path.startsWith("/hr/attendance")) return "attendance";
+    if (path.startsWith("/hr/departments")) return "departments";
+    if (path.startsWith("/hr/job-positions")) return "job-positions";
+    if (path.startsWith("/hr/leave/allocations")) return "leave-allocations";
+    if (path.startsWith("/hr/leave/calendar")) return "leave-calendar";
     if (path.startsWith("/hr/leave")) return "leave";
+    if (path.startsWith("/hr/contracts")) return "contracts";
+    if (path.startsWith("/recruitment/jobs")) return "recruitment-jobs";
+    if (path.startsWith("/recruitment/pipeline")) return "recruitment-pipeline";
+    if (path.startsWith("/recruitment/applicants")) return "recruitment-pipeline";
     if (path.startsWith("/admin/users")) return "users";
+    if (path.startsWith("/admin/roles")) return "roles";
     if (path.startsWith("/admin/settings")) return "settings";
     if (path.startsWith("/admin/audit-logs")) return "audit-logs";
     if (path.startsWith("/projects")) return "projects";
@@ -224,10 +287,19 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       journal: "finance",
       accounts: "finance",
       tickets: "support",
+      "hr-overview": "hr",
       employees: "hr",
       attendance: "hr",
+      departments: "hr",
+      "job-positions": "hr",
       leave: "hr",
+      "leave-allocations": "hr",
+      "leave-calendar": "hr",
+      contracts: "hr",
+      "recruitment-jobs": "recruitment",
+      "recruitment-pipeline": "recruitment",
       users: "admin",
+      roles: "admin",
       settings: "admin",
       "audit-logs": "admin",
     };

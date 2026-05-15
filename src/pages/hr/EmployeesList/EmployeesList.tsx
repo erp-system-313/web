@@ -8,17 +8,22 @@ import {
   Modal,
   Form,
   Input,
+  Select,
   DatePicker,
   message,
   Spin,
 } from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { useEmployees } from "../../../hooks";
+import { useEmployees, useDepartments, useJobPositions } from "../../../hooks";
+import { ImportModal } from "../../../components/common/ImportModal";
+import { hrService } from "../../../services/hrService";
 import type { Employee } from "../../../types/hr";
+import type { ImportFieldMapping } from "../../../utils/csv";
 import styles from "./EmployeesList.module.css";
 
 const { Title } = Typography;
+const { Option } = Select;
 
 export const EmployeesList: React.FC = () => {
   const {
@@ -29,10 +34,35 @@ export const EmployeesList: React.FC = () => {
     createEmployee,
     deleteEmployee,
   } = useEmployees();
+  const { data: departments } = useDepartments();
+  const { data: positions } = useJobPositions();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [creating, setCreating] = useState(false);
   const [form] = Form.useForm();
+  const [importOpen, setImportOpen] = useState(false);
+
+  const handleImport = async (data: Record<string, string>[], mappings: ImportFieldMapping[]) => {
+    let success = 0;
+    let errors = 0;
+    for (const row of data) {
+      try {
+        const payload: Record<string, unknown> = {};
+        mappings.forEach((m) => {
+          payload[m.entityField] = row[m.csvColumn];
+        });
+        if (payload.hireDate) {
+          payload.hireDate = new Date(payload.hireDate as string).toISOString().split("T")[0];
+        }
+        await hrService.employees.create(payload as any);
+        success++;
+      } catch {
+        errors++;
+      }
+    }
+    refetch();
+    return { successCount: success, errorCount: errors };
+  };
 
   const handleOk = async () => {
     try {
@@ -90,13 +120,15 @@ export const EmployeesList: React.FC = () => {
     },
     {
       title: "Department",
-      dataIndex: "department",
-      key: "department",
+      dataIndex: "departmentName",
+      key: "departmentName",
+      render: (v: string) => v || "-",
     },
     {
       title: "Position",
-      dataIndex: "position",
-      key: "position",
+      dataIndex: "positionName",
+      key: "positionName",
+      render: (v: string) => v || "-",
     },
     {
       title: "Actions",
@@ -119,17 +151,20 @@ export const EmployeesList: React.FC = () => {
     <Card>
       <div className={styles.header}>
         <Title level={3}>Employee List</Title>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setEditingEmployee(null);
-            form.resetFields();
-            setIsModalOpen(true);
-          }}
-        >
-          Add Employee
-        </Button>
+        <Space>
+          <Button icon={<UploadOutlined />} onClick={() => setImportOpen(true)}>Import CSV</Button>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setEditingEmployee(null);
+              form.resetFields();
+              setIsModalOpen(true);
+            }}
+          >
+            Add Employee
+          </Button>
+        </Space>
       </div>
 
       {loading ? (
@@ -185,18 +220,26 @@ export const EmployeesList: React.FC = () => {
             <Input placeholder="Enter email" />
           </Form.Item>
           <Form.Item
-            name="department"
+            name="departmentId"
             label="Department"
-            rules={[{ required: true, message: "Please enter department" }]}
+            rules={[{ required: true, message: "Please select department" }]}
           >
-            <Input placeholder="Enter department" />
+            <Select placeholder="Select department">
+              {departments.map((d) => (
+                <Option key={d.id} value={d.id}>{d.name}</Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item
-            name="position"
+            name="positionId"
             label="Position"
-            rules={[{ required: true, message: "Please enter position" }]}
+            rules={[{ required: true, message: "Please select position" }]}
           >
-            <Input placeholder="Enter position" />
+            <Select placeholder="Select position">
+              {positions.map((p) => (
+                <Option key={p.id} value={p.id}>{p.title}</Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item name="phone" label="Phone">
             <Input placeholder="Enter phone number" />
@@ -213,6 +256,21 @@ export const EmployeesList: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <ImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Employees"
+        entityType="employees"
+        fields={[
+          { label: "First Name", value: "firstName", required: true },
+          { label: "Last Name", value: "lastName", required: true },
+          { label: "Email", value: "email", required: true },
+          { label: "Phone", value: "phone" },
+          { label: "Hire Date", value: "hireDate" },
+        ]}
+        onImport={handleImport}
+      />
     </Card>
   );
 };
