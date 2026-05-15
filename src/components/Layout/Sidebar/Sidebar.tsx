@@ -210,6 +210,11 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           onClick: () => navigate("/admin/users"),
         },
         {
+          key: "roles",
+          label: "Roles",
+          onClick: () => navigate("/admin/roles"),
+        },
+        {
           key: "settings",
           label: "Settings",
           onClick: () => navigate("/admin/settings"),
@@ -254,6 +259,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/recruitment/pipeline")) return "recruitment-pipeline";
     if (path.startsWith("/recruitment/applicants")) return "recruitment-pipeline";
     if (path.startsWith("/admin/users")) return "users";
+    if (path.startsWith("/admin/roles")) return "roles";
     if (path.startsWith("/admin/settings")) return "settings";
     if (path.startsWith("/admin/audit-logs")) return "audit-logs";
     if (path.startsWith("/projects")) return "projects";
@@ -286,6 +292,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       "recruitment-jobs": "recruitment",
       "recruitment-pipeline": "recruitment",
       users: "admin",
+      roles: "admin",
       settings: "admin",
       "audit-logs": "admin",
     };

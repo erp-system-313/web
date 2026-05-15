@@ -15,6 +15,7 @@ import ProfilePage from "./pages/common/Profile/Profile";
 import UsersListPage from "./pages/admin/Users/Users";
 import SettingsPage from "./pages/admin/Settings/Settings";
 import AuditLogsPage from "./pages/admin/AuditLogs/AuditLogs";
+import { RolesList } from "./pages/admin/Roles/Roles";
 import {
   InvoicesList,
   InvoiceForm,
@@ -80,6 +81,7 @@ export const AppRoutes = () => {
 
         {/* Admin routes */}
         <Route path="/admin/users" element={<UsersListPage />} />
+        <Route path="/admin/roles" element={<RolesList />} />
         <Route path="/admin/settings" element={<SettingsPage />} />
         <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
 
