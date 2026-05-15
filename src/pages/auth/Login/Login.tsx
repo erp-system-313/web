@@ -35,7 +35,7 @@ export const LoginPage: React.FC = () => {
     
     setLoading(true);
     try {
-      const result = await authContext.login({ email: data.email, password: data.password });
+      const result = await authContext.login({ email: data.email, password: data.password, remember: data.remember });
       
       if (result.success) {
         message.success('Login successful');

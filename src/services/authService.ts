@@ -3,6 +3,7 @@ import { apiClient as api, handleApiError } from "../api/client";
 export interface LoginRequest {
   email: string;
   password: string;
+  remember?: boolean;
 }
 
 export interface AuthUser {
@@ -108,7 +109,7 @@ export const authService = {
   },
 
   getCurrentUser: (): AuthUser | null => {
-    const userStr = localStorage.getItem("erp_user");
+    const userStr = localStorage.getItem("erp_user") || sessionStorage.getItem("erp_user");
     if (userStr) {
       try {
         return JSON.parse(userStr);
