@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Card, Typography, Table, Button, Space, Tag, message, Select, Modal, Row, Col, Statistic } from "antd";
 import { ClockCircleOutlined, CheckCircleOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useAttendance, useClockIn, useClockOut, useEmployees } from "../../../hooks";
@@ -21,6 +21,7 @@ export const AttendancePage: React.FC = () => {
   const [targetEmployeeId, setTargetEmployeeId] = useState<number | undefined>(undefined);
   const [clockedInEmployees, setClockedInEmployees] = useState<{ employeeId: number; employeeName: string }[]>([]);
 
+  const todayStr = dayjs().format("YYYY-MM-DD");
   const startDate = currentMonth.startOf("month").format("YYYY-MM-DD");
   const endDate = currentMonth.endOf("month").format("YYYY-MM-DD");
 
@@ -32,6 +33,18 @@ export const AttendancePage: React.FC = () => {
   const { data: employees } = useEmployees();
   const { clockIn, loading: clockingIn } = useClockIn();
   const { clockOut, loading: clockingOut } = useClockOut();
+
+  useEffect(() => {
+    if (!isAdmin && authContext?.user?.employeeId) {
+      const todayRecord = records.find(
+        (r) =>
+          r.date === todayStr &&
+          r.employeeId === authContext.user!.employeeId &&
+          r.checkIn
+      );
+      setTodayCheckedIn(!!todayRecord && !todayRecord.checkOut);
+    }
+  }, [records, isAdmin, authContext?.user?.employeeId, todayStr]);
 
   const openClockIn = async () => {
     if (isAdmin) {
@@ -117,13 +130,13 @@ export const AttendancePage: React.FC = () => {
       title: "Check In",
       dataIndex: "checkIn",
       key: "checkIn",
-      render: (v: string) => v || "-",
+      render: (v: string) => v ? dayjs(v).format("hh:mm A") : "-",
     },
     {
       title: "Check Out",
       dataIndex: "checkOut",
       key: "checkOut",
-      render: (v: string) => v || "-",
+      render: (v: string) => v ? dayjs(v).format("hh:mm A") : "-",
     },
     {
       title: "Status",
