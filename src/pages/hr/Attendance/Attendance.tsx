@@ -46,8 +46,9 @@ export const AttendancePage: React.FC = () => {
         setTodayCheckedIn(true);
         message.success("Clocked in successfully");
         refetch();
-      } catch {
-        message.error("Failed to clock in");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to clock in";
+        message.error(msg);
       }
     }
   };
@@ -65,8 +66,9 @@ export const AttendancePage: React.FC = () => {
         setTodayCheckedIn(false);
         message.success("Clocked out successfully");
         refetch();
-      } catch {
-        message.error("Failed to clock out");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to clock out";
+        message.error(msg);
       }
     }
   };
@@ -85,8 +87,9 @@ export const AttendancePage: React.FC = () => {
       message.success(clockAction === "in" ? "Clocked in" : "Clocked out");
       setClockAction(null);
       refetch();
-    } catch {
-      message.error("Failed to record attendance");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to record attendance";
+      message.error(msg);
     }
   };
 
@@ -187,7 +190,7 @@ export const AttendancePage: React.FC = () => {
               icon={<ClockCircleOutlined />}
               onClick={openClockIn}
               loading={clockingIn}
-              disabled={todayCheckedIn}
+              disabled={!isAdmin && todayCheckedIn}
               size="large"
             >
               Clock In
@@ -198,7 +201,7 @@ export const AttendancePage: React.FC = () => {
               icon={<CheckCircleOutlined />}
               onClick={openClockOut}
               loading={clockingOut}
-              disabled={!todayCheckedIn}
+              disabled={!isAdmin && !todayCheckedIn}
               size="large"
             >
               Clock Out

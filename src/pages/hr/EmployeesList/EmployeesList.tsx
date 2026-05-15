@@ -83,8 +83,9 @@ export const EmployeesList: React.FC = () => {
       form.resetFields();
       setEditingEmployee(null);
       refetch();
-    } catch (error) {
-      message.error("Failed to create employee");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to create employee";
+      message.error(msg);
     } finally {
       setCreating(false);
     }
@@ -99,8 +100,9 @@ export const EmployeesList: React.FC = () => {
           await deleteEmployee(id);
           message.success("Employee deleted successfully");
           refetch();
-        } catch (error) {
-          message.error("Failed to delete employee");
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Failed to delete employee";
+          message.error(msg);
         }
       },
     });

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -13,9 +14,10 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { useEmployee, useDepartments, useJobPositions } from "../../../hooks";
 import { hrService } from "../../../services/hrService";
+import type { Contract } from "../../../types/hr";
 import styles from "./EmployeeDetails.module.css";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 export const EmployeeDetails: React.FC = () => {
@@ -25,8 +27,18 @@ export const EmployeeDetails: React.FC = () => {
   const { data: employee, loading } = useEmployee(employeeId);
   const { data: departments } = useDepartments();
   const { data: positions } = useJobPositions();
+  const [contract, setContract] = useState<Contract | null>(null);
   const [form] = Form.useForm();
   const watchedDept = Form.useWatch("departmentId", form);
+
+  useEffect(() => {
+    if (employeeId) {
+      hrService.contracts.getAll({ employeeId, status: "ACTIVE" }).then((res) => {
+        const contracts: Contract[] = res.content ?? res ?? [];
+        setContract(contracts[0] || null);
+      }).catch(() => setContract(null));
+    }
+  }, [employeeId]);
 
   const onFinish = async (values: any) => {
     if (employeeId === null) return;
@@ -34,8 +46,9 @@ export const EmployeeDetails: React.FC = () => {
       await hrService.employees.update(employeeId, values);
       message.success("Employee updated successfully");
       navigate("/hr/employees");
-    } catch {
-      message.error("Failed to update employee");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to update employee";
+      message.error(msg);
     }
   };
 
@@ -150,6 +163,11 @@ export const EmployeeDetails: React.FC = () => {
             <Form.Item label="Salary" name="salary">
               <InputNumber style={{ width: "100%" }} prefix="$" disabled />
             </Form.Item>
+            {contract?.wage != null && (
+              <Form.Item label="Contract Wage">
+                <InputNumber style={{ width: "100%" }} prefix="$" value={contract.wage} disabled />
+              </Form.Item>
+            )}
 
             <Form.Item label="Status" name="status">
               <Select>
