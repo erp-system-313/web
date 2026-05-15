@@ -4,6 +4,8 @@ import type {
   AttendanceStatus,
   LeaveType,
   LeaveStatus,
+  Department,
+  JobPosition,
 } from "../types/hr";
 
 export interface Employee {
@@ -15,7 +17,11 @@ export interface Employee {
   email: string;
   phone?: string;
   department: string;
+  departmentId?: number;
+  departmentName?: string;
   position: string;
+  positionId?: number;
+  positionName?: string;
   hireDate: string;
   terminationDate?: string;
   salary?: number;
@@ -31,8 +37,8 @@ export interface CreateEmployeeRequest {
   lastName: string;
   email: string;
   phone: string;
-  department: string;
-  position: string;
+  departmentId?: number;
+  positionId?: number;
   hireDate?: string;
   salary?: number;
   address?: string;
@@ -43,8 +49,8 @@ export interface UpdateEmployeeRequest {
   firstName?: string;
   lastName?: string;
   email?: string;
-  department?: string;
-  position?: string;
+  departmentId?: number;
+  positionId?: number;
   phone?: string;
   salary?: number;
   address?: string;
@@ -142,6 +148,98 @@ export const hrService = {
     delete: async (id: number): Promise<void> => {
       try {
         await api.delete(`/v1/employees/${id}`);
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+  },
+
+  departments: {
+    getAll: async (): Promise<Department[]> => {
+      try {
+        const response = await api.get("/v1/departments");
+        return response.data.data?.content ?? response.data.data ?? [];
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    getById: async (id: number): Promise<Department> => {
+      try {
+        const response = await api.get(`/v1/departments/${id}`);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    create: async (data: Partial<Department>): Promise<Department> => {
+      try {
+        const response = await api.post("/v1/departments", data);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    update: async (id: number, data: Partial<Department>): Promise<Department> => {
+      try {
+        const response = await api.put(`/v1/departments/${id}`, data);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    delete: async (id: number): Promise<void> => {
+      try {
+        await api.delete(`/v1/departments/${id}`);
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+  },
+
+  jobPositions: {
+    getAll: async (): Promise<JobPosition[]> => {
+      try {
+        const response = await api.get("/v1/job-positions");
+        return response.data.data?.content ?? response.data.data ?? [];
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    getById: async (id: number): Promise<JobPosition> => {
+      try {
+        const response = await api.get(`/v1/job-positions/${id}`);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    create: async (data: Partial<JobPosition>): Promise<JobPosition> => {
+      try {
+        const response = await api.post("/v1/job-positions", data);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    update: async (id: number, data: Partial<JobPosition>): Promise<JobPosition> => {
+      try {
+        const response = await api.put(`/v1/job-positions/${id}`, data);
+        return response.data.data;
+      } catch (error) {
+        throw new Error(handleApiError(error));
+      }
+    },
+
+    delete: async (id: number): Promise<void> => {
+      try {
+        await api.delete(`/v1/job-positions/${id}`);
       } catch (error) {
         throw new Error(handleApiError(error));
       }

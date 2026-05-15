@@ -1,5 +1,28 @@
 export type EmployeeStatus = "ACTIVE" | "INACTIVE" | "ON_LEAVE" | "TERMINATED";
 
+export interface Department {
+  id: number;
+  name: string;
+  parentId?: number;
+  parentName?: string;
+  managerId?: number;
+  managerName?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface JobPosition {
+  id: number;
+  title: string;
+  departmentId?: number;
+  departmentName?: string;
+  description?: string;
+  expectedEmployees?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Employee {
   id: number;
   employeeCode: string;
@@ -9,7 +32,11 @@ export interface Employee {
   email: string;
   phone?: string;
   department: string;
+  departmentId?: number;
+  departmentName?: string;
   position: string;
+  positionId?: number;
+  positionName?: string;
   hireDate: string;
   terminationDate?: string;
   salary?: number;
@@ -25,8 +52,8 @@ export interface CreateEmployeeDto {
   lastName: string;
   email: string;
   phone?: string;
-  department?: string;
-  position?: string;
+  departmentId?: number;
+  positionId?: number;
   hireDate: string;
   salary?: number;
 }
@@ -37,7 +64,7 @@ export interface UpdateEmployeeDto extends Partial<CreateEmployeeDto> {
 
 export interface EmployeeFilters {
   search?: string;
-  department?: string;
+  departmentId?: number;
   status?: EmployeeStatus;
 }
 
