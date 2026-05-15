@@ -13,16 +13,14 @@ const Employees = lazy(() => import("@/pages/hr/Employees"));
 const EmployeeDetails = lazy(() => import("@/pages/hr/EmployeeDetails"));
 const Attendance = lazy(() => import("@/pages/hr/Attendance"));
 const LeaveRequests = lazy(() => import("@/pages/hr/LeaveRequests"));
-const Products = lazy(() => import("@/pages/inventory/ProductListPage"));
-const AddProduct = lazy(() => import("@/pages/inventory/CreateProductPage"));
-const ProductDetails = lazy(() => import("@/pages/inventory/ProductDetailsPage"));
-const EditProduct = lazy(() => import("@/pages/inventory/EditProductPage"));
-const Categories = lazy(() => import("@/pages/inventory/CategoryListPage"));
-const Suppliers = lazy(() => import("@/pages/purchasing/SupplierListPage"));
+const Products = lazy(() => import("@/pages/inventory/Products"));
+const AddProduct = lazy(() => import("@/pages/inventory/AddProduct"));
+const Categories = lazy(() => import("@/pages/inventory/Categories"));
+const Suppliers = lazy(() => import("@/pages/purchasing/Suppliers"));
 const SupplierDetails = lazy(
   () => import("@/pages/purchasing/SupplierDetails"),
 );
-const PurchaseOrders = lazy(() => import("@/pages/purchasing/PurchaseOrderListPage"));
+const PurchaseOrders = lazy(() => import("@/pages/purchasing/PurchaseOrders"));
 const NewPurchaseOrder = lazy(
   () => import("@/pages/purchasing/NewPurchaseOrder"),
 );
@@ -30,8 +28,6 @@ const Customers = lazy(() => import("@/pages/sales/Customers"));
 const CustomerDetails = lazy(() => import("@/pages/sales/CustomerDetails"));
 const SalesOrders = lazy(() => import("@/pages/sales/SalesOrders"));
 const NewSalesOrder = lazy(() => import("@/pages/sales/NewSalesOrder"));
-const SalesOrderView = lazy(() => import("@/pages/sales/SalesOrderDetails"));
-const SalesOrderEdit = lazy(() => import("@/pages/sales/SalesOrderForm"));
 const Invoices = lazy(() => import("@/pages/finance/Invoices"));
 const NewInvoice = lazy(() => import("@/pages/finance/NewInvoice"));
 const InvoiceDetails = lazy(() => import("@/pages/finance/InvoiceDetails"));
@@ -136,22 +132,6 @@ export default function AppRoutes() {
             }
           />
           <Route
-            path="/inventory/products/:id/edit"
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <EditProduct />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/inventory/products/:id"
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <ProductDetails />
-              </Suspense>
-            }
-          />
-          <Route
             path="/inventory/categories"
             element={
               <Suspense fallback={<PageLoader />}>
@@ -220,22 +200,6 @@ export default function AppRoutes() {
             element={
               <Suspense fallback={<PageLoader />}>
                 <NewSalesOrder />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/sales/orders/:id/edit"
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <SalesOrderEdit />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/sales/orders/:id"
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <SalesOrderView />
               </Suspense>
             }
           />
