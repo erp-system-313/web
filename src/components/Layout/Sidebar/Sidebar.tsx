@@ -141,6 +141,11 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       label: "HR",
       children: [
         {
+          key: "hr-overview",
+          label: "Overview",
+          onClick: () => navigate("/hr"),
+        },
+        {
           key: "employees",
           label: "Employees",
           onClick: () => navigate("/hr/employees"),
@@ -237,6 +242,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/finance/journal")) return "journal";
     if (path.startsWith("/finance/accounts")) return "accounts";
     if (path.startsWith("/support/tickets")) return "tickets";
+    if (path === "/hr") return "hr-overview";
     if (path.startsWith("/hr/employees")) return "employees";
     if (path.startsWith("/hr/attendance")) return "attendance";
     if (path.startsWith("/hr/departments")) return "departments";
@@ -269,6 +275,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       journal: "finance",
       accounts: "finance",
       tickets: "support",
+      "hr-overview": "hr",
       employees: "hr",
       attendance: "hr",
       departments: "hr",
