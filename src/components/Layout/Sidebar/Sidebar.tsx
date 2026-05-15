@@ -139,53 +139,61 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       key: "hr",
       icon: <TeamOutlined />,
       label: "HR",
-      children: [
-        {
-          key: "hr-overview",
-          label: "Overview",
-          onClick: () => navigate("/hr"),
-        },
-        {
-          key: "employees",
-          label: "Employees",
-          onClick: () => navigate("/hr/employees"),
-        },
-        {
-          key: "attendance",
-          label: "Attendance",
-          onClick: () => navigate("/hr/attendance"),
-        },
-        {
-          key: "departments",
-          label: "Departments",
-          onClick: () => navigate("/hr/departments"),
-        },
-        {
-          key: "job-positions",
-          label: "Job Positions",
-          onClick: () => navigate("/hr/job-positions"),
-        },
-        {
-          key: "leave",
-          label: "Leave Requests",
-          onClick: () => navigate("/hr/leave"),
-        },
-        {
-          key: "leave-allocations",
-          label: "Leave Allocations",
-          onClick: () => navigate("/hr/leave/allocations"),
-        },
-        {
-          key: "leave-calendar",
-          label: "Leave Calendar",
-          onClick: () => navigate("/hr/leave/calendar"),
-        },
-        {
-          key: "contracts",
-          label: "Contracts",
-          onClick: () => navigate("/hr/contracts"),
-        },
-      ],
+      children: userRole === "staff"
+        ? [
+            {
+              key: "attendance",
+              label: "Attendance",
+              onClick: () => navigate("/hr/attendance"),
+            },
+          ]
+        : [
+            {
+              key: "hr-overview",
+              label: "Overview",
+              onClick: () => navigate("/hr"),
+            },
+            {
+              key: "employees",
+              label: "Employees",
+              onClick: () => navigate("/hr/employees"),
+            },
+            {
+              key: "attendance",
+              label: "Attendance",
+              onClick: () => navigate("/hr/attendance"),
+            },
+            {
+              key: "departments",
+              label: "Departments",
+              onClick: () => navigate("/hr/departments"),
+            },
+            {
+              key: "job-positions",
+              label: "Job Positions",
+              onClick: () => navigate("/hr/job-positions"),
+            },
+            {
+              key: "leave",
+              label: "Leave Requests",
+              onClick: () => navigate("/hr/leave"),
+            },
+            {
+              key: "leave-allocations",
+              label: "Leave Allocations",
+              onClick: () => navigate("/hr/leave/allocations"),
+            },
+            {
+              key: "leave-calendar",
+              label: "Leave Calendar",
+              onClick: () => navigate("/hr/leave/calendar"),
+            },
+            {
+              key: "contracts",
+              label: "Contracts",
+              onClick: () => navigate("/hr/contracts"),
+            },
+          ],
     },
     {
       key: "recruitment",
@@ -235,7 +243,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (!item) return false;
     const key = item.key as string;
     if (key === "inventory" && !isVisible(["admin", "manager"])) return false;
-    if (key === "hr" && !isVisible(["admin", "manager"])) return false;
+    if (key === "hr" && !isVisible(["admin", "manager", "staff"])) return false;
     if (key === "recruitment" && !isVisible(["admin", "manager", "hr"])) return false;
     if (key === "admin" && !isVisible(["admin"])) return false;
     return true;

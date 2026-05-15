@@ -10,6 +10,7 @@ import {
   Input,
   Select,
   DatePicker,
+  Checkbox,
   message,
   Spin,
 } from "antd";
@@ -19,6 +20,7 @@ import { useEmployees, useDepartments, useJobPositions } from "../../../hooks";
 import { ImportModal } from "../../../components/common/ImportModal";
 import { hrService } from "../../../services/hrService";
 import { usersService } from "../../../services/usersService";
+import { adminService } from "../../../services/adminService";
 import type { Employee, EmployeeStatus } from "../../../types/hr";
 import type { ImportFieldMapping } from "../../../utils/csv";
 import styles from "./EmployeesList.module.css";
@@ -45,6 +47,8 @@ export const EmployeesList: React.FC = () => {
   const [form] = Form.useForm();
   const watchedDept = Form.useWatch("departmentId", form);
   const [importOpen, setImportOpen] = useState(false);
+  const [createAccount, setCreateAccount] = useState(false);
+  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
   const [userAccounts, setUserAccounts] = useState<{ id: number; fullName: string; email: string }[]>([]);
 
   useEffect(() => {
@@ -54,6 +58,9 @@ export const EmployeesList: React.FC = () => {
           (res.content ?? []).map((u) => ({ id: u.id, fullName: u.fullName, email: u.email }))
         );
       }).catch(() => setUserAccounts([]));
+      adminService.roles.getAll().then((res) => {
+        setRoles(res.map((r: { id: number; name: string }) => ({ id: r.id, name: r.name })));
+      }).catch(() => setRoles([]));
     }
   }, [isModalOpen]);
 
@@ -85,17 +92,37 @@ export const EmployeesList: React.FC = () => {
       setCreating(true);
 
       const employeeData = {
-        ...values,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phone: values.phone,
+        address: values.address,
+        departmentId: values.departmentId,
+        positionId: values.positionId,
         hireDate: values.hireDate
           ? values.hireDate.format("YYYY-MM-DD")
           : undefined,
+        userId: values.userId,
       };
 
-      await createEmployee(employeeData);
+      const newEmployee = await createEmployee(employeeData);
+
+      if (values._createAccount) {
+        await usersService.create({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          roleId: values._roleId,
+          password: values._password,
+          employeeId: newEmployee.id,
+        });
+      }
+
       message.success("Employee created successfully");
       setIsModalOpen(false);
       form.resetFields();
       setEditingEmployee(null);
+      setCreateAccount(false);
       refetch();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to create employee";
@@ -281,7 +308,7 @@ export const EmployeesList: React.FC = () => {
           </Form.Item>
           <Form.Item name="userId" label="User Account">
             <Select
-              placeholder="Link to user account (optional)"
+              placeholder="Link to existing user (optional)"
               allowClear
               showSearch
               filterOption={(input, option) =>
@@ -293,6 +320,36 @@ export const EmployeesList: React.FC = () => {
               }))}
             />
           </Form.Item>
+          <Form.Item name="_createAccount" valuePropName="checked">
+            <Checkbox onChange={(e) => setCreateAccount(e.target.checked)}>
+              Create user account for this employee
+            </Checkbox>
+          </Form.Item>
+          {createAccount && (
+            <>
+              <Form.Item
+                name="_roleId"
+                label="Account Role"
+                rules={[{ required: true, message: "Please select a role" }]}
+              >
+                <Select placeholder="Select role">
+                  {roles.map((r) => (
+                    <Option key={r.id} value={r.id}>{r.name}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item
+                name="_password"
+                label="Account Password"
+                rules={[
+                  { required: true, message: "Please enter a password" },
+                  { min: 6, message: "Password must be at least 6 characters" },
+                ]}
+              >
+                <Input.Password placeholder="Enter password" />
+              </Form.Item>
+            </>
+          )}
           <Form.Item
             name="hireDate"
             label="Hire Date"
