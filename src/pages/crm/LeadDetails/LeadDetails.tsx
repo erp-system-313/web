@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Space, Spin, Typography, message, Modal, Input, Select, Form, InputNumber, DatePicker, Divider } from 'antd';
+import dayjs from 'dayjs';
 import { ArrowLeftOutlined, EditOutlined, SwapOutlined } from '@ant-design/icons';
 import type { Lead, Opportunity } from '../../../types/crm';
 import { crmService } from '../../../services/crmService';
@@ -78,9 +79,12 @@ export const LeadDetails: React.FC = () => {
   const handleSave = async () => {
     if (!id) return;
     try {
-      const values = await form.validateFields();
-      await crmService.updateLead(Number(id), values);
-      setLead({ ...lead!, ...values });
+      const values = await form.validateFields() as Record<string, unknown>;
+      if (values.status === 'PROPOSAL' || values.status === 'NEGOTIATION') {
+        values.status = 'QUALIFIED';
+      }
+      await crmService.updateLead(Number(id), values as any);
+      setLead({ ...lead!, ...values } as any);
       message.success('Lead updated');
       setEditing(false);
     } catch {
@@ -174,6 +178,9 @@ export const LeadDetails: React.FC = () => {
               <Select.Option value="NEW">New</Select.Option>
               <Select.Option value="CONTACTED">Contacted</Select.Option>
               <Select.Option value="QUALIFIED">Qualified</Select.Option>
+              <Select.Option value="PROPOSAL">Proposal</Select.Option>
+              <Select.Option value="NEGOTIATION">Negotiation</Select.Option>
+              <Select.Option value="CONVERTED">Win</Select.Option>
               <Select.Option value="LOST">Lost</Select.Option>
             </Select>
           </Form.Item>
@@ -222,7 +229,7 @@ export const LeadDetails: React.FC = () => {
             />
           </Form.Item>
           <Form.Item name="closeDate" label="Expected Close Date">
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker style={{ width: '100%' }} disabledDate={d => d && d.isBefore(dayjs(), 'day')} />
           </Form.Item>
         </Form>
       </Modal>

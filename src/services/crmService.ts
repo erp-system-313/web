@@ -44,12 +44,14 @@ export const crmService = {
 
   async getPipelineStages(): Promise<PipelineStage[]> {
     const response = await apiClient.get(endpoints.crm.pipelines);
-    return response.data.data || [];
+    const data = response.data?.data;
+    return Array.isArray(data) ? data : [];
   },
 
   async getOpportunities(): Promise<Opportunity[]> {
     const response = await apiClient.get(endpoints.crm.opportunities);
-    return response.data.data || [];
+    const data = response.data?.data;
+    return Array.isArray(data) ? data : [];
   },
 
   async updateOpportunityStage(id: number, stageId: number): Promise<Opportunity> {

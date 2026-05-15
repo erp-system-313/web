@@ -28,6 +28,7 @@ export interface CreateLeadDto {
   source?: string;
   assignedTo?: string;
   notes?: string;
+  status?: LeadStatus;
 }
 
 export interface Opportunity {
