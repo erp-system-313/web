@@ -45,8 +45,9 @@ export const LeaveAllocations: React.FC = () => {
       setModalOpen(false);
       form.resetFields();
       refetch();
-    } catch {
-      message.error("Failed to allocate leave");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to allocate leave";
+      message.error(msg);
     }
   };
 
