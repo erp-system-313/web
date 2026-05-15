@@ -174,25 +174,27 @@ export const hrService = {
       }
     },
 
-    clockIn: async (): Promise<Attendance> => {
+    clockIn: async (employeeId?: number): Promise<Attendance> => {
       try {
-        const response = await api.post("/v1/attendance/clock-in");
+        const params = employeeId ? { employeeId } : {};
+        const response = await api.post("/v1/attendance/clock-in", null, { params });
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
       }
     },
 
-    clockOut: async (): Promise<Attendance> => {
+    clockOut: async (employeeId?: number): Promise<Attendance> => {
       try {
-        const response = await api.post("/v1/attendance/clock-out");
+        const params = employeeId ? { employeeId } : {};
+        const response = await api.post("/v1/attendance/clock-out", null, { params });
         return response.data.data;
       } catch (error) {
         throw new Error(handleApiError(error));
       }
     },
 
-    getClockedInStatus: async (): Promise<{ isClockedIn: boolean }> => {
+    getClockedInEmployees: async (): Promise<{ employeeId: number; employeeName: string }[]> => {
       try {
         const response = await api.get("/v1/attendance/clocked-in");
         return response.data.data;

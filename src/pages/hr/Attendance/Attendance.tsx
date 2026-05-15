@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext } from "react";
-import { Card, Typography, Table, Button, Space, Tag, message, Select, Row, Col, Statistic } from "antd";
+import { useState, useContext } from "react";
+import { Card, Typography, Table, Button, Space, Tag, message, Select, Modal, Row, Col, Statistic } from "antd";
 import { ClockCircleOutlined, CheckCircleOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useAttendance, useClockIn, useClockOut, useEmployees } from "../../../hooks";
 import { hrService } from "../../../services/hrService";
@@ -12,17 +12,14 @@ const { Title } = Typography;
 export const AttendancePage: React.FC = () => {
   const authContext = useContext(AuthContext);
   const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
-  const canViewAll = userRole === "admin" || userRole === "manager";
+  const isAdmin = userRole === "admin";
 
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [selectedEmployee, setSelectedEmployee] = useState<number | undefined>(undefined);
   const [todayCheckedIn, setTodayCheckedIn] = useState(false);
-
-  useEffect(() => {
-    hrService.attendance.getClockedInStatus()
-      .then((res) => setTodayCheckedIn(res.isClockedIn))
-      .catch(() => setTodayCheckedIn(false));
-  }, []);
+  const [clockAction, setClockAction] = useState<"in" | "out" | null>(null);
+  const [targetEmployeeId, setTargetEmployeeId] = useState<number | undefined>(undefined);
+  const [clockedInEmployees, setClockedInEmployees] = useState<{ employeeId: number; employeeName: string }[]>([]);
 
   const startDate = currentMonth.startOf("month").format("YYYY-MM-DD");
   const endDate = currentMonth.endOf("month").format("YYYY-MM-DD");
@@ -36,25 +33,60 @@ export const AttendancePage: React.FC = () => {
   const { clockIn, loading: clockingIn } = useClockIn();
   const { clockOut, loading: clockingOut } = useClockOut();
 
-  const handleClockIn = async () => {
-    try {
-      await clockIn();
-      setTodayCheckedIn(true);
-      message.success("Clocked in successfully");
-      refetch();
-    } catch {
-      message.error("Failed to clock in");
+  const openClockIn = async () => {
+    if (isAdmin) {
+      await hrService.attendance.getClockedInEmployees()
+        .then(setClockedInEmployees)
+        .catch(() => setClockedInEmployees([]));
+      setTargetEmployeeId(undefined);
+      setClockAction("in");
+    } else {
+      try {
+        await clockIn();
+        setTodayCheckedIn(true);
+        message.success("Clocked in successfully");
+        refetch();
+      } catch {
+        message.error("Failed to clock in");
+      }
     }
   };
 
-  const handleClockOut = async () => {
+  const openClockOut = async () => {
+    if (isAdmin) {
+      await hrService.attendance.getClockedInEmployees()
+        .then(setClockedInEmployees)
+        .catch(() => setClockedInEmployees([]));
+      setTargetEmployeeId(undefined);
+      setClockAction("out");
+    } else {
+      try {
+        await clockOut();
+        setTodayCheckedIn(false);
+        message.success("Clocked out successfully");
+        refetch();
+      } catch {
+        message.error("Failed to clock out");
+      }
+    }
+  };
+
+  const handleConfirmClock = async () => {
+    if (!targetEmployeeId) {
+      message.error("Please select an employee");
+      return;
+    }
     try {
-      await clockOut();
-      setTodayCheckedIn(false);
-      message.success("Clocked out successfully");
+      if (clockAction === "in") {
+        await clockIn(targetEmployeeId);
+      } else {
+        await clockOut(targetEmployeeId);
+      }
+      message.success(clockAction === "in" ? "Clocked in" : "Clocked out");
+      setClockAction(null);
       refetch();
     } catch {
-      message.error("Failed to clock out");
+      message.error("Failed to record attendance");
     }
   };
 
@@ -62,6 +94,14 @@ export const AttendancePage: React.FC = () => {
   const absentCount = records.filter((r) => r.status === "ABSENT").length;
   const lateCount = records.filter((r) => r.status === "LATE").length;
   const halfDayCount = records.filter((r) => r.status === "HALF_DAY").length;
+
+  const clockOutOptions = clockedInEmployees.map((e) => ({
+    value: e.employeeId,
+    label: e.employeeName,
+  }));
+  const clockInOptions = employees
+    .filter((e) => !clockedInEmployees.some((c) => c.employeeId === e.id))
+    .map((e) => ({ value: e.id, label: e.fullName }));
 
   const columns = [
     { title: "Date", dataIndex: "date", key: "date" },
@@ -100,7 +140,7 @@ export const AttendancePage: React.FC = () => {
         <div className={styles.header}>
           <Title level={3}>Attendance</Title>
           <Space>
-            {canViewAll && (
+            {isAdmin && (
               <Select
                 allowClear
                 placeholder="All Employees"
@@ -145,7 +185,7 @@ export const AttendancePage: React.FC = () => {
             <Button
               type="primary"
               icon={<ClockCircleOutlined />}
-              onClick={handleClockIn}
+              onClick={openClockIn}
               loading={clockingIn}
               disabled={todayCheckedIn}
               size="large"
@@ -156,7 +196,7 @@ export const AttendancePage: React.FC = () => {
               type="primary"
               danger
               icon={<CheckCircleOutlined />}
-              onClick={handleClockOut}
+              onClick={openClockOut}
               loading={clockingOut}
               disabled={!todayCheckedIn}
               size="large"
@@ -165,6 +205,22 @@ export const AttendancePage: React.FC = () => {
             </Button>
           </Space>
         </div>
+
+        <Modal
+          title={clockAction === "in" ? "Select Employee to Clock In" : "Select Employee to Clock Out"}
+          open={!!clockAction}
+          onCancel={() => setClockAction(null)}
+          onOk={handleConfirmClock}
+          confirmLoading={clockAction === "in" ? clockingIn : clockingOut}
+        >
+          <Select
+            style={{ width: "100%" }}
+            placeholder="Select employee..."
+            value={targetEmployeeId}
+            onChange={setTargetEmployeeId}
+            options={clockAction === "out" ? clockOutOptions : clockInOptions}
+          />
+        </Modal>
 
         <div className={styles.tableSection}>
           <Title level={5}>Attendance Records</Title>

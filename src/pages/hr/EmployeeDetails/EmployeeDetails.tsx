@@ -26,6 +26,7 @@ export const EmployeeDetails: React.FC = () => {
   const { data: departments } = useDepartments();
   const { data: positions } = useJobPositions();
   const [form] = Form.useForm();
+  const watchedDept = Form.useWatch("departmentId", form);
 
   const onFinish = async (values: any) => {
     if (employeeId === null) return;
@@ -116,8 +117,8 @@ export const EmployeeDetails: React.FC = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item label="Phone" name="phone">
-              <Input />
+            <Form.Item label="Phone" name="phone" rules={[{ pattern: /^[0-9+\-() ]+$/, message: "Only numbers and phone symbols allowed" }]}>
+              <Input maxLength={15} />
             </Form.Item>
 
             <Form.Item label="Department" name="departmentId">
@@ -130,9 +131,11 @@ export const EmployeeDetails: React.FC = () => {
 
             <Form.Item label="Position" name="positionId">
               <Select placeholder="Select position" allowClear>
-                {positions.map((p) => (
-                  <Option key={p.id} value={p.id}>{p.title}</Option>
-                ))}
+                {positions
+                  .filter((p) => !watchedDept || p.departmentId === watchedDept)
+                  .map((p) => (
+                    <Option key={p.id} value={p.id}>{p.title}</Option>
+                  ))}
               </Select>
             </Form.Item>
 

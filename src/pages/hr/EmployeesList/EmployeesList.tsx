@@ -40,6 +40,7 @@ export const EmployeesList: React.FC = () => {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [creating, setCreating] = useState(false);
   const [form] = Form.useForm();
+  const watchedDept = Form.useWatch("departmentId", form);
   const [importOpen, setImportOpen] = useState(false);
 
   const handleImport = async (data: Record<string, string>[], mappings: ImportFieldMapping[]) => {
@@ -235,14 +236,16 @@ export const EmployeesList: React.FC = () => {
             label="Position"
             rules={[{ required: true, message: "Please select position" }]}
           >
-            <Select placeholder="Select position">
-              {positions.map((p) => (
-                <Option key={p.id} value={p.id}>{p.title}</Option>
-              ))}
+             <Select placeholder="Select position">
+              {positions
+                .filter((p) => !watchedDept || p.departmentId === watchedDept)
+                .map((p) => (
+                  <Option key={p.id} value={p.id}>{p.title}</Option>
+                ))}
             </Select>
           </Form.Item>
-          <Form.Item name="phone" label="Phone">
-            <Input placeholder="Enter phone number" />
+          <Form.Item name="phone" label="Phone" rules={[{ pattern: /^[0-9+\-() ]+$/, message: "Only numbers and phone symbols allowed" }]}>
+            <Input placeholder="Enter phone number" maxLength={15} />
           </Form.Item>
           <Form.Item
             name="hireDate"
