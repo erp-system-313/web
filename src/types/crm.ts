@@ -44,6 +44,13 @@ export interface Opportunity {
   updatedAt: string;
 }
 
+export interface ConvertLeadPayload {
+  stageId: number;
+  revenue?: number;
+  probability?: number;
+  closeDate?: string;
+}
+
 export interface CrmDashboardStats {
   totalLeads: number;
   conversionRate: number;
