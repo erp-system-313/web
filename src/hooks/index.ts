@@ -18,3 +18,9 @@ export { useInvoice } from "./useInvoice";
 export { useAccounts } from "./useAccounts";
 export { useJournalEntries } from "./useJournalEntries";
 export { useJournalEntry } from "./useJournalEntry";
+export {
+  useTickets,
+  useTicket,
+  useCreateTicket,
+  useUpdateTicket,
+} from "./useSupport";
