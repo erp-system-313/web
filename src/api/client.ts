@@ -61,7 +61,9 @@ const doRefresh = async (): Promise<string | null> => {
   const refreshToken = localStorage.getItem("erp_refresh_token");
   if (!refreshToken) return null;
   try {
-    const response = await axios.post("/api/v1/auth/refresh", { refreshToken });
+    const response = await axios.post(`${API_BASE_URL}/v1/auth/refresh`, {
+      refreshToken,
+    });
     const data = response.data;
     if (data.success && data.data) {
       localStorage.setItem("erp_token", data.data.accessToken);
@@ -138,7 +140,7 @@ apiClient.interceptors.response.use(
       }
 
       try {
-        const response = await axios.post("/api/v1/auth/refresh", {
+        const response = await axios.post(`${API_BASE_URL}/v1/auth/refresh`, {
           refreshToken,
         });
         const data = response.data;
