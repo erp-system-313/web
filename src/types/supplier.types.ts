@@ -9,7 +9,7 @@ export interface Supplier {
   taxId?: string;
   paymentTerms: number;
   totalPurchased?: number;
-  isActive: boolean;
+  status: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,7 +18,6 @@ export interface SupplierFilters {
   name?: string;
   search?: string;
   status?: string;
-  isActive?: boolean;
 }
 
 export interface CreateSupplierDto {

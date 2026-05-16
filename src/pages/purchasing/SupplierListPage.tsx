@@ -27,11 +27,11 @@ const supplierSchema = yup.object({
 
 type SupplierFormData = yup.InferType<typeof supplierSchema>;
 
-const statusOptions = [
-  { value: "", label: "All Statuses" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-];
+  const statusOptions = [
+    { value: "", label: "All Statuses" },
+    { value: "ACTIVE", label: "Active" },
+    { value: "INACTIVE", label: "Inactive" },
+  ];
 
 const paymentTermsLabels: Record<number, string> = {
   30: "Net 30",
@@ -63,10 +63,10 @@ export const SupplierListPage: React.FC = () => {
 
   const filteredSuppliers = useMemo(() => {
     let list = suppliers;
-    if (statusFilter === "active") {
-      list = list.filter((s) => s.isActive);
-    } else if (statusFilter === "inactive") {
-      list = list.filter((s) => !s.isActive);
+    if (statusFilter === "ACTIVE") {
+      list = list.filter((s) => s.status === "ACTIVE");
+    } else if (statusFilter === "INACTIVE") {
+      list = list.filter((s) => s.status !== "ACTIVE");
     }
     if (searchText) {
       const q = searchText.toLowerCase();
@@ -137,7 +137,7 @@ export const SupplierListPage: React.FC = () => {
       title: "Status",
       key: "status",
       render: (_: unknown, record: any) => (
-        <Tag color={record.isActive ? "green" : "red"}>{record.isActive ? "ACTIVE" : "INACTIVE"}</Tag>
+        <Tag color={record.status === "ACTIVE" ? "green" : "red"}>{record.status === "ACTIVE" ? "ACTIVE" : "INACTIVE"}</Tag>
       ),
     },
     {
