@@ -1,0 +1,155 @@
+.calendar {
+  margin-top: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.weekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.weekDay {
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: #888;
+  padding: 6px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dayCell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: default;
+  position: relative;
+  min-height: 60px;
+  border: 1px solid #f0f0f0;
+}
+
+.dayCell:hover {
+  border-color: #d9d9d9;
+}
+
+.otherMonth {
+  opacity: 0.3;
+}
+
+.today {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.dayNumber {
+  font-weight: 500;
+  font-size: 13px;
+  position: absolute;
+  top: 4px;
+  left: 6px;
+}
+
+.statusDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 8px;
+}
+
+.multiDots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.miniDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.moreCount {
+  font-size: 9px;
+  color: #999;
+}
+
+.weekendDash {
+  margin-top: 8px;
+  font-size: 10px;
+  color: #ccc;
+}
+
+.present {
+  background: #52c41a;
+}
+
+.absent {
+  background: #ff4d4f;
+}
+
+.late {
+  background: #faad14;
+}
+
+.halfDay {
+  background: #722ed1;
+}
+
+.leave {
+  background: #1890ff;
+}
+
+.weekend {
+  background: #fafafa;
+}
+
+.weekend .dayNumber {
+  color: #ccc;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}

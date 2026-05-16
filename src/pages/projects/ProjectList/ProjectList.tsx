@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, Table, Button, Input, Select, Space, Modal, Form, message, Tag, DatePicker, Empty } from 'antd';
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useProjects } from '../../../hooks/useProjects';
 import { projectService } from '../../../services/projectService';
+import { apiClient } from '../../../api/client';
 import { PROJECT_STATE_LABELS, PROJECT_STATE_COLORS } from '../../../types/project';
 import type { ProjectState, CreateProjectRequest } from '../../../types/project';
 import styles from './ProjectList.module.css';
@@ -15,8 +16,18 @@ export const ProjectList: React.FC = () => {
   const [stateFilter, setStateFilter] = useState<ProjectState | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [customers, setCustomers] = useState<{ id: number; name: string }[]>([]);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    apiClient.get('/v1/customers').then((res) => {
+      const data = res.data.data?.content ?? res.data.data ?? [];
+      setCustomers(data.map((c: any) => ({ id: c.id, name: c.name || c.companyName })));
+    }).catch((err) => {
+      console.error("Failed to load customers", err);
+    });
+  }, []);
 
   const { data, total, loading, refetch } = useProjects(page, size, stateFilter, search || undefined);
 
@@ -147,6 +158,17 @@ export const ProjectList: React.FC = () => {
           </Form.Item>
           <Form.Item name="dateEnd" label="End Date">
             <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="customerId" label="Customer">
+            <Select
+              options={customers.map((c) => ({ value: c.id, label: c.name }))}
+              placeholder="Select customer"
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+            />
           </Form.Item>
           <Form.Item name="budget" label="Budget">
             <Input type="number" prefix="$" min={0} />

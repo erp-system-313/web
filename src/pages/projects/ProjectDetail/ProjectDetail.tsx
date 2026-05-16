@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import {
@@ -24,6 +24,8 @@ import {
   PlusOutlined,
   DeleteOutlined,
   EditOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import {
   useProject,
@@ -31,6 +33,7 @@ import {
   useProjectStages,
 } from "../../../hooks/useProjects";
 import { projectService } from "../../../services/projectService";
+import { apiClient } from "../../../api/client";
 import { AuthContext } from "../../../contexts/AuthContext";
 import {
   PROJECT_STATE_LABELS,
@@ -42,6 +45,7 @@ import type {
   UpdateTaskRequest,
   ProjectTask,
 } from "../../../types/project";
+import { TaskKanban } from "../TaskKanban/TaskKanban";
 import styles from "./ProjectDetail.module.css";
 
 const STATE_TRANSITIONS: Record<ProjectState, ProjectState[]> = {
@@ -62,11 +66,22 @@ export const ProjectDetail: React.FC = () => {
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form] = Form.useForm();
+  const [employees, setEmployees] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    apiClient.get('/v1/employees/active').then((res) => {
+      const data = res.data.data ?? [];
+      setEmployees(data.map((e: any) => ({ id: e.id, name: `${e.firstName} ${e.lastName}` })));
+    }).catch((err) => {
+      console.error("Failed to load employees", err);
+    });
+  }, []);
 
   const [editingTask, setEditingTask] = useState<ProjectTask | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editForm] = Form.useForm();
   const [updatingStage, setUpdatingStage] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<"table" | "board">("table");
 
   const {
     data: project,
@@ -170,6 +185,7 @@ export const ProjectDetail: React.FC = () => {
       dueDate: task.dueDate ? dayjs(task.dueDate) : null,
       estimatedHours: task.estimatedHours,
       actualHours: task.actualHours,
+      assignedTo: task.assignedTo,
       stageId: task.stageId,
     });
     setEditModalOpen(true);
@@ -279,15 +295,43 @@ export const ProjectDetail: React.FC = () => {
       render: (h: number | null) => h ?? "-",
     },
     {
+      title: "Assigned To",
+      dataIndex: "assignedTo",
+      key: "assignedTo",
+      width: 120,
+      render: (id: number | null) => {
+        const emp = employees.find((e) => e.id === id);
+        return emp ? emp.name : "-";
+      },
+    },
+    {
       title: "Actions",
       key: "actions",
-      width: 80,
+      width: 120,
       render: (_: unknown, record: ProjectTask) => (
-        <Button
-          type="link"
-          icon={<EditOutlined />}
-          onClick={() => openEditModal(record)}
-        />
+        <Space>
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => openEditModal(record)}
+          />
+          {isAdminOrManager && (
+            <Popconfirm
+              title="Delete this task?"
+              onConfirm={async () => {
+                try {
+                  await projectService.deleteTask(record.id);
+                  message.success("Task deleted");
+                  refetchTasks();
+                } catch (err) {
+                  message.error(err instanceof Error ? err.message : "Failed to delete task");
+                }
+              }}
+            >
+              <Button type="link" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
+        </Space>
       ),
     },
   ];
@@ -365,20 +409,47 @@ export const ProjectDetail: React.FC = () => {
         title="Tasks"
         style={{ marginTop: 16 }}
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              const defaultStage = stages?.find((s) => s.isDefault);
-              if (defaultStage) form.setFieldValue("stageId", defaultStage.id);
-              setTaskModalOpen(true);
-            }}
-          >
-            Add Task
-          </Button>
+          <Space>
+            <Button.Group>
+              <Button
+                type={viewMode === "table" ? "primary" : "default"}
+                icon={<UnorderedListOutlined />}
+                onClick={() => setViewMode("table")}
+              >
+                Table
+              </Button>
+              <Button
+                type={viewMode === "board" ? "primary" : "default"}
+                icon={<AppstoreOutlined />}
+                onClick={() => setViewMode("board")}
+              >
+                Board
+              </Button>
+            </Button.Group>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                const defaultStage = stages?.find((s) => s.isDefault);
+                if (defaultStage) form.setFieldValue("stageId", defaultStage.id);
+                setTaskModalOpen(true);
+              }}
+            >
+              Add Task
+            </Button>
+          </Space>
         }
       >
-        {tasks.length === 0 && !tasksLoading ? (
+        {tasksLoading ? (
+          <div style={{ textAlign: "center", padding: 40 }}><Spin /></div>
+        ) : viewMode === "board" ? (
+          <TaskKanban
+            tasks={tasks}
+            stages={stages || []}
+            employees={employees}
+            onTaskUpdated={refetchTasks}
+          />
+        ) : tasks.length === 0 ? (
           <Empty description="No tasks yet" />
         ) : (
           <Table
@@ -386,7 +457,7 @@ export const ProjectDetail: React.FC = () => {
             columns={taskColumns}
             rowKey="id"
             loading={tasksLoading}
-            pagination={false}
+            pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (t) => `Total ${t} tasks` }}
           />
         )}
       </Card>
@@ -419,6 +490,17 @@ export const ProjectDetail: React.FC = () => {
           </Form.Item>
           <Form.Item name="estimatedHours" label="Estimated Hours">
             <Input type="number" min={0} />
+          </Form.Item>
+          <Form.Item name="assignedTo" label="Assigned Employee">
+            <Select
+              options={employees.map((e) => ({ value: e.id, label: e.name }))}
+              placeholder="Assign to employee"
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+            />
           </Form.Item>
           <Form.Item name="stageId" label="Stage">
             <Select
@@ -470,6 +552,17 @@ export const ProjectDetail: React.FC = () => {
           </Form.Item>
           <Form.Item name="actualHours" label="Actual Hours">
             <Input type="number" min={0} />
+          </Form.Item>
+          <Form.Item name="assignedTo" label="Assigned Employee">
+            <Select
+              options={employees.map((e) => ({ value: e.id, label: e.name }))}
+              placeholder="Assign to employee"
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+            />
           </Form.Item>
           <Form.Item name="stageId" label="Stage">
             <Select
