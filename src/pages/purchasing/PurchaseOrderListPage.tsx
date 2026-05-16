@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Select, Table, Tag, Space, Input, Modal } from "antd";
+import { Button, Card, Select, Table, Tag, Space, Input } from "antd";
 import {
   PlusOutlined,
   EyeOutlined,
   EditOutlined,
-  DeleteOutlined,
   SearchOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
 } from "@ant-design/icons";
 import type { PurchaseOrderStatus } from "../../types/purchaseOrder.types";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
@@ -37,7 +34,7 @@ const getStatusTag = (status: PurchaseOrderStatus) => {
 
 export const PurchaseOrderListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { orders, loading, fetchOrders, deleteOrder, cancelOrder } = usePurchaseOrders();
+  const { orders, loading, fetchOrders } = usePurchaseOrders();
 
   const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | undefined>(undefined);
   const [searchText, setSearchText] = useState('');
@@ -66,34 +63,6 @@ export const PurchaseOrderListPage: React.FC = () => {
 
   const handleEditOrder = (id: number) => {
     navigate(`/purchasing/orders/${id}/edit`);
-  };
-
-  const handleDeleteOrder = (id: number) => {
-    Modal.confirm({
-      title: "Delete Purchase Order",
-      content: "Are you sure you want to delete this purchase order?",
-      okText: "Delete",
-      okType: "danger",
-      onOk: async () => {
-        await deleteOrder(id);
-      },
-    });
-  };
-
-  const handleCancelOrder = (id: number) => {
-    Modal.confirm({
-      title: "Cancel Purchase Order",
-      content: "Are you sure you want to cancel this purchase order? This cannot be undone.",
-      okText: "Cancel Order",
-      okType: "danger",
-      onOk: async () => {
-        await cancelOrder(id);
-      },
-    });
-  };
-
-  const handleReceiveOrder = (id: number) => {
-    navigate(`/purchasing/orders/${id}`);
   };
 
   const columns = [
@@ -135,28 +104,12 @@ export const PurchaseOrderListPage: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_: unknown, record: any) => {
-        const canEdit = record.status === 'DRAFT';
-        const canReceive = record.status === 'SENT' || record.status === 'APPROVED' || record.status === 'PARTIAL';
-        const canCancel = record.status === 'DRAFT' || record.status === 'SENT' || record.status === 'APPROVED' || record.status === 'PARTIAL';
-        return (
-          <Space className={styles.tableActions}>
-            <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewOrder(record.id)} />
-            {canEdit && (
-              <Button type="text" icon={<EditOutlined />} onClick={() => handleEditOrder(record.id)} />
-            )}
-            {canReceive && (
-              <Button type="text" icon={<CheckCircleOutlined />} onClick={() => handleReceiveOrder(record.id)} />
-            )}
-            {canCancel && (
-              <Button type="text" danger icon={<CloseCircleOutlined />} onClick={() => handleCancelOrder(record.id)} />
-            )}
-            {canEdit && (
-              <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDeleteOrder(record.id)} />
-            )}
-          </Space>
-        );
-      },
+      render: (_: unknown, record: any) => (
+        <Space className={styles.tableActions}>
+          <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewOrder(record.id)} />
+          <Button type="text" icon={<EditOutlined />} onClick={() => handleEditOrder(record.id)} />
+        </Space>
+      ),
     },
   ];
 
