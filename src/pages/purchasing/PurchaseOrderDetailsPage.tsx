@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Card, Descriptions, Table, Tag, Button, Spin, Select, message } from "antd";
-import { ArrowLeftOutlined, SaveOutlined, EditOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import type { PurchaseOrder, PurchaseOrderStatus } from "../../types/purchaseOrder.types";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 
@@ -90,10 +90,7 @@ export const PurchaseOrderDetailsPage: React.FC = () => {
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/purchasing/orders")}>Back</Button>
         <h1 style={{ margin: 0 }}>Purchase Order {order.poNumber}</h1>
         {!isEditing ? (
-          <>
-            <Tag color={statusColors[order.status]}>{order.status}</Tag>
-            <Button icon={<EditOutlined />} onClick={() => navigate(`/purchasing/orders/${id}/edit`)}>Edit</Button>
-          </>
+          <Tag color={statusColors[order.status]}>{order.status}</Tag>
         ) : (
           <>
             <Select
