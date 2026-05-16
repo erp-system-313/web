@@ -26,7 +26,7 @@ export interface PurchaseOrder {
   supplierId: number;
   supplierName: string;
   orderDate: string;
-  deliveryDate: string;
+  expectedDate: string;
   status: PurchaseOrderStatus;
   subtotal: number;
   taxAmount: number;

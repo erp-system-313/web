@@ -40,6 +40,7 @@ import CreateProductPage from "./pages/inventory/CreateProductPage";
 import SupplierListPage from "./pages/purchasing/SupplierListPage";
 import SupplierDetailsPage from "./pages/purchasing/SupplierDetailsPage";
 import PurchaseOrderListPage from "./pages/purchasing/PurchaseOrderListPage";
+import PurchaseOrderDetailsPage from "./pages/purchasing/PurchaseOrderDetailsPage";
 import CreatePurchaseOrderPage from "./pages/purchasing/CreatePurchaseOrderPage";
 import CRMDashboard from "./pages/crm/Dashboard/Dashboard";
 import LeadsList from "./pages/crm/LeadsList/LeadsList";
@@ -155,11 +156,11 @@ export const AppRoutes = () => {
         />
         <Route
           path="/purchasing/orders/:id"
-          element={<PurchaseOrderListPage />}
+          element={<PurchaseOrderDetailsPage />}
         />
         <Route
           path="/purchasing/orders/:id/edit"
-          element={<PurchaseOrderListPage />}
+          element={<PurchaseOrderDetailsPage />}
         />
         {/* Project routes */}
         <Route path="/projects" element={<ProjectList />} />
