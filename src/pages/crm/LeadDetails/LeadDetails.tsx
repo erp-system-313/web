@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { ArrowLeftOutlined, EditOutlined, SwapOutlined } from '@ant-design/icons';
 import type { Lead, Opportunity } from '../../../types/crm';
 import { crmService } from '../../../services/crmService';
+import { formatPhone } from '../../../utils/format';
 import styles from './LeadDetails.module.css';
 
 const { Title } = Typography;
@@ -120,7 +121,7 @@ export const LeadDetails: React.FC = () => {
       <Card>
         <Descriptions column={2}>
           <Descriptions.Item label="Email">{lead.email}</Descriptions.Item>
-          <Descriptions.Item label="Phone">{lead.phone}</Descriptions.Item>
+          <Descriptions.Item label="Phone">{formatPhone(lead.phone)}</Descriptions.Item>
           <Descriptions.Item label="Company">{lead.company}</Descriptions.Item>
           <Descriptions.Item label="Status"><Tag color={statusColors[lead.status]}>{lead.status}</Tag></Descriptions.Item>
           <Descriptions.Item label="Source">{lead.source || '-'}</Descriptions.Item>
@@ -167,8 +168,17 @@ export const LeadDetails: React.FC = () => {
           <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="phone" label="Phone">
-            <Input />
+          <Form.Item name="phone" label="Phone" rules={[{
+            validator: (_, value) => {
+              if (!value) return Promise.resolve();
+              const digits = value.replace(/\D/g, '');
+              const valid = (digits.length === 11 && /^01[0125]\d{8}$/.test(digits)) ||
+                            (digits.length === 12 && /^201[0125]\d{8}$/.test(digits));
+              if (!valid) return Promise.reject(new Error('Must be an Egyptian mobile (+20 1X XXXXXXXX)'));
+              return Promise.resolve();
+            },
+          }]}>
+            <Input placeholder="+20 12 78753670" />
           </Form.Item>
           <Form.Item name="company" label="Company" rules={[{ required: true }]}>
             <Input />

@@ -4,6 +4,7 @@ import { Table, Button, Input, Select, Space, Modal, Form, Card, Typography } fr
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import type { LeadStatus, CreateLeadDto } from '../../../types/crm';
 import { useLeads } from '../../../hooks/useCRM';
+import { formatPhone } from '../../../utils/format';
 import styles from './LeadsList.module.css';
 
 const { Title } = Typography;
@@ -45,7 +46,7 @@ export const LeadsList: React.FC = () => {
     { title: 'Name', dataIndex: 'name', key: 'name', render: (_: string, r: any) => <a onClick={() => navigate(`/crm/leads/${r.id}`)}>{r.name}</a> },
     { title: 'Company', dataIndex: 'company', key: 'company' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Phone', dataIndex: 'phone', key: 'phone' },
+    { title: 'Phone', dataIndex: 'phone', key: 'phone', render: (v: string) => formatPhone(v) },
     { title: 'Status', dataIndex: 'status', key: 'status', render: (s: LeadStatus) => <span style={{ color: statusColors[s] }}>{s}</span> },
     { title: 'Assigned To', dataIndex: 'assignedTo', key: 'assignedTo' },
     { title: 'Created', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => new Date(v).toLocaleDateString() },
@@ -79,7 +80,16 @@ export const LeadsList: React.FC = () => {
         <Form form={form} layout="vertical">
           <Form.Item name="name" label="Name" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
-          <Form.Item name="phone" label="Phone"><Input /></Form.Item>
+          <Form.Item name="phone" label="Phone" rules={[{
+            validator: (_, value) => {
+              if (!value) return Promise.resolve();
+              const digits = value.replace(/\D/g, '');
+              const valid = (digits.length === 11 && /^01[0125]\d{8}$/.test(digits)) ||
+                            (digits.length === 12 && /^201[0125]\d{8}$/.test(digits));
+              if (!valid) return Promise.reject(new Error('Must be an Egyptian mobile (+20 1X XXXXXXXX)'));
+              return Promise.resolve();
+            },
+          }]}><Input placeholder="+20 12 78753670" /></Form.Item>
           <Form.Item name="company" label="Company" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="source" label="Source"><Input /></Form.Item>
           <Form.Item name="assignedTo" label="Assigned To"><Input /></Form.Item>
