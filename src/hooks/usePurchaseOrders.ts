@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { message } from "antd";
+import axios from "axios";
 import { purchasingService } from "../services/purchasingService";
 import { handleApiError } from "../api/client";
 import type {
@@ -39,7 +40,11 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
         setTotal(result.total);
       } catch (error) {
         if (requestId !== requestIdRef.current) return;
-        message.error(handleApiError(error));
+        const errMsg = handleApiError(error);
+        if (axios.isAxiosError(error) && error.response?.data) {
+          console.error('Backend error response:', JSON.stringify(error.response.data, null, 2));
+        }
+        message.error(errMsg);
       } finally {
         if (requestId === requestIdRef.current) {
           setLoading(false);
