@@ -1,0 +1,91 @@
+.board {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  min-height: 300px;
+}
+
+.column {
+  min-width: 280px;
+  max-width: 300px;
+  flex-shrink: 0;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.columnHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e8e8e8;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.taskCount {
+  background: #e8e8e8;
+  border-radius: 10px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.taskList {
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.taskCard {
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px 12px;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+  transition: box-shadow 0.2s;
+}
+
+.taskCard:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.taskCard:active {
+  cursor: grabbing;
+}
+
+.taskCardDragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+.taskCardDragOver {
+  border-top: 2px solid #1890ff;
+}
+
+.taskName {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.taskMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #999;
+}
+
+.emptyColumn {
+  color: #bbb;
+  text-align: center;
+  padding: 20px 0;
+  font-size: 12px;
+}

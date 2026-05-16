@@ -257,6 +257,11 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       label: "Admin",
       children: [
         {
+          key: "admin-overview",
+          label: "Overview",
+          onClick: () => navigate("/admin"),
+        },
+        {
           key: "users",
           label: "Users",
           onClick: () => navigate("/admin/users"),
@@ -282,7 +287,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (!item) return false;
     const key = item.key as string;
     if (key === "inventory" && !isVisible(["admin", "manager"])) return false;
-    if (key === "hr" && !isVisible(["admin", "manager", "staff", "user"]))
+    if (key === "hr" && !isVisible(["admin", "manager", "hr", "staff", "user"]))
       return false;
     if (key === "recruitment" && !isVisible(["admin", "manager", "hr"]))
       return false;
@@ -320,6 +325,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/recruitment/pipeline")) return "recruitment-pipeline";
     if (path.startsWith("/recruitment/applicants"))
       return "recruitment-pipeline";
+    if (path === "/admin") return "admin-overview";
     if (path.startsWith("/admin/users")) return "users";
     if (path.startsWith("/admin/roles")) return "roles";
     if (path.startsWith("/admin/settings")) return "settings";
@@ -358,6 +364,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       contracts: "hr",
       "recruitment-jobs": "recruitment",
       "recruitment-pipeline": "recruitment",
+      "admin-overview": "admin",
       users: "admin",
       roles: "admin",
       settings: "admin",

@@ -13,6 +13,7 @@ import { Contracts } from "./pages/hr/Contracts/Contracts";
 import LoginPage from "./pages/auth/Login/Login";
 import DashboardPage from "./pages/common/Dashboard/Dashboard";
 import ProfilePage from "./pages/common/Profile/Profile";
+import AdminDashboard from "./pages/admin/AdminDashboard/AdminDashboard";
 import UsersListPage from "./pages/admin/Users/Users";
 import SettingsPage from "./pages/admin/Settings/Settings";
 import AuditLogsPage from "./pages/admin/AuditLogs/AuditLogs";
@@ -86,6 +87,7 @@ export const AppRoutes = () => {
 
         {/* Admin routes */}
         <Route element={<RequireRole roles={["ADMIN"]} />}>
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<UsersListPage />} />
           <Route path="/admin/roles" element={<RolesList />} />
           <Route path="/admin/settings" element={<SettingsPage />} />

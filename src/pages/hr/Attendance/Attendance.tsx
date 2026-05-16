@@ -1,9 +1,10 @@
 import { useState, useContext, useEffect } from "react";
 import { Card, Typography, Table, Button, Space, Tag, message, Select, Modal, Row, Col, Statistic, DatePicker, Input } from "antd";
-import { ClockCircleOutlined, CheckCircleOutlined, MinusCircleOutlined, LeftOutlined, RightOutlined, ReloadOutlined } from "@ant-design/icons";
+import { ClockCircleOutlined, CheckCircleOutlined, MinusCircleOutlined, LeftOutlined, RightOutlined, ReloadOutlined, CalendarOutlined, TableOutlined } from "@ant-design/icons";
 import { useAttendance, useClockIn, useClockOut, useEmployees } from "../../../hooks";
 import { hrService } from "../../../services/hrService";
 import { AuthContext } from "../../../contexts/AuthContext";
+import { AttendanceCalendar } from "../AttendanceCalendar";
 import dayjs from "dayjs";
 import styles from "./Attendance.module.css";
 
@@ -28,6 +29,7 @@ export const AttendancePage: React.FC = () => {
   const [absentEmployeeId, setAbsentEmployeeId] = useState<number | undefined>();
   const [absentDate, setAbsentDate] = useState(dayjs());
   const [absentNotes, setAbsentNotes] = useState("");
+  const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
 
   const todayStr = dayjs().format("YYYY-MM-DD");
   const startDate = currentMonth.startOf("month").format("YYYY-MM-DD");
@@ -225,10 +227,16 @@ export const AttendancePage: React.FC = () => {
             </span>
             <Button icon={<RightOutlined />} onClick={() => setCurrentMonth(currentMonth.add(1, "month"))} />
             <Button icon={<ReloadOutlined />} onClick={refetch} />
+            <Button
+              icon={viewMode === "table" ? <CalendarOutlined /> : <TableOutlined />}
+              onClick={() => setViewMode(viewMode === "table" ? "calendar" : "table")}
+            >
+              {viewMode === "table" ? "Calendar" : "Table"}
+            </Button>
           </Space>
         </div>
 
-        {isAdminOrManager && (
+        {isAdminOrManager && viewMode === "table" && (
           <Row gutter={[16, 16]} className={styles.summaryRow}>
             <Col xs={12} sm={8} md={6}>
               <Card size="small"><Statistic title="Total" value={records.length} /></Card>
@@ -344,16 +352,20 @@ export const AttendancePage: React.FC = () => {
           </div>
         </Modal>
 
-        <div className={styles.tableSection}>
-          <Title level={5}>{isAdminOrManager ? "Attendance Records" : "My Attendance"}</Title>
-          <Table
-            dataSource={records}
-            columns={columns}
-            rowKey="id"
-            loading={loading}
-            pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} records` }}
-          />
-        </div>
+        {viewMode === "calendar" ? (
+          <AttendanceCalendar records={records} currentMonth={currentMonth} />
+        ) : (
+          <div className={styles.tableSection}>
+            <Title level={5}>{isAdminOrManager ? "Attendance Records" : "My Attendance"}</Title>
+            <Table
+              dataSource={records}
+              columns={columns}
+              rowKey="id"
+              loading={loading}
+              pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} records` }}
+            />
+          </div>
+        )}
       </Card>
     </div>
   );

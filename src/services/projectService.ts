@@ -46,7 +46,7 @@ export const projectService = {
 
   updateState: async (id: number, state: ProjectState): Promise<Project> => {
     try {
-      const response = await api.patch(`/v1/projects/${id}/state`, state);
+      const response = await api.patch(`/v1/projects/${id}/state`, { state });
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -92,6 +92,14 @@ export const projectService = {
     try {
       const response = await api.put(`/v1/tasks/${taskId}`, data);
       return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  deleteTask: async (taskId: number): Promise<void> => {
+    try {
+      await api.delete(`/v1/tasks/${taskId}`);
     } catch (error) {
       throw new Error(handleApiError(error));
     }

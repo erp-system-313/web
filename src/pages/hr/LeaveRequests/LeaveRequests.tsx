@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useForm } from "react-hook-form";
 import {
   Card,
@@ -24,6 +24,7 @@ import {
   useApproveLeaveRequest,
   useRejectLeaveRequest,
 } from "../../../hooks";
+import { AuthContext } from "../../../contexts/AuthContext";
 import type { LeaveRequest, LeaveStatus, LeaveType } from "../../../types/hr";
 import styles from "./LeaveRequests.module.css";
 import formStyles from "../../../components/common/FormCard/FormCard.module.css";
@@ -38,6 +39,8 @@ interface LeaveFormData {
 }
 
 export const LeaveRequests: React.FC = () => {
+  const authContext = useContext(AuthContext);
+  const currentEmployeeId = authContext?.user?.employeeId;
   const { data: requests, loading, refetch } = useLeaveRequests();
   const { data: balances } = useLeaveBalances();
   const { create, loading: creating } = useCreateLeaveRequest();
@@ -73,7 +76,7 @@ export const LeaveRequests: React.FC = () => {
   const onSubmit = async (data: LeaveFormData) => {
     try {
       await create({
-        employeeId: 0,
+        employeeId: currentEmployeeId || 0,
         startDate: data.startDate,
         endDate: data.endDate,
         type: data.type,
