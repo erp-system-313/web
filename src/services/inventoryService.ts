@@ -5,12 +5,13 @@ import type { Category, CreateCategoryDto } from '../types/category.types';
 
 export const inventoryService = {
   async getProducts(filters: ProductFilters = {}, page = 1, size = 20): Promise<{ data: Product[]; total: number }> {
-    const params: Record<string, string> = { page: String(page - 1), size: String(size) };
+    const params: Record<string, string> = { page: String(page - 1), size: String(size), status: 'ACTIVE' };
     
     if (filters.categoryId !== undefined) params.categoryId = String(filters.categoryId);
     if (filters.search) params.search = filters.search;
     if (filters.minPrice !== undefined) params.minPrice = String(filters.minPrice);
     if (filters.maxPrice !== undefined) params.maxPrice = String(filters.maxPrice);
+    if (filters.status) params.status = filters.status;
     
     const response = await api.get(endpoints.products.list, { params });
     return {
@@ -44,7 +45,7 @@ export const inventoryService = {
   },
 
   async getCategories(page = 1, size = 20): Promise<{ data: Category[]; total: number }> {
-    const params: Record<string, string> = { page: String(page - 1), size: String(size) };
+    const params: Record<string, string> = { page: String(page - 1), size: String(size), status: 'ACTIVE' };
     
     const response = await api.get(endpoints.categories.list, { params });
     return {

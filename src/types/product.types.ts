@@ -6,6 +6,7 @@ export interface ProductFilters {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
+  status?: string;
 }
 
 export interface Product {
