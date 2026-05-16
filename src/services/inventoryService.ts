@@ -7,7 +7,7 @@ export const inventoryService = {
   async getProducts(filters: ProductFilters = {}, page = 1, size = 20): Promise<{ data: Product[]; total: number }> {
     const params: Record<string, string> = { page: String(page - 1), size: String(size), status: 'ACTIVE' };
     
-    if (filters.categoryId !== undefined) params.categoryId = String(filters.categoryId);
+    if (filters.categoryId !== undefined && filters.categoryId !== -1) params.categoryId = String(filters.categoryId);
     if (filters.search) params.search = filters.search;
     if (filters.minPrice !== undefined) params.minPrice = String(filters.minPrice);
     if (filters.maxPrice !== undefined) params.maxPrice = String(filters.maxPrice);

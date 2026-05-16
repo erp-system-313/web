@@ -10,8 +10,9 @@ import { formatCurrency } from '../../utils/formatters';
 import styles from './ProductListPage.module.css';
 
 function buildCategoryTree(categories: Category[]): { value: number; title: string; children?: { value: number; title: string }[] }[] {
+  const allOption = { value: -1, title: 'All Categories' };
   const parents = categories.filter(c => c.parentId === null).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-  return parents.map(parent => {
+  const tree = parents.map(parent => {
     const children = categories.filter(c => c.parentId === parent.id).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     return {
       value: parent.id,
@@ -19,6 +20,7 @@ function buildCategoryTree(categories: Category[]): { value: number; title: stri
       children: children.length > 0 ? children.map(c => ({ value: c.id, title: c.name })) : undefined,
     };
   });
+  return [allOption, ...tree];
 }
 
 const stockStatusOptions = [
@@ -32,7 +34,7 @@ export const ProductListPage: React.FC = () => {
   const navigate = useNavigate();
   const { products, loading, fetchProducts, deleteProduct } = useProducts();
   
-  const [filters, setFilters] = useState<ProductFilters>({});
+  const [filters, setFilters] = useState<ProductFilters>({ categoryId: -1 });
   const [searchText, setSearchText] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -56,8 +58,8 @@ export const ProductListPage: React.FC = () => {
     setSearchText(value);
   };
 
-  const handleCategoryFilter = (categoryId: number | undefined) => {
-    setFilters(prev => ({ ...prev, categoryId }));
+  const handleCategoryFilter = (value: number | undefined) => {
+    setFilters(prev => ({ ...prev, categoryId: value === -1 ? undefined : value }));
   };
 
   const handleStockStatusFilter = (stockStatus: string) => {
@@ -160,7 +162,7 @@ export const ProductListPage: React.FC = () => {
       <Card className={styles.filterPanel}>
         <Space size="large" wrap>
           <Input.Search placeholder="Search products..." allowClear prefix={<SearchOutlined />} onSearch={handleSearch} style={{ width: 300 }} />
-          <TreeSelect placeholder="Category" allowClear style={{ width: 200 }} treeData={categoryTreeData} treeDefaultExpandAll onChange={handleCategoryFilter} />
+          <TreeSelect value={filters.categoryId} style={{ width: 200 }} treeData={categoryTreeData} treeDefaultExpandAll onChange={handleCategoryFilter} />
           <Select placeholder="Stock Status" allowClear style={{ width: 150 }} options={stockStatusOptions} onChange={handleStockStatusFilter} />
         </Space>
       </Card>
