@@ -12,6 +12,7 @@ import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import styles from "./PurchaseOrderListPage.module.css";
 
 const statusOptions = [
+  { value: '', label: 'All' },
   { value: 'DRAFT', label: 'Draft' },
   { value: 'SENT', label: 'Sent' },
   { value: 'RECEIVED', label: 'Received' },
@@ -133,13 +134,12 @@ export const PurchaseOrderListPage: React.FC = () => {
           />
           <Select
             placeholder="Filter by status"
-            allowClear
             style={{ width: 160 }}
             options={statusOptions}
             onChange={(value) =>
-              setStatusFilter(value as PurchaseOrderStatus | undefined)
+              setStatusFilter(value ? (value as PurchaseOrderStatus) : undefined)
             }
-            value={statusFilter}
+            value={statusFilter ?? ''}
           />
         </Space>
       </Card>
