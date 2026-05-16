@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { message } from "antd";
 import { purchasingService } from "../services/purchasingService";
 import type {
@@ -25,18 +25,24 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const requestIdRef = useRef(0);
 
   const fetchOrders = useCallback(
     async (filters: PurchaseOrderFilters, _page: number) => {
+      const requestId = ++requestIdRef.current;
       setLoading(true);
       try {
         const result = await purchasingService.getPurchaseOrders(filters);
+        if (requestId !== requestIdRef.current) return;
         setOrders(result.data);
         setTotal(result.total);
       } catch (error) {
+        if (requestId !== requestIdRef.current) return;
         message.error("Failed to fetch purchase orders");
       } finally {
-        setLoading(false);
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+        }
       }
     },
     [],
