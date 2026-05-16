@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Select, Table, Tag, Space, Input, Modal } from "antd";
 import {
@@ -15,7 +15,6 @@ import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import styles from "./PurchaseOrderListPage.module.css";
 
 const statusOptions = [
-  { value: '', label: 'All Statuses' },
   { value: 'DRAFT', label: 'Draft' },
   { value: 'SENT', label: 'Sent' },
   { value: 'RECEIVED', label: 'Received' },
@@ -40,22 +39,18 @@ export const PurchaseOrderListPage: React.FC = () => {
   const navigate = useNavigate();
   const { orders, loading, fetchOrders, deleteOrder, cancelOrder } = usePurchaseOrders();
 
-  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | ''>('');
+  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | undefined>(undefined);
   const [searchText, setSearchText] = useState('');
 
-  const loadOrders = useCallback(async () => {
-    await fetchOrders(
+  useEffect(() => {
+    fetchOrders(
       {
-        status: (statusFilter || undefined) as PurchaseOrderStatus | undefined,
+        status: statusFilter,
         search: searchText || undefined,
       },
       1,
     );
   }, [fetchOrders, statusFilter, searchText]);
-
-  useEffect(() => {
-    loadOrders();
-  }, [loadOrders]);
 
   const handleSearch = (value: string) => {
     setSearchText(value);
@@ -184,10 +179,12 @@ export const PurchaseOrderListPage: React.FC = () => {
             style={{ width: 300 }}
           />
           <Select
+            placeholder="Filter by status"
+            allowClear
             style={{ width: 160 }}
             options={statusOptions}
             onChange={(value) =>
-              setStatusFilter((value ?? '') as PurchaseOrderStatus | '')
+              setStatusFilter(value as PurchaseOrderStatus | undefined)
             }
             value={statusFilter}
           />
