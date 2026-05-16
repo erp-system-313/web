@@ -1,7 +1,16 @@
-import { Card, Form, Input, Button, Typography, Tabs, message, Spin } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
-import { useSettings, useUpdateSettings } from '../../../hooks/useSettings';
-import styles from './Settings.module.css';
+import {
+  Card,
+  Form,
+  Input,
+  Button,
+  Typography,
+  Tabs,
+  message,
+  Spin,
+} from "antd";
+import { SaveOutlined } from "@ant-design/icons";
+import { useSettings, useUpdateSettings } from "../../../hooks/useSettings";
+import formStyles from "../../../components/common/FormCard/FormCard.module.css";
 
 const { Title } = Typography;
 
@@ -14,18 +23,18 @@ export const SettingsPage: React.FC = () => {
     try {
       const values = await form.validateFields();
       await update(values);
-      message.success('Settings saved successfully');
+      message.success("Settings saved successfully");
       refetch();
     } catch (error) {
-      message.error('Failed to save settings');
+      message.error("Failed to save settings");
     }
   };
 
   if (loading) {
     return (
-      <div className={styles.container}>
+      <div className={formStyles.container}>
         <Card>
-          <div style={{ textAlign: 'center', padding: 40 }}>
+          <div style={{ textAlign: "center", padding: 40 }}>
             <Spin />
           </div>
         </Card>
@@ -35,8 +44,8 @@ export const SettingsPage: React.FC = () => {
 
   const tabItems = [
     {
-      key: 'general',
-      label: 'General',
+      key: "general",
+      label: "General",
       children: (
         <Form
           form={form}
@@ -71,34 +80,41 @@ export const SettingsPage: React.FC = () => {
           <Form.Item label="Date Format" name="dateFormat">
             <Input placeholder="YYYY-MM-DD" />
           </Form.Item>
-          <Button type="primary" htmlType="submit" loading={updating} icon={<SaveOutlined />}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={updating}
+            icon={<SaveOutlined />}
+          >
             Save Changes
           </Button>
         </Form>
       ),
     },
     {
-      key: 'notifications',
-      label: 'Notifications',
+      key: "notifications",
+      label: "Notifications",
       children: (
         <Form layout="vertical">
-          <p style={{ color: '#8c8c8c' }}>Notification settings coming soon...</p>
+          <p style={{ color: "#8c8c8c" }}>
+            Notification settings coming soon...
+          </p>
         </Form>
       ),
     },
     {
-      key: 'hr',
-      label: 'HR Settings',
+      key: "hr",
+      label: "HR Settings",
       children: (
         <Form layout="vertical">
-          <p style={{ color: '#8c8c8c' }}>HR settings coming soon...</p>
+          <p style={{ color: "#8c8c8c" }}>HR settings coming soon...</p>
         </Form>
       ),
     },
   ];
 
   return (
-    <div className={styles.container}>
+    <div className={formStyles.container}>
       <Card>
         <Title level={3}>Company Settings</Title>
         <Tabs items={tabItems} />

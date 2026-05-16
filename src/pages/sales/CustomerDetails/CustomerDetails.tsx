@@ -149,7 +149,11 @@ export const CustomerDetails: React.FC = () => {
         <Title level={3} style={{ margin: 0, flex: 1 }}>
           {customer.name}
         </Title>
-        <Button type="primary" icon={<EditOutlined />}>
+        <Button
+          type="primary"
+          icon={<EditOutlined />}
+          onClick={() => navigate(`/sales/customers/${customerId}/edit`)}
+        >
           Edit Customer
         </Button>
       </div>

@@ -139,4 +139,10 @@ export const endpoints = {
   permissions: {
     list: "/v1/permissions",
   },
+  reports: {
+    trialBalance: "/v1/reports/trial-balance",
+    generalLedger: "/v1/reports/general-ledger",
+    profitLoss: "/v1/reports/profit-loss",
+    balanceSheet: "/v1/reports/balance-sheet",
+  },
 };

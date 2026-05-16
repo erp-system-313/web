@@ -1,20 +1,54 @@
-import { useState, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import dayjs from 'dayjs';
-import { Card, Descriptions, Tag, Button, Space, Spin, Table, Modal, Form, Input, DatePicker, message, Popconfirm, Select, Empty } from 'antd';
-import { ArrowLeftOutlined, BarChartOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { useProject, useProjectTasks, useProjectStages } from '../../../hooks/useProjects';
-import { projectService } from '../../../services/projectService';
-import { AuthContext } from '../../../contexts/AuthContext';
-import { PROJECT_STATE_LABELS, PROJECT_STATE_COLORS } from '../../../types/project';
-import type { ProjectState, CreateTaskRequest, UpdateTaskRequest, ProjectTask } from '../../../types/project';
-import styles from './ProjectDetail.module.css';
+import { useState, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
+import {
+  Card,
+  Descriptions,
+  Tag,
+  Button,
+  Space,
+  Spin,
+  Table,
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  message,
+  Popconfirm,
+  Select,
+  Empty,
+} from "antd";
+import {
+  ArrowLeftOutlined,
+  BarChartOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
+import {
+  useProject,
+  useProjectTasks,
+  useProjectStages,
+} from "../../../hooks/useProjects";
+import { projectService } from "../../../services/projectService";
+import { AuthContext } from "../../../contexts/AuthContext";
+import {
+  PROJECT_STATE_LABELS,
+  PROJECT_STATE_COLORS,
+} from "../../../types/project";
+import type {
+  ProjectState,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+  ProjectTask,
+} from "../../../types/project";
+import styles from "./ProjectDetail.module.css";
 
 const STATE_TRANSITIONS: Record<ProjectState, ProjectState[]> = {
-  PLANNING: ['IN_PROGRESS'],
-  IN_PROGRESS: ['ON_HOLD', 'COMPLETED'],
-  ON_HOLD: ['IN_PROGRESS', 'CANCELLED'],
-  COMPLETED: [],
+  PLANNING: ["ACTIVE"],
+  ACTIVE: ["ON_HOLD", "COMPLETED"],
+  ON_HOLD: ["ACTIVE", "CANCELLED"],
+  COMPLETED: ["ACTIVE"],
   CANCELLED: [],
 };
 
@@ -34,18 +68,30 @@ export const ProjectDetail: React.FC = () => {
   const [editForm] = Form.useForm();
   const [updatingStage, setUpdatingStage] = useState<number | null>(null);
 
-  const { data: project, loading, refetch: refetchProject } = useProject(projectId);
-  const { data: tasks, loading: tasksLoading, refetch: refetchTasks } = useProjectTasks(projectId);
+  const {
+    data: project,
+    loading,
+    refetch: refetchProject,
+  } = useProject(projectId);
+  const {
+    data: tasks,
+    loading: tasksLoading,
+    refetch: refetchTasks,
+  } = useProjectTasks(projectId);
   const { data: stages } = useProjectStages(projectId);
 
   const handleStateChange = async (newState: ProjectState) => {
     if (!projectId) return;
     try {
       await projectService.updateState(projectId, newState);
-      message.success(`Project state updated to ${PROJECT_STATE_LABELS[newState]}`);
+      message.success(
+        `Project state updated to ${PROJECT_STATE_LABELS[newState]}`,
+      );
       refetchProject();
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Failed to update state');
+      message.error(
+        err instanceof Error ? err.message : "Failed to update state",
+      );
     }
   };
 
@@ -53,10 +99,12 @@ export const ProjectDetail: React.FC = () => {
     if (!projectId) return;
     try {
       await projectService.delete(projectId);
-      message.success('Project deleted successfully');
-      navigate('/projects');
+      message.success("Project deleted successfully");
+      navigate("/projects");
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Failed to delete project');
+      message.error(
+        err instanceof Error ? err.message : "Failed to delete project",
+      );
     }
   };
 
@@ -65,16 +113,36 @@ export const ProjectDetail: React.FC = () => {
     try {
       const payload: UpdateTaskRequest = {
         ...values,
-        dueDate: values.dueDate ? String((values.dueDate as any).format?.('YYYY-MM-DD') ?? values.dueDate) : null,
+        startDate: values.startDate
+          ? String(
+              (values.startDate as any).format?.("YYYY-MM-DD") ??
+                values.startDate,
+            )
+          : null,
+        dueDate: values.dueDate
+          ? String(
+              (values.dueDate as any).format?.("YYYY-MM-DD") ?? values.dueDate,
+            )
+          : null,
+        estimatedHours:
+          values.estimatedHours != null && values.estimatedHours !== ""
+            ? Number(values.estimatedHours)
+            : null,
+        actualHours:
+          values.actualHours != null && values.actualHours !== ""
+            ? Number(values.actualHours)
+            : null,
       };
       await projectService.updateTask(editingTask.id, payload);
-      message.success('Task updated successfully');
+      message.success("Task updated successfully");
       setEditModalOpen(false);
       setEditingTask(null);
       editForm.resetFields();
       refetchTasks();
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Failed to update task');
+      message.error(
+        err instanceof Error ? err.message : "Failed to update task",
+      );
     }
   };
 
@@ -82,10 +150,12 @@ export const ProjectDetail: React.FC = () => {
     setUpdatingStage(taskId);
     try {
       await projectService.updateTask(taskId, { stageId });
-      message.success('Task stage updated');
+      message.success("Task stage updated");
       refetchTasks();
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Failed to update task stage');
+      message.error(
+        err instanceof Error ? err.message : "Failed to update task stage",
+      );
     } finally {
       setUpdatingStage(null);
     }
@@ -96,6 +166,7 @@ export const ProjectDetail: React.FC = () => {
     editForm.setFieldsValue({
       name: task.name,
       description: task.description,
+      startDate: task.startDate ? dayjs(task.startDate) : null,
       dueDate: task.dueDate ? dayjs(task.dueDate) : null,
       estimatedHours: task.estimatedHours,
       actualHours: task.actualHours,
@@ -110,15 +181,35 @@ export const ProjectDetail: React.FC = () => {
     try {
       const payload: CreateTaskRequest = {
         ...values,
-        dueDate: values.dueDate ? String((values.dueDate as any).format?.('YYYY-MM-DD') ?? values.dueDate) : null,
+        startDate: values.startDate
+          ? String(
+              (values.startDate as any).format?.("YYYY-MM-DD") ??
+                values.startDate,
+            )
+          : null,
+        dueDate: values.dueDate
+          ? String(
+              (values.dueDate as any).format?.("YYYY-MM-DD") ?? values.dueDate,
+            )
+          : null,
+        estimatedHours:
+          values.estimatedHours != null && values.estimatedHours !== ""
+            ? Number(values.estimatedHours)
+            : null,
+        actualHours:
+          values.actualHours != null && values.actualHours !== ""
+            ? Number(values.actualHours)
+            : null,
       };
       await projectService.createTask(projectId, payload);
-      message.success('Task created successfully');
+      message.success("Task created successfully");
       setTaskModalOpen(false);
       form.resetFields();
       refetchTasks();
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Failed to create task');
+      message.error(
+        err instanceof Error ? err.message : "Failed to create task",
+      );
     } finally {
       setCreating(false);
     }
@@ -126,7 +217,7 @@ export const ProjectDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: 80 }}>
         <Spin size="large" />
       </div>
     );
@@ -139,13 +230,16 @@ export const ProjectDetail: React.FC = () => {
   const availableTransitions = STATE_TRANSITIONS[project.state] || [];
 
   const taskColumns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
+    { title: "Name", dataIndex: "name", key: "name" },
     {
-      title: 'Stage',
-      key: 'stage',
+      title: "Stage",
+      key: "stage",
       width: 160,
       render: (_: unknown, record: ProjectTask) => {
-        const stageOptions = (stages || []).map((s) => ({ value: s.id, label: s.name }));
+        const stageOptions = (stages || []).map((s) => ({
+          value: s.id,
+          label: s.name,
+        }));
         const currentStageId = record.stageId;
         return (
           <Select
@@ -160,25 +254,40 @@ export const ProjectDetail: React.FC = () => {
         );
       },
     },
-    { title: 'Due Date', dataIndex: 'dueDate', key: 'dueDate', render: (d: string | null) => d || '-' },
     {
-      title: 'Est. Hours',
-      dataIndex: 'estimatedHours',
-      key: 'estimatedHours',
-      render: (h: number | null) => h ?? '-',
+      title: "Start Date",
+      dataIndex: "startDate",
+      key: "startDate",
+      render: (d: string | null) => d || "-",
     },
     {
-      title: 'Actual Hours',
-      dataIndex: 'actualHours',
-      key: 'actualHours',
-      render: (h: number | null) => h ?? '-',
+      title: "Due Date",
+      dataIndex: "dueDate",
+      key: "dueDate",
+      render: (d: string | null) => d || "-",
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Est. Hours",
+      dataIndex: "estimatedHours",
+      key: "estimatedHours",
+      render: (h: number | null) => h ?? "-",
+    },
+    {
+      title: "Actual Hours",
+      dataIndex: "actualHours",
+      key: "actualHours",
+      render: (h: number | null) => h ?? "-",
+    },
+    {
+      title: "Actions",
+      key: "actions",
       width: 80,
       render: (_: unknown, record: ProjectTask) => (
-        <Button type="link" icon={<EditOutlined />} onClick={() => openEditModal(record)} />
+        <Button
+          type="link"
+          icon={<EditOutlined />}
+          onClick={() => openEditModal(record)}
+        />
       ),
     },
   ];
@@ -186,12 +295,20 @@ export const ProjectDetail: React.FC = () => {
   return (
     <div className={styles.container}>
       <Space style={{ marginBottom: 16 }}>
-        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/projects')}>
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/projects")}
+        >
           Back to Projects
         </Button>
         {isAdminOrManager && (
-          <Popconfirm title="Delete this project?" onConfirm={handleDeleteProject}>
-            <Button danger icon={<DeleteOutlined />}>Delete Project</Button>
+          <Popconfirm
+            title="Delete this project?"
+            onConfirm={handleDeleteProject}
+          >
+            <Button danger icon={<DeleteOutlined />}>
+              Delete Project
+            </Button>
           </Popconfirm>
         )}
       </Space>
@@ -200,15 +317,18 @@ export const ProjectDetail: React.FC = () => {
         title={project.name}
         extra={
           <Space>
-            {isAdminOrManager && availableTransitions.map((state) => (
-              <Popconfirm
-                key={state}
-                title={`Move to ${PROJECT_STATE_LABELS[state]}?`}
-                onConfirm={() => handleStateChange(state)}
-              >
-                <Button size="small">Move to {PROJECT_STATE_LABELS[state]}</Button>
-              </Popconfirm>
-            ))}
+            {isAdminOrManager &&
+              availableTransitions.map((state) => (
+                <Popconfirm
+                  key={state}
+                  title={`Move to ${PROJECT_STATE_LABELS[state]}?`}
+                  onConfirm={() => handleStateChange(state)}
+                >
+                  <Button size="small">
+                    Move to {PROJECT_STATE_LABELS[state]}
+                  </Button>
+                </Popconfirm>
+              ))}
             <Button
               icon={<BarChartOutlined />}
               onClick={() => navigate(`/projects/${projectId}/gantt`)}
@@ -220,12 +340,24 @@ export const ProjectDetail: React.FC = () => {
       >
         <Descriptions column={2}>
           <Descriptions.Item label="State">
-            <Tag color={PROJECT_STATE_COLORS[project.state]}>{PROJECT_STATE_LABELS[project.state]}</Tag>
+            <Tag color={PROJECT_STATE_COLORS[project.state]}>
+              {PROJECT_STATE_LABELS[project.state]}
+            </Tag>
           </Descriptions.Item>
-          <Descriptions.Item label="Budget">{project.budget ? `$${project.budget.toLocaleString()}` : '-'}</Descriptions.Item>
-          <Descriptions.Item label="Start Date">{project.dateStart || '-'}</Descriptions.Item>
-          <Descriptions.Item label="End Date">{project.dateEnd || '-'}</Descriptions.Item>
-          <Descriptions.Item label="Created">{project.createdAt ? new Date(project.createdAt).toLocaleDateString() : '-'}</Descriptions.Item>
+          <Descriptions.Item label="Budget">
+            {project.budget ? `$${project.budget.toLocaleString()}` : "-"}
+          </Descriptions.Item>
+          <Descriptions.Item label="Start Date">
+            {project.dateStart || "-"}
+          </Descriptions.Item>
+          <Descriptions.Item label="End Date">
+            {project.dateEnd || "-"}
+          </Descriptions.Item>
+          <Descriptions.Item label="Created">
+            {project.createdAt
+              ? new Date(project.createdAt).toLocaleDateString()
+              : "-"}
+          </Descriptions.Item>
         </Descriptions>
       </Card>
 
@@ -233,11 +365,15 @@ export const ProjectDetail: React.FC = () => {
         title="Tasks"
         style={{ marginTop: 16 }}
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => {
-            const defaultStage = stages?.find((s) => s.isDefault);
-            if (defaultStage) form.setFieldValue('stageId', defaultStage.id);
-            setTaskModalOpen(true);
-          }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              const defaultStage = stages?.find((s) => s.isDefault);
+              if (defaultStage) form.setFieldValue("stageId", defaultStage.id);
+              setTaskModalOpen(true);
+            }}
+          >
             Add Task
           </Button>
         }
@@ -258,25 +394,38 @@ export const ProjectDetail: React.FC = () => {
       <Modal
         title="New Task"
         open={taskModalOpen}
-        onCancel={() => { setTaskModalOpen(false); form.resetFields(); }}
+        onCancel={() => {
+          setTaskModalOpen(false);
+          form.resetFields();
+        }}
         footer={null}
       >
         <Form form={form} layout="vertical" onFinish={handleCreateTask}>
-          <Form.Item name="name" label="Task Name" rules={[{ required: true, message: 'Name is required' }]}>
+          <Form.Item
+            name="name"
+            label="Task Name"
+            rules={[{ required: true, message: "Name is required" }]}
+          >
             <Input />
           </Form.Item>
           <Form.Item name="description" label="Description">
             <Input.TextArea rows={3} />
           </Form.Item>
+          <Form.Item name="startDate" label="Start Date">
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
           <Form.Item name="dueDate" label="Due Date">
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item name="estimatedHours" label="Estimated Hours">
             <Input type="number" min={0} />
           </Form.Item>
           <Form.Item name="stageId" label="Stage">
             <Select
-              options={(stages || []).map((s) => ({ value: s.id, label: s.name }))}
+              options={(stages || []).map((s) => ({
+                value: s.id,
+                label: s.name,
+              }))}
               placeholder="Select stage"
               defaultValue={stages?.find((s) => s.isDefault)?.id}
             />
@@ -292,18 +441,29 @@ export const ProjectDetail: React.FC = () => {
       <Modal
         title="Edit Task"
         open={editModalOpen}
-        onCancel={() => { setEditModalOpen(false); setEditingTask(null); editForm.resetFields(); }}
+        onCancel={() => {
+          setEditModalOpen(false);
+          setEditingTask(null);
+          editForm.resetFields();
+        }}
         footer={null}
       >
         <Form form={editForm} layout="vertical" onFinish={handleEditTask}>
-          <Form.Item name="name" label="Task Name" rules={[{ required: true, message: 'Name is required' }]}>
+          <Form.Item
+            name="name"
+            label="Task Name"
+            rules={[{ required: true, message: "Name is required" }]}
+          >
             <Input />
           </Form.Item>
           <Form.Item name="description" label="Description">
             <Input.TextArea rows={3} />
           </Form.Item>
+          <Form.Item name="startDate" label="Start Date">
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
           <Form.Item name="dueDate" label="Due Date">
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item name="estimatedHours" label="Estimated Hours">
             <Input type="number" min={0} />
@@ -313,7 +473,10 @@ export const ProjectDetail: React.FC = () => {
           </Form.Item>
           <Form.Item name="stageId" label="Stage">
             <Select
-              options={(stages || []).map((s) => ({ value: s.id, label: s.name }))}
+              options={(stages || []).map((s) => ({
+                value: s.id,
+                label: s.name,
+              }))}
               placeholder="Select stage"
               allowClear
             />

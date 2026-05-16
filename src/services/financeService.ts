@@ -94,16 +94,29 @@ export const financeService = {
     },
 
     update: async (
-      _id: number,
-      _data: Partial<CreateInvoiceDto>,
+      id: number,
+      data: Partial<CreateInvoiceDto>,
     ): Promise<Invoice | null> => {
-      console.warn("Update/delete not available - backend endpoint missing");
-      return null;
+      try {
+        const response = await apiClient.put<ApiResponse<Invoice>>(
+          endpoints.invoices.update(id),
+          data,
+        );
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to update invoice ${id}:`, error);
+        return null;
+      }
     },
 
-    delete: async (_id: number): Promise<boolean> => {
-      console.warn("Update/delete not available - backend endpoint missing");
-      return false;
+    delete: async (id: number): Promise<boolean> => {
+      try {
+        await apiClient.delete(endpoints.invoices.delete(id));
+        return true;
+      } catch (error) {
+        console.error(`Failed to delete invoice ${id}:`, error);
+        return false;
+      }
     },
 
     recordPayment: async (data: RecordPaymentDto): Promise<Payment> => {
@@ -180,11 +193,12 @@ export const financeService = {
           params.append("parentId", filters.parentId.toString());
         }
 
-        const response = await apiClient.get<
-          ApiResponse<PageResponse<Account>>
-        >(endpoints.accounts.list, { params });
+        const response = await apiClient.get<PageResponse<Account>>(
+          endpoints.accounts.list,
+          { params },
+        );
 
-        const pageData = response.data.data;
+        const pageData = response.data;
         return {
           items: pageData.content,
           total: pageData.totalElements,
@@ -211,10 +225,11 @@ export const financeService = {
       try {
         const params = new URLSearchParams();
         params.append("type", type);
-        const response = await apiClient.get<
-          ApiResponse<PageResponse<Account>>
-        >(endpoints.accounts.list, { params });
-        return response.data.data.content;
+        const response = await apiClient.get<PageResponse<Account>>(
+          endpoints.accounts.list,
+          { params },
+        );
+        return response.data.content;
       } catch (error) {
         console.error(`Failed to fetch accounts by type ${type}:`, error);
         return [];

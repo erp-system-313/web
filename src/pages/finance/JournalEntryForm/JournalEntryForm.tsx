@@ -19,10 +19,13 @@ import {
   DeleteOutlined,
   CheckOutlined,
 } from "@ant-design/icons";
+import { useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useAccounts } from "../../../hooks";
+import { useAccounts, useJournalEntry } from "../../../hooks";
 import { journalEntryFormSchema } from "../../../schemas/finance";
+import type { CreateJournalEntryDto } from "../../../types/finance";
+import formStyles from "../../../components/common/FormCard/FormCard.module.css";
 import styles from "./JournalEntryForm.module.css";
 
 const JOURNAL_TYPE_OPTIONS = [
@@ -51,6 +54,7 @@ interface JournalEntryFormData {
 export const JournalEntryForm: React.FC = () => {
   const navigate = useNavigate();
   const { data: accounts } = useAccounts();
+  const { create, saving } = useJournalEntry();
 
   const {
     control,
@@ -83,14 +87,34 @@ export const JournalEntryForm: React.FC = () => {
     watchedLines?.reduce((sum, line) => sum + (line.credit || 0), 0) || 0;
   const isBalanced = Math.abs(totalDebit - totalCredit) < 0.01;
 
-  const handleSave = () => {
-    message.success("Journal entry saved (mock)");
-    navigate("/finance/journal");
+  const handleSave = async () => {
+    const formData = watch();
+    const payload: CreateJournalEntryDto = {
+      date: formData.date,
+      description: formData.description,
+      reference: formData.reference || undefined,
+      journalType: formData.journalType as CreateJournalEntryDto["journalType"],
+      lines: formData.lines
+        .filter((l) => l.accountId)
+        .map((l) => ({
+          accountId: l.accountId!,
+          debit: l.debit,
+          credit: l.credit,
+          description: l.description || undefined,
+        })),
+    };
+    const result = await create(payload);
+    if (result) {
+      message.success("Journal entry created");
+      navigate("/finance/journal");
+    } else {
+      message.error("Failed to create journal entry");
+    }
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
+    <div className={formStyles.container}>
+      <div className={formStyles.header}>
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/finance/journal")}
@@ -101,7 +125,7 @@ export const JournalEntryForm: React.FC = () => {
       </div>
 
       <Form layout="vertical">
-        <Card title="Entry Details" className={styles.card}>
+        <Card title="Entry Details" style={{ marginBottom: 16 }}>
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
@@ -166,7 +190,7 @@ export const JournalEntryForm: React.FC = () => {
           </Row>
         </Card>
 
-        <Card title="Journal Lines" className={styles.card}>
+        <Card title="Journal Lines" style={{ marginBottom: 16 }}>
           <Table
             dataSource={fields.map((field) => ({ ...field, key: field.id }))}
             rowKey="id"
@@ -312,21 +336,23 @@ export const JournalEntryForm: React.FC = () => {
           </div>
         </Card>
 
-        <div className={styles.actions}>
+        <div className={formStyles.actions}>
           <Space>
             <Button
               type="primary"
               icon={<SaveOutlined />}
-              onClick={handleSave}
+              onClick={() => handleSave()}
               disabled={!isBalanced}
+              loading={saving}
             >
               Save as Draft
             </Button>
             <Button
               type="primary"
               icon={<CheckOutlined />}
-              onClick={handleSave}
+              onClick={() => handleSave()}
               disabled={!isBalanced}
+              loading={saving}
             >
               Post Entry
             </Button>

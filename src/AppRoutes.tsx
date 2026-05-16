@@ -24,6 +24,7 @@ import {
   JournalEntries,
   JournalEntryForm,
   ChartOfAccounts,
+  ReportsPage,
 } from "./pages/finance";
 import {
   SalesOrdersList,
@@ -31,6 +32,7 @@ import {
   SalesOrderDetails,
   CustomersList,
   CustomerDetails,
+  CustomerForm,
 } from "./pages/sales";
 import ProductListPage from "./pages/inventory/ProductListPage";
 import ProductDetailsPage from "./pages/inventory/ProductDetailsPage";
@@ -98,6 +100,7 @@ export const AppRoutes = () => {
         <Route path="/finance/journal" element={<JournalEntries />} />
         <Route path="/finance/journal/new" element={<JournalEntryForm />} />
         <Route path="/finance/accounts" element={<ChartOfAccounts />} />
+        <Route path="/finance/reports" element={<ReportsPage />} />
 
         {/* Sales routes */}
         <Route path="/sales/orders" element={<SalesOrdersList />} />
@@ -105,14 +108,25 @@ export const AppRoutes = () => {
         <Route path="/sales/orders/:id" element={<SalesOrderDetails />} />
         <Route path="/sales/orders/:id/edit" element={<SalesOrderForm />} />
         <Route path="/sales/customers" element={<CustomersList />} />
+        <Route path="/sales/customers/new" element={<CustomerForm />} />
         <Route path="/sales/customers/:id" element={<CustomerDetails />} />
+        <Route path="/sales/customers/:id/edit" element={<CustomerForm />} />
 
         {/* Inventory routes — admin/manager only */}
         <Route element={<RequireRole roles={["ADMIN", "MANAGER"]} />}>
           <Route path="/inventory/products" element={<ProductListPage />} />
-          <Route path="/inventory/products/new" element={<CreateProductPage />} />
-          <Route path="/inventory/products/:id" element={<ProductDetailsPage />} />
-          <Route path="/inventory/products/:id/edit" element={<EditProductPage />} />
+          <Route
+            path="/inventory/products/new"
+            element={<CreateProductPage />}
+          />
+          <Route
+            path="/inventory/products/:id"
+            element={<ProductDetailsPage />}
+          />
+          <Route
+            path="/inventory/products/:id/edit"
+            element={<EditProductPage />}
+          />
           <Route path="/inventory/categories" element={<CategoryListPage />} />
         </Route>
 
@@ -125,8 +139,14 @@ export const AppRoutes = () => {
         {/* Recruitment routes — admin/manager/hr only */}
         <Route element={<RequireRole roles={["ADMIN", "MANAGER", "HR"]} />}>
           <Route path="/recruitment/jobs" element={<JobOpenings />} />
-          <Route path="/recruitment/pipeline" element={<RecruitmentPipeline />} />
-          <Route path="/recruitment/applicants/:id" element={<ApplicantDetail />} />
+          <Route
+            path="/recruitment/pipeline"
+            element={<RecruitmentPipeline />}
+          />
+          <Route
+            path="/recruitment/applicants/:id"
+            element={<ApplicantDetail />}
+          />
         </Route>
 
         {/* Support routes */}

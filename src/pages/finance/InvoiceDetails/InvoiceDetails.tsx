@@ -305,7 +305,7 @@ export const InvoiceDetails: React.FC = () => {
               </Button>
               <Button
                 icon={<PrinterOutlined />}
-                onClick={() => message.info("PDF feature coming soon")}
+                onClick={() => window.print()}
                 block
               >
                 Print / PDF

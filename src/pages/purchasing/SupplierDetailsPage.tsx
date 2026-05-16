@@ -29,6 +29,7 @@ import type { PurchaseOrderStatus } from "../../types/purchaseOrder.types";
 import type { CreateSupplierDto } from "../../types/supplier.types";
 import { useSuppliers } from "../../hooks/useSuppliers";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
+import formStyles from "../../components/common/FormCard/FormCard.module.css";
 import styles from "./SupplierDetailsPage.module.css";
 
 const editSchema = yup.object({
@@ -340,10 +341,8 @@ export const SupplierDetailsPage: React.FC = () => {
         okText="Update Supplier"
       >
         <form onSubmit={handleSubmit(handleEditSupplier)}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>
-              Supplier Code *
-            </label>
+          <div className={formStyles.formItem}>
+            <label>Supplier Code *</label>
             <Controller
               name="code"
               control={control}
@@ -356,15 +355,11 @@ export const SupplierDetailsPage: React.FC = () => {
               )}
             />
             {errors.code && (
-              <span style={{ color: "#ff4d4f", fontSize: 12 }}>
-                {errors.code.message}
-              </span>
+              <span className={formStyles.error}>{errors.code.message}</span>
             )}
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>
-              Supplier Name *
-            </label>
+          <div className={formStyles.formItem}>
+            <label>Supplier Name *</label>
             <Controller
               name="name"
               control={control}
@@ -377,15 +372,11 @@ export const SupplierDetailsPage: React.FC = () => {
               )}
             />
             {errors.name && (
-              <span style={{ color: "#ff4d4f", fontSize: 12 }}>
-                {errors.name.message}
-              </span>
+              <span className={formStyles.error}>{errors.name.message}</span>
             )}
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>
-              Contact Person *
-            </label>
+          <div className={formStyles.formItem}>
+            <label>Contact Person *</label>
             <Controller
               name="contactPerson"
               control={control}
@@ -398,13 +389,13 @@ export const SupplierDetailsPage: React.FC = () => {
               )}
             />
             {errors.contactPerson && (
-              <span style={{ color: "#ff4d4f", fontSize: 12 }}>
+              <span className={formStyles.error}>
                 {errors.contactPerson.message}
               </span>
             )}
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>Email *</label>
+          <div className={formStyles.formItem}>
+            <label>Email *</label>
             <Controller
               name="email"
               control={control}
@@ -417,13 +408,11 @@ export const SupplierDetailsPage: React.FC = () => {
               )}
             />
             {errors.email && (
-              <span style={{ color: "#ff4d4f", fontSize: 12 }}>
-                {errors.email.message}
-              </span>
+              <span className={formStyles.error}>{errors.email.message}</span>
             )}
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>Phone *</label>
+          <div className={formStyles.formItem}>
+            <label>Phone *</label>
             <Controller
               name="phone"
               control={control}
@@ -436,15 +425,11 @@ export const SupplierDetailsPage: React.FC = () => {
               )}
             />
             {errors.phone && (
-              <span style={{ color: "#ff4d4f", fontSize: 12 }}>
-                {errors.phone.message}
-              </span>
+              <span className={formStyles.error}>{errors.phone.message}</span>
             )}
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>
-              Address *
-            </label>
+          <div className={formStyles.formItem}>
+            <label>Address *</label>
             <Controller
               name="address"
               control={control}
@@ -458,15 +443,11 @@ export const SupplierDetailsPage: React.FC = () => {
               )}
             />
             {errors.address && (
-              <span style={{ color: "#ff4d4f", fontSize: 12 }}>
-                {errors.address.message}
-              </span>
+              <span className={formStyles.error}>{errors.address.message}</span>
             )}
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>
-              Tax ID *
-            </label>
+          <div className={formStyles.formItem}>
+            <label>Tax ID *</label>
             <Controller
               name="taxId"
               control={control}
@@ -479,15 +460,11 @@ export const SupplierDetailsPage: React.FC = () => {
               )}
             />
             {errors.taxId && (
-              <span style={{ color: "#ff4d4f", fontSize: 12 }}>
-                {errors.taxId.message}
-              </span>
+              <span className={formStyles.error}>{errors.taxId.message}</span>
             )}
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>
-              Payment Terms (days) *
-            </label>
+          <div className={formStyles.formItem}>
+            <label>Payment Terms (days) *</label>
             <Controller
               name="paymentTerms"
               control={control}
@@ -503,7 +480,7 @@ export const SupplierDetailsPage: React.FC = () => {
               )}
             />
             {errors.paymentTerms && (
-              <span style={{ color: "#ff4d4f", fontSize: 12 }}>
+              <span className={formStyles.error}>
                 {errors.paymentTerms.message}
               </span>
             )}

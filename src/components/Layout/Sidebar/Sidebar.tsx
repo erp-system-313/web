@@ -144,6 +144,11 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
           label: "Accounts",
           onClick: () => navigate("/finance/accounts"),
         },
+        {
+          key: "reports",
+          label: "Reports",
+          onClick: () => navigate("/finance/reports"),
+        },
       ],
     },
     {
@@ -162,71 +167,72 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       key: "hr",
       icon: <TeamOutlined />,
       label: "HR",
-      children: userRole === "staff" || userRole === "user"
-        ? [
-            {
-              key: "attendance",
-              label: "Attendance",
-              onClick: () => navigate("/hr/attendance"),
-            },
-            {
-              key: "leave",
-              label: "Leave Requests",
-              onClick: () => navigate("/hr/leave"),
-            },
-            {
-              key: "leave-allocations",
-              label: "Leave Balances",
-              onClick: () => navigate("/hr/leave/allocations"),
-            },
-          ]
-        : [
-            {
-              key: "hr-overview",
-              label: "Overview",
-              onClick: () => navigate("/hr"),
-            },
-            {
-              key: "employees",
-              label: "Employees",
-              onClick: () => navigate("/hr/employees"),
-            },
-            {
-              key: "attendance",
-              label: "Attendance",
-              onClick: () => navigate("/hr/attendance"),
-            },
-            {
-              key: "departments",
-              label: "Departments",
-              onClick: () => navigate("/hr/departments"),
-            },
-            {
-              key: "job-positions",
-              label: "Job Positions",
-              onClick: () => navigate("/hr/job-positions"),
-            },
-            {
-              key: "leave",
-              label: "Leave Requests",
-              onClick: () => navigate("/hr/leave"),
-            },
-            {
-              key: "leave-allocations",
-              label: "Leave Allocations",
-              onClick: () => navigate("/hr/leave/allocations"),
-            },
-            {
-              key: "leave-calendar",
-              label: "Leave Calendar",
-              onClick: () => navigate("/hr/leave/calendar"),
-            },
-            {
-              key: "contracts",
-              label: "Contracts",
-              onClick: () => navigate("/hr/contracts"),
-            },
-          ],
+      children:
+        userRole === "staff" || userRole === "user"
+          ? [
+              {
+                key: "attendance",
+                label: "Attendance",
+                onClick: () => navigate("/hr/attendance"),
+              },
+              {
+                key: "leave",
+                label: "Leave Requests",
+                onClick: () => navigate("/hr/leave"),
+              },
+              {
+                key: "leave-allocations",
+                label: "Leave Balances",
+                onClick: () => navigate("/hr/leave/allocations"),
+              },
+            ]
+          : [
+              {
+                key: "hr-overview",
+                label: "Overview",
+                onClick: () => navigate("/hr"),
+              },
+              {
+                key: "employees",
+                label: "Employees",
+                onClick: () => navigate("/hr/employees"),
+              },
+              {
+                key: "attendance",
+                label: "Attendance",
+                onClick: () => navigate("/hr/attendance"),
+              },
+              {
+                key: "departments",
+                label: "Departments",
+                onClick: () => navigate("/hr/departments"),
+              },
+              {
+                key: "job-positions",
+                label: "Job Positions",
+                onClick: () => navigate("/hr/job-positions"),
+              },
+              {
+                key: "leave",
+                label: "Leave Requests",
+                onClick: () => navigate("/hr/leave"),
+              },
+              {
+                key: "leave-allocations",
+                label: "Leave Allocations",
+                onClick: () => navigate("/hr/leave/allocations"),
+              },
+              {
+                key: "leave-calendar",
+                label: "Leave Calendar",
+                onClick: () => navigate("/hr/leave/calendar"),
+              },
+              {
+                key: "contracts",
+                label: "Contracts",
+                onClick: () => navigate("/hr/contracts"),
+              },
+            ],
     },
     {
       key: "recruitment",
@@ -276,8 +282,10 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (!item) return false;
     const key = item.key as string;
     if (key === "inventory" && !isVisible(["admin", "manager"])) return false;
-    if (key === "hr" && !isVisible(["admin", "manager", "staff", "user"])) return false;
-    if (key === "recruitment" && !isVisible(["admin", "manager", "hr"])) return false;
+    if (key === "hr" && !isVisible(["admin", "manager", "staff", "user"]))
+      return false;
+    if (key === "recruitment" && !isVisible(["admin", "manager", "hr"]))
+      return false;
     if (key === "admin" && !isVisible(["admin"])) return false;
     return true;
   });
@@ -296,6 +304,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/crm")) return "crm-dashboard";
     if (path.startsWith("/finance/invoices")) return "invoices";
     if (path.startsWith("/finance/journal")) return "journal";
+    if (path.startsWith("/finance/reports")) return "reports";
     if (path.startsWith("/finance/accounts")) return "accounts";
     if (path.startsWith("/support/tickets")) return "tickets";
     if (path === "/hr") return "hr-overview";
@@ -309,7 +318,8 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
     if (path.startsWith("/hr/contracts")) return "contracts";
     if (path.startsWith("/recruitment/jobs")) return "recruitment-jobs";
     if (path.startsWith("/recruitment/pipeline")) return "recruitment-pipeline";
-    if (path.startsWith("/recruitment/applicants")) return "recruitment-pipeline";
+    if (path.startsWith("/recruitment/applicants"))
+      return "recruitment-pipeline";
     if (path.startsWith("/admin/users")) return "users";
     if (path.startsWith("/admin/roles")) return "roles";
     if (path.startsWith("/admin/settings")) return "settings";
@@ -335,6 +345,7 @@ export const Sidebar: React.FC<{ collapsed?: boolean }> = ({
       invoices: "finance",
       journal: "finance",
       accounts: "finance",
+      reports: "finance",
       tickets: "support",
       "hr-overview": "hr",
       employees: "hr",

@@ -107,7 +107,11 @@ export const CustomersList: React.FC = () => {
             icon={<EyeOutlined />}
             onClick={() => navigate(`/sales/customers/${record.id}`)}
           />
-          <Button type="text" icon={<EditOutlined />} />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => navigate(`/sales/customers/${record.id}/edit`)}
+          />
           {isAdminOrManager && (
             <Button
               type="text"
@@ -125,7 +129,11 @@ export const CustomersList: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>Customers</h1>
-        <Button type="primary" icon={<PlusOutlined />}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/sales/customers/new")}
+        >
           Add Customer
         </Button>
       </div>

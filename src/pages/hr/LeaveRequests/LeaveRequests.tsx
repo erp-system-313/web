@@ -11,7 +11,12 @@ import {
   message,
   Input,
 } from "antd";
-import { PlusOutlined, CheckOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 import {
   useLeaveRequests,
   useLeaveBalances,
@@ -21,8 +26,9 @@ import {
 } from "../../../hooks";
 import type { LeaveRequest, LeaveStatus, LeaveType } from "../../../types/hr";
 import styles from "./LeaveRequests.module.css";
+import formStyles from "../../../components/common/FormCard/FormCard.module.css";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 interface LeaveFormData {
   type: LeaveType;
@@ -39,12 +45,19 @@ export const LeaveRequests: React.FC = () => {
   const { reject } = useRejectLeaveRequest();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [rejectModal, setRejectModal] = useState<{ id: number; open: boolean; reason: string }>({
+  const [rejectModal, setRejectModal] = useState<{
+    id: number;
+    open: boolean;
+    reason: string;
+  }>({
     id: 0,
     open: false,
     reason: "",
   });
-  const [reasonModal, setReasonModal] = useState<{ open: boolean; reason: string }>({
+  const [reasonModal, setReasonModal] = useState<{
+    open: boolean;
+    reason: string;
+  }>({
     open: false,
     reason: "",
   });
@@ -169,7 +182,9 @@ export const LeaveRequests: React.FC = () => {
                 type="link"
                 danger
                 icon={<CloseOutlined />}
-                onClick={() => setRejectModal({ id: record.id, open: true, reason: "" })}
+                onClick={() =>
+                  setRejectModal({ id: record.id, open: true, reason: "" })
+                }
                 loading={actionLoading === record.id}
               >
                 Reject
@@ -180,7 +195,9 @@ export const LeaveRequests: React.FC = () => {
             <Button
               type="link"
               icon={<EyeOutlined />}
-              onClick={() => setReasonModal({ open: true, reason: record.rejectionReason! })}
+              onClick={() =>
+                setReasonModal({ open: true, reason: record.rejectionReason! })
+              }
             >
               View Reason
             </Button>
@@ -249,14 +266,14 @@ export const LeaveRequests: React.FC = () => {
           footer={null}
         >
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className={styles.formFields}>
-              <div className={styles.field}>
+            <div>
+              <div className={formStyles.formItem}>
                 <label>Leave Type *</label>
                 <select
                   {...register("type", {
                     required: "Please select a leave type",
                   })}
-                  style={{ width: "100%", padding: "8px", height: "40px" }}
+                  style={{ width: "100%" }}
                 >
                   <option value="">Select leave type</option>
                   <option value="ANNUAL">Annual Leave</option>
@@ -267,43 +284,43 @@ export const LeaveRequests: React.FC = () => {
                   <option value="PATERNITY">Paternity Leave</option>
                 </select>
                 {errors.type && (
-                  <Text type="danger" style={{ fontSize: 12 }}>
+                  <span className={formStyles.error}>
                     {errors.type.message}
-                  </Text>
+                  </span>
                 )}
               </div>
 
-              <div className={styles.field}>
+              <div className={formStyles.formItem}>
                 <label>Start Date *</label>
                 <input
                   type="date"
                   {...register("startDate", {
                     required: "Start date is required",
                   })}
-                  style={{ width: "100%", padding: "8px", height: "40px" }}
+                  style={{ width: "100%" }}
                 />
                 {errors.startDate && (
-                  <Text type="danger" style={{ fontSize: 12 }}>
+                  <span className={formStyles.error}>
                     {errors.startDate.message}
-                  </Text>
+                  </span>
                 )}
               </div>
 
-              <div className={styles.field}>
+              <div className={formStyles.formItem}>
                 <label>End Date *</label>
                 <input
                   type="date"
                   {...register("endDate", { required: "End date is required" })}
-                  style={{ width: "100%", padding: "8px", height: "40px" }}
+                  style={{ width: "100%" }}
                 />
                 {errors.endDate && (
-                  <Text type="danger" style={{ fontSize: 12 }}>
+                  <span className={formStyles.error}>
                     {errors.endDate.message}
-                  </Text>
+                  </span>
                 )}
               </div>
 
-              <div className={styles.field}>
+              <div className={formStyles.formItem}>
                 <label>Reason *</label>
                 <textarea
                   {...register("reason", {
@@ -315,23 +332,22 @@ export const LeaveRequests: React.FC = () => {
                   })}
                   rows={4}
                   placeholder="Enter reason for leave"
-                  style={{ width: "100%", padding: "8px" }}
+                  style={{ width: "100%" }}
                 />
                 {errors.reason && (
-                  <Text type="danger" style={{ fontSize: 12 }}>
+                  <span className={formStyles.error}>
                     {errors.reason.message}
-                  </Text>
+                  </span>
                 )}
               </div>
             </div>
 
-            <div style={{ marginTop: 16, textAlign: "right" }}>
+            <div className={formStyles.actions}>
               <Button
                 onClick={() => {
                   setIsModalOpen(false);
                   reset();
                 }}
-                style={{ marginRight: 8 }}
               >
                 Cancel
               </Button>
@@ -360,7 +376,9 @@ export const LeaveRequests: React.FC = () => {
               rows={4}
               placeholder="Enter rejection reason..."
               value={rejectModal.reason}
-              onChange={(e) => setRejectModal({ ...rejectModal, reason: e.target.value })}
+              onChange={(e) =>
+                setRejectModal({ ...rejectModal, reason: e.target.value })
+              }
               style={{ marginTop: 8 }}
             />
           </div>
@@ -370,7 +388,11 @@ export const LeaveRequests: React.FC = () => {
           title="Rejection Reason"
           open={reasonModal.open}
           onCancel={() => setReasonModal({ open: false, reason: "" })}
-          footer={<Button onClick={() => setReasonModal({ open: false, reason: "" })}>Close</Button>}
+          footer={
+            <Button onClick={() => setReasonModal({ open: false, reason: "" })}>
+              Close
+            </Button>
+          }
         >
           <p style={{ marginTop: 16 }}>{reasonModal.reason}</p>
         </Modal>

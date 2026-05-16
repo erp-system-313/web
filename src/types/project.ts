@@ -1,4 +1,9 @@
-export type ProjectState = 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED';
+export type ProjectState =
+  | "PLANNING"
+  | "ACTIVE"
+  | "ON_HOLD"
+  | "COMPLETED"
+  | "CANCELLED";
 
 export interface Project {
   id: number;
@@ -28,6 +33,7 @@ export interface ProjectTask {
   assignedTo: number | null;
   stageId: number | null;
   stageName: string | null;
+  startDate: string | null;
   dueDate: string | null;
   estimatedHours: number | null;
   actualHours: number | null;
@@ -40,6 +46,7 @@ export interface CreateTaskRequest {
   description?: string | null;
   assignedTo?: number | null;
   stageId?: number | null;
+  startDate?: string | null;
   dueDate?: string | null;
   estimatedHours?: number | null;
   actualHours?: number | null;
@@ -50,6 +57,7 @@ export interface UpdateTaskRequest {
   description?: string | null;
   assignedTo?: number | null;
   stageId?: number | null;
+  startDate?: string | null;
   dueDate?: string | null;
   estimatedHours?: number | null;
   actualHours?: number | null;
@@ -68,23 +76,24 @@ export interface GanttItem {
   name: string;
   stageName: string | null;
   assignedTo: number | null;
+  startDate: string | null;
   dueDate: string | null;
   estimatedHours: number | null;
   actualHours: number | null;
 }
 
 export const PROJECT_STATE_LABELS: Record<ProjectState, string> = {
-  PLANNING: 'Planning',
-  IN_PROGRESS: 'In Progress',
-  ON_HOLD: 'On Hold',
-  COMPLETED: 'Completed',
-  CANCELLED: 'Cancelled',
+  PLANNING: "Planning",
+  ACTIVE: "Active",
+  ON_HOLD: "On Hold",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 };
 
 export const PROJECT_STATE_COLORS: Record<ProjectState, string> = {
-  PLANNING: 'blue',
-  IN_PROGRESS: 'processing',
-  ON_HOLD: 'warning',
-  COMPLETED: 'success',
-  CANCELLED: 'default',
+  PLANNING: "blue",
+  ACTIVE: "processing",
+  ON_HOLD: "warning",
+  COMPLETED: "success",
+  CANCELLED: "default",
 };
