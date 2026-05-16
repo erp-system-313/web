@@ -15,6 +15,7 @@ import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import styles from "./PurchaseOrderListPage.module.css";
 
 const statusOptions = [
+  { value: '', label: 'All Statuses' },
   { value: 'DRAFT', label: 'Draft' },
   { value: 'SENT', label: 'Sent' },
   { value: 'RECEIVED', label: 'Received' },
@@ -39,13 +40,13 @@ export const PurchaseOrderListPage: React.FC = () => {
   const navigate = useNavigate();
   const { orders, loading, fetchOrders, deleteOrder, cancelOrder } = usePurchaseOrders();
 
-  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | ''>('');
   const [searchText, setSearchText] = useState('');
 
   const loadOrders = useCallback(async () => {
     await fetchOrders(
       {
-        status: statusFilter,
+        status: (statusFilter || undefined) as PurchaseOrderStatus | undefined,
         search: searchText || undefined,
       },
       1,
@@ -183,12 +184,10 @@ export const PurchaseOrderListPage: React.FC = () => {
             style={{ width: 300 }}
           />
           <Select
-            placeholder="Filter by status"
-            allowClear
             style={{ width: 160 }}
             options={statusOptions}
             onChange={(value) =>
-              setStatusFilter(value as PurchaseOrderStatus | undefined)
+              setStatusFilter((value ?? '') as PurchaseOrderStatus | '')
             }
             value={statusFilter}
           />
