@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Tabs, Input, InputNumber, Select, TreeSelect } from 'antd';
+import { Button, Card, Tabs, Input, InputNumber, TreeSelect, message } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useProducts } from '../../hooks/useProducts';
 import { inventoryService } from '../../services/inventoryService';
+import { handleApiError } from '../../api/client';
 import type { Category } from '../../types/category.types';
 import styles from './CreateProductPage.module.css';
 
@@ -103,20 +104,24 @@ export const CreateProductPage: React.FC = () => {
   const onInventorySubmit = async (data: InventoryData) => {
     setIsSubmitting(true);
     try {
-      if (basicData && pricingData) {
-        await createProduct({
-          name: basicData.name,
-          sku: basicData.sku,
-          description: basicData.description || '',
-          categoryId: basicData.categoryId,
-          unitPrice: pricingData.unitPrice,
-          costPrice: pricingData.costPrice,
-          currentStock: data.currentStock,
-          reorderLevel: data.reorderLevel,
-        });
-        navigate('/inventory/products');
+      if (!basicData || !pricingData) {
+        message.error('Please complete all previous steps');
+        return;
       }
-    } catch {
+      await createProduct({
+        name: basicData.name,
+        sku: basicData.sku,
+        description: basicData.description || '',
+        categoryId: basicData.categoryId,
+        unitPrice: pricingData.unitPrice,
+        costPrice: pricingData.costPrice,
+        currentStock: data.currentStock,
+        reorderLevel: data.reorderLevel,
+      });
+      navigate('/inventory/products');
+    } catch (err: unknown) {
+      console.error('Create product failed:', err);
+      message.error(handleApiError(err));
     } finally {
       setIsSubmitting(false);
     }

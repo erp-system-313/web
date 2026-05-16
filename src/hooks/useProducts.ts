@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { message } from "antd";
 import { inventoryService } from "../services/inventoryService";
+import { handleApiError } from "../api/client";
 import type {
   Product,
   CreateProductDto,
@@ -62,7 +63,7 @@ export const useProducts = (): UseProductsReturn => {
         message.success("Product created successfully");
         return product;
       } catch (error) {
-        message.error("Failed to create product");
+        message.error(handleApiError(error));
         throw error;
       }
     },
@@ -76,7 +77,7 @@ export const useProducts = (): UseProductsReturn => {
         message.success("Product updated successfully");
         return product;
       } catch (error) {
-        message.error("Failed to update product");
+        message.error(handleApiError(error));
         throw error;
       }
     },
@@ -89,7 +90,7 @@ export const useProducts = (): UseProductsReturn => {
       setProducts((prev) => prev.filter((p) => p.id !== id));
       message.success("Product deleted successfully");
     } catch (error) {
-      message.error("Failed to delete product");
+      message.error(handleApiError(error));
       throw error;
     }
   }, []);
