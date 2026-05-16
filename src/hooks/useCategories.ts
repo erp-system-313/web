@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { message } from 'antd';
 import { inventoryService } from '../services/inventoryService';
+import { handleApiError } from '../api/client';
 import type { Category, CreateCategoryDto } from '../types/category.types';
 
 interface UseCategoriesReturn {
@@ -45,7 +46,7 @@ export const useCategories = (): UseCategoriesReturn => {
       message.success('Category created successfully');
       return category;
     } catch (error) {
-      message.error('Failed to create category');
+      message.error(handleApiError(error));
       throw error;
     }
   }, []);
@@ -57,7 +58,7 @@ export const useCategories = (): UseCategoriesReturn => {
       message.success('Category updated successfully');
       return category;
     } catch (error) {
-      message.error('Failed to update category');
+      message.error(handleApiError(error));
       throw error;
     }
   }, []);

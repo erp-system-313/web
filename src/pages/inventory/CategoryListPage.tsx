@@ -36,13 +36,17 @@ export const CategoryListPage: React.FC = () => {
   }, [loadCategories]);
 
   const onSubmit = async (data: CategoryFormData) => {
-    const categoryData: CreateCategoryDto = { name: data.name, description: data.description || '', parentId: data.parentId };
-    if (editingCategory) {
-      await updateCategory(editingCategory.id, categoryData);
-    } else {
-      await createCategory(categoryData);
+    try {
+      const categoryData: CreateCategoryDto = { name: data.name, description: data.description || '', parentId: data.parentId };
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, categoryData);
+      } else {
+        await createCategory(categoryData);
+      }
+      handleCloseModal();
+    } catch {
+      // error toast already shown by hook
     }
-    handleCloseModal();
   };
 
   const handleCloseModal = () => {
