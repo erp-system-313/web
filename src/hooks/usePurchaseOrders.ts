@@ -3,6 +3,7 @@ import { message } from "antd";
 import { purchasingService } from "../services/purchasingService";
 import type {
   PurchaseOrder,
+  PurchaseOrderStatus,
   CreatePurchaseOrderDto,
   PurchaseOrderFilters,
 } from "../types/purchaseOrder.types";
@@ -17,6 +18,7 @@ interface UsePurchaseOrdersReturn {
   createPurchaseOrder: (data: CreatePurchaseOrderDto) => Promise<void>;
   updateOrder: (id: number, data: Partial<CreatePurchaseOrderDto>) => Promise<PurchaseOrder>;
   deleteOrder: (id: number) => Promise<void>;
+  cancelOrder: (id: number) => Promise<void>;
 }
 
 export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
@@ -93,6 +95,17 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     }
   }, []);
 
+  const cancelOrder = useCallback(async (id: number): Promise<void> => {
+    try {
+      await purchasingService.cancelPurchaseOrder(id);
+      setOrders((prev) => prev.map(o => o.id === id ? { ...o, status: 'CANCELLED' as PurchaseOrderStatus } : o));
+      message.success("Purchase order cancelled successfully");
+    } catch (error) {
+      message.error("Failed to cancel purchase order");
+      throw error;
+    }
+  }, []);
+
   return {
     orders,
     loading,
@@ -103,6 +116,7 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     createPurchaseOrder,
     updateOrder,
     deleteOrder,
+    cancelOrder,
   };
 };
 
