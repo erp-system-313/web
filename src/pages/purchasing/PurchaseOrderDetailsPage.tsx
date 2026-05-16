@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Card, Descriptions, Table, Tag, Button, Spin } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Card, Descriptions, Table, Tag, Button, Spin, Select, message } from "antd";
+import { ArrowLeftOutlined, SaveOutlined, EditOutlined } from "@ant-design/icons";
 import type { PurchaseOrder, PurchaseOrderStatus } from "../../types/purchaseOrder.types";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 
-const statusColors: Record<PurchaseOrderStatus, string> = {
+const statusColors: Record<string, string> = {
   DRAFT: "default",
   SENT: "processing",
   RECEIVED: "green",
@@ -15,21 +15,57 @@ const statusColors: Record<PurchaseOrderStatus, string> = {
   APPROVED: "processing",
 };
 
+const statusOptions = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SENT', label: 'Sent' },
+  { value: 'RECEIVED', label: 'Received' },
+  { value: 'PARTIAL', label: 'Partial' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+];
+
 export const PurchaseOrderDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getOrder } = usePurchaseOrders();
+  const location = useLocation();
+  const { getOrder, updateOrder } = usePurchaseOrders();
   const [order, setOrder] = useState<PurchaseOrder | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editStatus, setEditStatus] = useState<PurchaseOrderStatus | ''>('');
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    setIsEditing(location.pathname.endsWith('/edit'));
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     getOrder(Number(id)).then((data) => {
       setOrder(data);
+      if (data) setEditStatus(data.status);
       setLoading(false);
     });
   }, [id, getOrder]);
+
+  const handleSave = async () => {
+    if (!order || !editStatus || editStatus === order.status) {
+      setIsEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      const updated = await updateOrder(order.id, { status: editStatus } as any);
+      setOrder(updated);
+      setEditStatus(updated.status);
+      message.success('Order status updated');
+      setIsEditing(false);
+    } catch {
+      // error handled by hook
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
     return <div style={{ textAlign: "center", padding: 48 }}><Spin size="large" /></div>;
@@ -53,7 +89,22 @@ export const PurchaseOrderDetailsPage: React.FC = () => {
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/purchasing/orders")}>Back</Button>
         <h1 style={{ margin: 0 }}>Purchase Order {order.poNumber}</h1>
-        <Tag color={statusColors[order.status]}>{order.status}</Tag>
+        {!isEditing ? (
+          <>
+            <Tag color={statusColors[order.status]}>{order.status}</Tag>
+            <Button icon={<EditOutlined />} onClick={() => navigate(`/purchasing/orders/${id}/edit`)}>Edit</Button>
+          </>
+        ) : (
+          <>
+            <Select
+              style={{ width: 160 }}
+              options={statusOptions}
+              value={editStatus || undefined}
+              onChange={(v) => setEditStatus(v as PurchaseOrderStatus)}
+            />
+            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>Save</Button>
+          </>
+        )}
       </div>
 
       <Card title="Order Information" style={{ marginBottom: 16 }}>
