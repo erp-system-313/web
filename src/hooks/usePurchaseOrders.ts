@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { message } from "antd";
 import { purchasingService } from "../services/purchasingService";
+import { handleApiError } from "../api/client";
 import type {
   PurchaseOrder,
   PurchaseOrderStatus,
@@ -38,7 +39,7 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
         setTotal(result.total);
       } catch (error) {
         if (requestId !== requestIdRef.current) return;
-        message.error("Failed to fetch purchase orders");
+        message.error(handleApiError(error));
       } finally {
         if (requestId === requestIdRef.current) {
           setLoading(false);
