@@ -1,4 +1,4 @@
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo } from "react";
 import {
   Button,
   Tree,
@@ -29,7 +29,6 @@ import {
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAccounts } from "../../../hooks";
-import { AuthContext } from "../../../contexts/AuthContext";
 import { editAccountSchema, addAccountSchema } from "../../../schemas/finance";
 import type { Account, AccountType } from "../../../types/finance";
 import styles from "./ChartOfAccounts.module.css";
@@ -89,9 +88,6 @@ interface AddFormValues {
 }
 
 export const ChartOfAccounts: React.FC = () => {
-  const authContext = useContext(AuthContext);
-  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
-  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const { data: accounts } = useAccounts();
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
     null,
@@ -260,14 +256,13 @@ export const ChartOfAccounts: React.FC = () => {
       title: "",
       key: "actions",
       width: 60,
-      render: (_: unknown, record: Account) =>
-        isAdminOrManager ? (
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => openEditModal(record)}
-          />
-        ) : null,
+      render: (_: unknown, record: Account) => (
+        <Button
+          type="text"
+          icon={<EditOutlined />}
+          onClick={() => openEditModal(record)}
+        />
+      ),
     },
   ];
 
@@ -275,18 +270,16 @@ export const ChartOfAccounts: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>Chart of Accounts</h1>
-        {isAdminOrManager && (
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              addForm.reset();
-              setAddModalOpen(true);
-            }}
-          >
-            Add Account
-          </Button>
-        )}
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            addForm.reset();
+            setAddModalOpen(true);
+          }}
+        >
+          Add Account
+        </Button>
       </div>
 
       <Row gutter={16} className={styles.summaryRow}>

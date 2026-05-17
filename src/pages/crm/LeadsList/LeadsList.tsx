@@ -61,8 +61,7 @@ export const LeadsList: React.FC = () => {
       <Card className={styles.filters}>
         <Space>
           <Input placeholder="Search leads..." prefix={<SearchOutlined />} value={search} onChange={e => setSearch(e.target.value)} allowClear style={{ width: 250 }} />
-          <Select placeholder="Filter by status" value={statusFilter || undefined} onChange={v => setStatusFilter(v || '')} style={{ width: 160 }}>
-            <Select.Option value="">All</Select.Option>
+          <Select placeholder="Filter by status" value={statusFilter || undefined} onChange={v => setStatusFilter(v || '')} allowClear style={{ width: 160 }}>
             <Select.Option value="NEW">NEW</Select.Option>
             <Select.Option value="CONTACTED">CONTACTED</Select.Option>
             <Select.Option value="QUALIFIED">QUALIFIED</Select.Option>

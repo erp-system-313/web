@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -10,17 +9,13 @@ import {
   Space,
   Divider,
   message,
-  Descriptions,
-  Tag,
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEmployee, useDepartments, useJobPositions } from "../../../hooks";
 import { hrService } from "../../../services/hrService";
-import { usersService } from "../../../services/usersService";
-import type { Contract } from "../../../types/hr";
 import styles from "./EmployeeDetails.module.css";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { Option } = Select;
 
 export const EmployeeDetails: React.FC = () => {
@@ -30,36 +25,7 @@ export const EmployeeDetails: React.FC = () => {
   const { data: employee, loading } = useEmployee(employeeId);
   const { data: departments } = useDepartments();
   const { data: positions } = useJobPositions();
-  const [contract, setContract] = useState<Contract | null>(null);
-  const [userAccounts, setUserAccounts] = useState<{ id: number; fullName: string; email: string }[]>([]);
-  const [linkedUser, setLinkedUser] = useState<{ fullName: string; email: string } | null>(null);
   const [form] = Form.useForm();
-  const watchedDept = Form.useWatch("departmentId", form);
-
-  useEffect(() => {
-    if (employeeId) {
-      hrService.contracts.getAll({ employeeId, status: "ACTIVE" }).then((res) => {
-        const contracts: Contract[] = res.content ?? res ?? [];
-        setContract(contracts[0] || null);
-      }).catch(() => setContract(null));
-    }
-  }, [employeeId]);
-
-  useEffect(() => {
-    usersService.getAll({ page: 0, size: 200, isActive: true }).then((res) => {
-      setUserAccounts(
-        (res.content ?? []).map((u) => ({ id: u.id, fullName: u.fullName, email: u.email }))
-      );
-    }).catch(() => setUserAccounts([]));
-  }, []);
-
-  useEffect(() => {
-    if (employee?.userId) {
-      usersService.getById(employee.userId).then((u) => {
-        setLinkedUser({ fullName: u.fullName, email: u.email });
-      }).catch(() => setLinkedUser(null));
-    }
-  }, [employee?.userId]);
 
   const onFinish = async (values: any) => {
     if (employeeId === null) return;
@@ -67,9 +33,8 @@ export const EmployeeDetails: React.FC = () => {
       await hrService.employees.update(employeeId, values);
       message.success("Employee updated successfully");
       navigate("/hr/employees");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to update employee";
-      message.error(msg);
+    } catch {
+      message.error("Failed to update employee");
     }
   };
 
@@ -151,8 +116,8 @@ export const EmployeeDetails: React.FC = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item label="Phone" name="phone" rules={[{ pattern: /^[0-9+\-() ]+$/, message: "Only numbers and phone symbols allowed" }]}>
-              <Input maxLength={15} />
+            <Form.Item label="Phone" name="phone">
+              <Input />
             </Form.Item>
 
             <Form.Item label="Department" name="departmentId">
@@ -165,11 +130,9 @@ export const EmployeeDetails: React.FC = () => {
 
             <Form.Item label="Position" name="positionId">
               <Select placeholder="Select position" allowClear>
-                {positions
-                  .filter((p) => !watchedDept || p.departmentId === watchedDept)
-                  .map((p) => (
-                    <Option key={p.id} value={p.id}>{p.title}</Option>
-                  ))}
+                {positions.map((p) => (
+                  <Option key={p.id} value={p.id}>{p.title}</Option>
+                ))}
               </Select>
             </Form.Item>
 
@@ -181,32 +144,8 @@ export const EmployeeDetails: React.FC = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item label="Salary (from Contract)">
-              <InputNumber
-                style={{ width: "100%" }}
-                prefix="$"
-                value={contract?.wage ?? employee?.salary}
-                disabled
-              />
-            </Form.Item>
-            {linkedUser && (
-              <Form.Item label="Linked User">
-                <Input value={`${linkedUser.fullName} (${linkedUser.email})`} disabled />
-              </Form.Item>
-            )}
-            <Form.Item name="userId" label="Link User Account">
-              <Select
-                placeholder="Link to user account (optional)"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-                }
-                options={userAccounts.map((u) => ({
-                  value: u.id,
-                  label: `${u.fullName} (${u.email})`,
-                }))}
-              />
+            <Form.Item label="Salary" name="salary">
+              <InputNumber style={{ width: "100%" }} prefix="$" disabled />
             </Form.Item>
 
             <Form.Item label="Status" name="status">

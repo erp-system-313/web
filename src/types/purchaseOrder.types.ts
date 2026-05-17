@@ -1,6 +1,6 @@
 export type PurchaseOrderStatus =
-  | "DRAFT"
-  | "SENT"
+  | "PENDING"
+  | "APPROVED"
   | "RECEIVED"
   | "CANCELLED"
   | "DRAFT"

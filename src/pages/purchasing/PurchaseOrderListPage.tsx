@@ -30,7 +30,7 @@ const getStatusTag = (status: PurchaseOrderStatus) => {
     PENDING: 'default',
     APPROVED: 'processing',
   };
-  return <Tag color={colors[status] ?? "default"}>{status}</Tag>;
+  return <Tag color={colors[status]}>{status}</Tag>;
 };
 
 export const PurchaseOrderListPage: React.FC = () => {
@@ -85,11 +85,10 @@ export const PurchaseOrderListPage: React.FC = () => {
       render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
-      title: "Expected Date",
-      dataIndex: "expectedDate",
-      key: "expectedDate",
-      render: (date: string) =>
-        date ? new Date(date).toLocaleDateString() : "-",
+      title: 'Expected Date',
+      dataIndex: 'expectedDate',
+      key: 'expectedDate',
+      render: (date: string) => date ? new Date(date).toLocaleDateString() : '-',
     },
     {
       title: "Status",
@@ -119,15 +118,9 @@ export const PurchaseOrderListPage: React.FC = () => {
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Purchase Orders</h1>
-        {isAdminOrManager && (
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleCreatePO}
-          >
-            Create Purchase Order
-          </Button>
-        )}
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreatePO}>
+          Create Purchase Order
+        </Button>
       </div>
 
       <Card className={styles.filterBar}>

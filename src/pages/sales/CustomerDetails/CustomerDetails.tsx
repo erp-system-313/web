@@ -1,12 +1,11 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, Button, Descriptions, Table, Typography } from "antd";
 import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { StatusBadge, TabPanel } from "../../../components/common";
 import { useCustomer } from "../../../hooks";
-import { AuthContext } from "../../../contexts/AuthContext";
-import type { CustomerContact, SalesOrder } from "../../../types/sales";
+import type { SalesOrder } from "../../../types/sales";
 import styles from "./CustomerDetails.module.css";
 
 const { Title } = Typography;
@@ -14,9 +13,6 @@ const { Title } = Typography;
 export const CustomerDetails: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const authContext = useContext(AuthContext);
-  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
-  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const customerId = parseInt(id || "0", 10);
 
   const {
@@ -34,26 +30,6 @@ export const CustomerDetails: React.FC = () => {
     return <div className={styles.container}>Customer not found</div>;
   }
 
-  const contactColumns: ColumnsType<CustomerContact> = [
-    { title: "Name", dataIndex: "name", key: "name" },
-    { title: "Role", dataIndex: "role", key: "role" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Phone", dataIndex: "phone", key: "phone" },
-    {
-      title: "Actions",
-      key: "actions",
-      render: () => (
-        <Space>
-          <Button type="text" icon={<EditOutlined />} size="small" />
-          {isAdminOrManager && (
-            <Button type="text" danger size="small">
-              Delete
-            </Button>
-          )}
-        </Space>
-      ),
-    },
-  ];
   const orderColumns: ColumnsType<SalesOrder> = [
     {
       title: "Order #",
@@ -149,11 +125,7 @@ export const CustomerDetails: React.FC = () => {
         <Title level={3} style={{ margin: 0, flex: 1 }}>
           {customer.name}
         </Title>
-        <Button
-          type="primary"
-          icon={<EditOutlined />}
-          onClick={() => navigate(`/sales/customers/${customerId}/edit`)}
-        >
+        <Button type="primary" icon={<EditOutlined />}>
           Edit Customer
         </Button>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useContext } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Space, Select, Modal, message } from "antd";
 import {
@@ -10,7 +10,6 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { DataTable, StatusBadge } from "../../../components/common";
 import { useSalesOrders } from "../../../hooks";
-import { AuthContext } from "../../../contexts/AuthContext";
 import { salesService } from "../../../services/salesService";
 import type {
   SalesOrder,
@@ -23,9 +22,6 @@ const { confirm } = Modal;
 
 export const SalesOrdersList: React.FC = () => {
   const navigate = useNavigate();
-  const authContext = useContext(AuthContext);
-  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
-  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     SalesOrderStatus | undefined
@@ -105,14 +101,12 @@ export const SalesOrdersList: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => navigate(`/sales/orders/${record.id}/edit`)}
           />
-          {isAdminOrManager && (
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-            />
-          )}
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record)}
+          />
         </Space>
       ),
     },

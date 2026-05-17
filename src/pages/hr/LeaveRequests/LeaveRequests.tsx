@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Card,
@@ -11,12 +11,7 @@ import {
   message,
   Input,
 } from "antd";
-import {
-  PlusOutlined,
-  CheckOutlined,
-  CloseOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, CheckOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
 import {
   useLeaveRequests,
   useLeaveBalances,
@@ -24,12 +19,10 @@ import {
   useApproveLeaveRequest,
   useRejectLeaveRequest,
 } from "../../../hooks";
-import { AuthContext } from "../../../contexts/AuthContext";
 import type { LeaveRequest, LeaveStatus, LeaveType } from "../../../types/hr";
 import styles from "./LeaveRequests.module.css";
-import formStyles from "../../../components/common/FormCard/FormCard.module.css";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 interface LeaveFormData {
   type: LeaveType;
@@ -39,8 +32,6 @@ interface LeaveFormData {
 }
 
 export const LeaveRequests: React.FC = () => {
-  const authContext = useContext(AuthContext);
-  const currentEmployeeId = authContext?.user?.employeeId;
   const { data: requests, loading, refetch } = useLeaveRequests();
   const { data: balances } = useLeaveBalances();
   const { create, loading: creating } = useCreateLeaveRequest();
@@ -48,19 +39,12 @@ export const LeaveRequests: React.FC = () => {
   const { reject } = useRejectLeaveRequest();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [rejectModal, setRejectModal] = useState<{
-    id: number;
-    open: boolean;
-    reason: string;
-  }>({
+  const [rejectModal, setRejectModal] = useState<{ id: number; open: boolean; reason: string }>({
     id: 0,
     open: false,
     reason: "",
   });
-  const [reasonModal, setReasonModal] = useState<{
-    open: boolean;
-    reason: string;
-  }>({
+  const [reasonModal, setReasonModal] = useState<{ open: boolean; reason: string }>({
     open: false,
     reason: "",
   });
@@ -76,7 +60,7 @@ export const LeaveRequests: React.FC = () => {
   const onSubmit = async (data: LeaveFormData) => {
     try {
       await create({
-        employeeId: currentEmployeeId || 0,
+        employeeId: 0,
         startDate: data.startDate,
         endDate: data.endDate,
         type: data.type,
@@ -185,9 +169,7 @@ export const LeaveRequests: React.FC = () => {
                 type="link"
                 danger
                 icon={<CloseOutlined />}
-                onClick={() =>
-                  setRejectModal({ id: record.id, open: true, reason: "" })
-                }
+                onClick={() => setRejectModal({ id: record.id, open: true, reason: "" })}
                 loading={actionLoading === record.id}
               >
                 Reject
@@ -198,9 +180,7 @@ export const LeaveRequests: React.FC = () => {
             <Button
               type="link"
               icon={<EyeOutlined />}
-              onClick={() =>
-                setReasonModal({ open: true, reason: record.rejectionReason! })
-              }
+              onClick={() => setReasonModal({ open: true, reason: record.rejectionReason! })}
             >
               View Reason
             </Button>
@@ -269,14 +249,14 @@ export const LeaveRequests: React.FC = () => {
           footer={null}
         >
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <div className={formStyles.formItem}>
+            <div className={styles.formFields}>
+              <div className={styles.field}>
                 <label>Leave Type *</label>
                 <select
                   {...register("type", {
                     required: "Please select a leave type",
                   })}
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", padding: "8px", height: "40px" }}
                 >
                   <option value="">Select leave type</option>
                   <option value="ANNUAL">Annual Leave</option>
@@ -287,43 +267,43 @@ export const LeaveRequests: React.FC = () => {
                   <option value="PATERNITY">Paternity Leave</option>
                 </select>
                 {errors.type && (
-                  <span className={formStyles.error}>
+                  <Text type="danger" style={{ fontSize: 12 }}>
                     {errors.type.message}
-                  </span>
+                  </Text>
                 )}
               </div>
 
-              <div className={formStyles.formItem}>
+              <div className={styles.field}>
                 <label>Start Date *</label>
                 <input
                   type="date"
                   {...register("startDate", {
                     required: "Start date is required",
                   })}
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", padding: "8px", height: "40px" }}
                 />
                 {errors.startDate && (
-                  <span className={formStyles.error}>
+                  <Text type="danger" style={{ fontSize: 12 }}>
                     {errors.startDate.message}
-                  </span>
+                  </Text>
                 )}
               </div>
 
-              <div className={formStyles.formItem}>
+              <div className={styles.field}>
                 <label>End Date *</label>
                 <input
                   type="date"
                   {...register("endDate", { required: "End date is required" })}
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", padding: "8px", height: "40px" }}
                 />
                 {errors.endDate && (
-                  <span className={formStyles.error}>
+                  <Text type="danger" style={{ fontSize: 12 }}>
                     {errors.endDate.message}
-                  </span>
+                  </Text>
                 )}
               </div>
 
-              <div className={formStyles.formItem}>
+              <div className={styles.field}>
                 <label>Reason *</label>
                 <textarea
                   {...register("reason", {
@@ -335,22 +315,23 @@ export const LeaveRequests: React.FC = () => {
                   })}
                   rows={4}
                   placeholder="Enter reason for leave"
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", padding: "8px" }}
                 />
                 {errors.reason && (
-                  <span className={formStyles.error}>
+                  <Text type="danger" style={{ fontSize: 12 }}>
                     {errors.reason.message}
-                  </span>
+                  </Text>
                 )}
               </div>
             </div>
 
-            <div className={formStyles.actions}>
+            <div style={{ marginTop: 16, textAlign: "right" }}>
               <Button
                 onClick={() => {
                   setIsModalOpen(false);
                   reset();
                 }}
+                style={{ marginRight: 8 }}
               >
                 Cancel
               </Button>
@@ -379,9 +360,7 @@ export const LeaveRequests: React.FC = () => {
               rows={4}
               placeholder="Enter rejection reason..."
               value={rejectModal.reason}
-              onChange={(e) =>
-                setRejectModal({ ...rejectModal, reason: e.target.value })
-              }
+              onChange={(e) => setRejectModal({ ...rejectModal, reason: e.target.value })}
               style={{ marginTop: 8 }}
             />
           </div>
@@ -391,11 +370,7 @@ export const LeaveRequests: React.FC = () => {
           title="Rejection Reason"
           open={reasonModal.open}
           onCancel={() => setReasonModal({ open: false, reason: "" })}
-          footer={
-            <Button onClick={() => setReasonModal({ open: false, reason: "" })}>
-              Close
-            </Button>
-          }
+          footer={<Button onClick={() => setReasonModal({ open: false, reason: "" })}>Close</Button>}
         >
           <p style={{ marginTop: 16 }}>{reasonModal.reason}</p>
         </Modal>

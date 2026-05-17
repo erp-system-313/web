@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { hrService } from "../services/hrService";
-import type { Employee, CreateEmployeeDto, UpdateEmployeeDto } from "../types/hr";
+import type { Employee, EmployeeStatus, CreateEmployeeDto, UpdateEmployeeDto } from "../types/hr";
 
 interface EmployeeFilters {
   search?: string;
-  departmentId?: number;
-  status?: string;
+  department?: string;
+  status?: EmployeeStatus;
 }
 
 export const useEmployees = (filters?: EmployeeFilters) => {
@@ -28,7 +28,7 @@ export const useEmployees = (filters?: EmployeeFilters) => {
     } finally {
       setLoading(false);
     }
-  }, [filters?.search, filters?.departmentId, filters?.status]);
+  }, [filters?.search, filters?.department, filters?.status]);
 
   useEffect(() => {
     fetchEmployees();

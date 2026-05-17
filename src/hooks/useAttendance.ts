@@ -43,11 +43,11 @@ export const useClockIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const clockIn = useCallback(async (employeeId?: number) => {
+  const clockIn = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await hrService.attendance.clockIn(employeeId);
+      const result = await hrService.attendance.clockIn();
       return result;
     } catch (err) {
       setError("Failed to clock in");
@@ -64,11 +64,11 @@ export const useClockOut = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const clockOut = useCallback(async (employeeId?: number) => {
+  const clockOut = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await hrService.attendance.clockOut(employeeId);
+      const result = await hrService.attendance.clockOut();
       return result;
     } catch (err) {
       setError("Failed to clock out");

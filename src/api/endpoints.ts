@@ -87,16 +87,11 @@ export const endpoints = {
     create: "/v1/employees",
     update: (id: number) => `/v1/employees/${id}`,
     delete: (id: number) => `/v1/employees/${id}`,
-    active: "/v1/employees/active",
   },
   attendance: {
     clockIn: "/v1/attendance/clock-in",
     clockOut: "/v1/attendance/clock-out",
     list: "/v1/attendance",
-  },
-  settings: {
-    notifications: "/v1/settings/notifications",
-    hr: "/v1/settings/hr",
   },
   leave: {
     list: "/v1/leave-requests",
@@ -143,11 +138,5 @@ export const endpoints = {
   },
   permissions: {
     list: "/v1/permissions",
-  },
-  reports: {
-    trialBalance: "/v1/reports/trial-balance",
-    generalLedger: "/v1/reports/general-ledger",
-    profitLoss: "/v1/reports/profit-loss",
-    balanceSheet: "/v1/reports/balance-sheet",
   },
 };

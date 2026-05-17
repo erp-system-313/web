@@ -1,11 +1,10 @@
-import { useState, useContext } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { Input, Button, Card, Typography, message, Checkbox } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../../contexts/AuthContext";
-import formStyles from "../../../components/common/FormCard/FormCard.module.css";
-import styles from "./Login.module.css";
+import { useState, useContext } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { Input, Button, Card, Typography, message, Checkbox } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../../contexts/AuthContext';
+import styles from './Login.module.css';
 
 const { Title, Text } = Typography;
 
@@ -20,33 +19,32 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const { control, handleSubmit } = useForm<LoginFormData>({
+  const {
+    control,
+    handleSubmit,
+  } = useForm<LoginFormData>({
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
       remember: true,
     },
   });
 
   const onSubmit = async (data: LoginFormData) => {
     if (!authContext) return;
-
+    
     setLoading(true);
     try {
-      const result = await authContext.login({
-        email: data.email,
-        password: data.password,
-        remember: data.remember,
-      });
-
+      const result = await authContext.login({ email: data.email, password: data.password, remember: data.remember });
+      
       if (result.success) {
-        message.success("Login successful");
-        navigate("/dashboard");
+        message.success('Login successful');
+        navigate('/dashboard');
       } else {
-        message.error(result.error || "Invalid credentials");
+        message.error(result.error || 'Invalid credentials');
       }
     } catch (error) {
-      message.error("An error occurred during login");
+      message.error('An error occurred during login');
     } finally {
       setLoading(false);
     }
@@ -56,24 +54,22 @@ export const LoginPage: React.FC = () => {
     <div className={styles.container}>
       <Card className={styles.loginCard}>
         <div className={styles.header}>
-          <Title level={2} className={styles.title}>
-            ERP System
-          </Title>
+          <Title level={2} className={styles.title}>ERP System</Title>
           <Text type="secondary">Sign in to your account</Text>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className={formStyles.formItem}>
-            <label>Email</label>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', marginBottom: 8 }}>Email</label>
             <Controller
               name="email"
               control={control}
               rules={{
-                required: "Email is required",
+                required: 'Email is required',
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Invalid email address",
-                },
+                  message: 'Invalid email address'
+                }
               }}
               render={({ field, fieldState }) => (
                 <>
@@ -81,29 +77,27 @@ export const LoginPage: React.FC = () => {
                     {...field}
                     prefix={<UserOutlined />}
                     placeholder="Email address"
-                    status={fieldState.error ? "error" : undefined}
+                    status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
-                    <span className={formStyles.error}>
-                      {fieldState.error.message}
-                    </span>
+                    <Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text>
                   )}
                 </>
               )}
             />
           </div>
 
-          <div className={formStyles.formItem}>
-            <label>Password</label>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', marginBottom: 8 }}>Password</label>
             <Controller
               name="password"
               control={control}
               rules={{
-                required: "Password is required",
+                required: 'Password is required',
                 minLength: {
                   value: 6,
-                  message: "Password must be at least 6 characters",
-                },
+                  message: 'Password must be at least 6 characters'
+                }
               }}
               render={({ field, fieldState }) => (
                 <>
@@ -111,34 +105,37 @@ export const LoginPage: React.FC = () => {
                     {...field}
                     prefix={<LockOutlined />}
                     placeholder="Password"
-                    status={fieldState.error ? "error" : undefined}
+                    status={fieldState.error ? 'error' : undefined}
                   />
                   {fieldState.error && (
-                    <span className={formStyles.error}>
-                      {fieldState.error.message}
-                    </span>
+                    <Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text>
                   )}
                 </>
               )}
             />
           </div>
 
-          <div className={formStyles.formItem}>
+          <div style={{ marginBottom: 16 }}>
             <Controller
               name="remember"
               control={control}
               render={({ field }) => (
-                <Checkbox {...field} checked={field.value}>
-                  Remember me
-                </Checkbox>
+                <Checkbox {...field} checked={field.value}>Remember me</Checkbox>
               )}
             />
           </div>
 
-          <Button type="primary" htmlType="submit" loading={loading} block>
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={loading}
+            block
+          >
             Sign In
           </Button>
         </form>
+
+        
       </Card>
     </div>
   );

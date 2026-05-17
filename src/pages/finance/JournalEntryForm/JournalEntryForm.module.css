@@ -1,3 +1,25 @@
+.container {
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  margin-bottom: 16px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.card {
+  margin-bottom: 16px;
+}
+
 .balanceWarning {
   color: #ff4d4f;
   font-weight: 500;
@@ -34,4 +56,13 @@
   font-size: 18px;
   font-weight: 600;
   font-family: monospace;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
 }

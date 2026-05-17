@@ -14,7 +14,6 @@ import {
   PlusOutlined,
   DeleteOutlined,
   SendOutlined,
-  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -22,7 +21,6 @@ import * as yup from "yup";
 import { usePurchaseOrders } from "../../hooks/usePurchaseOrders";
 import { useSuppliers } from "../../hooks/useSuppliers";
 import { useProducts } from "../../hooks/useProducts";
-import formStyles from "../../components/common/FormCard/FormCard.module.css";
 import styles from "./CreatePurchaseOrderPage.module.css";
 
 interface LineItem {
@@ -259,20 +257,27 @@ export const CreatePurchaseOrderPage: React.FC = () => {
   return (
     <div>
       <div className={styles.header}>
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/purchasing/orders")}
-        >
-          Back
-        </Button>
         <h1 className={styles.title}>Create Purchase Order</h1>
+        <Space className={styles.actions}>
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={handleSubmit(onSubmit)}
+            loading={isSubmitting}
+          >
+            Submit Order
+          </Button>
+          <Button onClick={() => navigate("/purchasing/orders")}>Cancel</Button>
+        </Space>
       </div>
 
       <div className={styles.formGrid}>
         <div>
           <Card title="Supplier Information" className={styles.formCard}>
-            <div className={formStyles.formItem}>
-              <label>Select Supplier *</label>
+            <div className={styles.formSection}>
+              <label style={{ display: "block", marginBottom: 8 }}>
+                Select Supplier *
+              </label>
               <Controller
                 name="supplierId"
                 control={control}
@@ -290,7 +295,7 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                 )}
               />
               {errors.supplierId && (
-                <span className={formStyles.error}>
+                <span style={{ color: "#ff4d4f", fontSize: 12 }}>
                   {errors.supplierId.message}
                 </span>
               )}
@@ -341,30 +346,32 @@ export const CreatePurchaseOrderPage: React.FC = () => {
         <div>
           <div className={styles.orderSummary}>
             <Card title="Order Details" className={styles.formCard}>
-              <div className={formStyles.formItem}>
-                <label>Order Date</label>
+              <div className={styles.formSection}>
+                <label style={{ display: "block", marginBottom: 8 }}>
+                  Order Date
+                </label>
                 <Controller
                   name="orderDate"
                   control={control}
-                  render={({ field }) => (
-                    <Input type="date" min={today} {...field} />
-                  )}
+                  render={({ field }) => <Input type="date" min={today} {...field} />}
                 />
               </div>
 
-              <div className={formStyles.formItem}>
-                <label>Expected Delivery Date</label>
+              <div className={styles.formSection}>
+                <label style={{ display: "block", marginBottom: 8 }}>
+                  Expected Delivery Date
+                </label>
                 <Controller
                   name="expectedDate"
                   control={control}
-                  render={({ field }) => (
-                    <Input type="date" min={today} {...field} />
-                  )}
+                  render={({ field }) => <Input type="date" min={today} {...field} />}
                 />
               </div>
 
-              <div className={formStyles.formItem}>
-                <label>Notes</label>
+              <div className={styles.formSection}>
+                <label style={{ display: "block", marginBottom: 8 }}>
+                  Notes
+                </label>
                 <Controller
                   name="notes"
                   control={control}
@@ -378,20 +385,6 @@ export const CreatePurchaseOrderPage: React.FC = () => {
                 />
               </div>
             </Card>
-
-            <div className={formStyles.actions}>
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                onClick={handleSubmit(onSubmit)}
-                loading={isSubmitting}
-              >
-                Submit Order
-              </Button>
-              <Button onClick={() => navigate("/purchasing/orders")}>
-                Cancel
-              </Button>
-            </div>
 
             <Card title="Order Summary">
               <div className={styles.summaryRow}>

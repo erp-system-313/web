@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -24,9 +23,19 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { StatusBadge } from "../../../components/common";
 import { useInvoice } from "../../../hooks";
 import { invoiceFormSchema } from "../../../schemas/finance";
-import { salesService } from "../../../services/salesService";
-import { inventoryService } from "../../../services/inventoryService";
-import formStyles from "../../../components/common/FormCard/FormCard.module.css";
+import styles from "./InvoiceForm.module.css";
+
+const CUSTOMER_OPTIONS = [
+  { value: 1, label: "Acme Corp" },
+  { value: 2, label: "Tech Solutions" },
+  { value: 3, label: "Global Industries" },
+];
+
+const PRODUCT_OPTIONS = [
+  { value: 1, label: "Product A" },
+  { value: 2, label: "Product B" },
+  { value: 3, label: "Product C" },
+];
 
 interface LineItemData {
   id: string;
@@ -48,26 +57,6 @@ export const InvoiceForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditMode = Boolean(id);
   const invoiceId = isEditMode ? parseInt(id || "0", 10) : undefined;
-
-  const [customerOptions, setCustomerOptions] = useState<
-    { value: number; label: string }[]
-  >([]);
-  const [productOptions, setProductOptions] = useState<
-    { value: number; label: string }[]
-  >([]);
-
-  useEffect(() => {
-    salesService.customers.getAll({ page: 0, size: 200 }).then((res) => {
-      setCustomerOptions(
-        res.items.map((c) => ({ value: c.id, label: c.name })),
-      );
-    });
-    inventoryService.getProducts({}, 1, 200).then((res) => {
-      setProductOptions(
-        res.data.map((p) => ({ value: p.id, label: `${p.name} (${p.sku})` })),
-      );
-    });
-  }, []);
 
   const {
     data: existingInvoice,
@@ -113,8 +102,8 @@ export const InvoiceForm: React.FC = () => {
     const data = watch();
     const invoiceData = {
       customerId: data.customerId,
-      invoiceDate: data.invoiceDate + "T00:00:00",
-      dueDate: data.dueDate + "T00:00:00",
+      invoiceDate: data.invoiceDate,
+      dueDate: data.dueDate,
       status,
       lines: data.lines
         .filter((l) => l.productId)
@@ -144,12 +133,12 @@ export const InvoiceForm: React.FC = () => {
   };
 
   if (isEditMode && loading) {
-    return <div className={formStyles.container}>Loading...</div>;
+    return <div className={styles.container}>Loading...</div>;
   }
 
   return (
-    <div className={formStyles.container}>
-      <div className={formStyles.header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/finance/invoices")}
@@ -161,7 +150,7 @@ export const InvoiceForm: React.FC = () => {
       </div>
 
       <Form layout="vertical">
-        <Card title="Invoice Details" style={{ marginBottom: 16 }}>
+        <Card title="Invoice Details" className={styles.card}>
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
@@ -176,7 +165,7 @@ export const InvoiceForm: React.FC = () => {
                     <Select
                       {...field}
                       placeholder="Select customer..."
-                      options={customerOptions}
+                      options={CUSTOMER_OPTIONS}
                       showSearch
                       filterOption={(input, option) =>
                         (option?.label ?? "")
@@ -209,7 +198,7 @@ export const InvoiceForm: React.FC = () => {
           </Row>
         </Card>
 
-        <Card title="Line Items" style={{ marginBottom: 16 }}>
+        <Card title="Line Items" className={styles.card}>
           <Table
             dataSource={fields.map((field) => ({
               ...field,
@@ -232,7 +221,7 @@ export const InvoiceForm: React.FC = () => {
                         placeholder="Select product"
                         allowClear
                         style={{ width: "100%" }}
-                        options={productOptions}
+                        options={PRODUCT_OPTIONS}
                       />
                     )}
                   />
@@ -316,13 +305,13 @@ export const InvoiceForm: React.FC = () => {
                 taxRate: 0.1,
               })
             }
-            style={{ marginTop: 16 }}
+            className={styles.addBtn}
           >
             Add Line
           </Button>
         </Card>
 
-        <div className={formStyles.actions}>
+        <div className={styles.actions}>
           <Space>
             <Button
               type="primary"

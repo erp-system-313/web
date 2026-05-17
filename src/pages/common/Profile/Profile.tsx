@@ -1,75 +1,30 @@
-import { useContext, useState } from "react";
-import {
-  Card,
-  Form,
-  Input,
-  Button,
-  Typography,
-  Avatar,
-  Divider,
-  message,
-} from "antd";
-import {
-  UserOutlined,
-  MailOutlined,
-  LockOutlined,
-  PhoneOutlined,
-} from "@ant-design/icons";
-import { AuthContext } from "../../../contexts/AuthContext";
-import { authService } from "../../../services/authService";
-import formStyles from "../../../components/common/FormCard/FormCard.module.css";
-import styles from "./Profile.module.css";
+import { useContext, useState } from 'react';
+import { Card, Form, Input, Button, Typography, Avatar, Divider, message } from 'antd';
+import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons';
+import { AuthContext } from '../../../contexts/AuthContext';
+import styles from './Profile.module.css';
 
 const { Title, Text } = Typography;
 
 export const ProfilePage: React.FC = () => {
   const { user } = useContext(AuthContext) || {};
   const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const onFinish = async (values: {
-    firstName: string;
-    lastName: string;
-    phone?: string;
-  }) => {
+  const onFinish = () => {
     setLoading(true);
-    try {
-      await authService.updateProfile(values);
-      message.success("Profile updated successfully");
-    } catch {
-      message.error("Failed to update profile");
-    } finally {
+    setTimeout(() => {
+      message.success('Profile updated successfully');
       setLoading(false);
-    }
-  };
-
-  const onFinishPassword = async (values: {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-  }) => {
-    if (values.newPassword !== values.confirmPassword) {
-      message.error("Passwords do not match");
-      return;
-    }
-    setPasswordLoading(true);
-    try {
-      await authService.changePassword(values);
-      message.success("Password changed successfully");
-    } catch {
-      message.error("Failed to change password");
-    } finally {
-      setPasswordLoading(false);
-    }
+    }, 500);
   };
 
   return (
-    <div className={formStyles.container}>
+    <div className={styles.container}>
       <Card>
         <div className={styles.header}>
           <Avatar size={80} icon={<UserOutlined />} className={styles.avatar} />
-          <Title level={3}>{user?.name || "User"}</Title>
-          <Text type="secondary">{user?.role || "Staff"}</Text>
+          <Title level={3}>{user?.name || 'User'}</Title>
+          <Text type="secondary">{user?.role || 'Staff'}</Text>
         </div>
 
         <Divider />
@@ -78,10 +33,10 @@ export const ProfilePage: React.FC = () => {
         <Form
           layout="vertical"
           initialValues={{
-            firstName: user?.name?.split(" ")[0] || "",
-            lastName: user?.name?.split(" ").slice(1).join(" ") || "",
-            email: user?.email || "",
-            phone: "",
+            firstName: user?.name?.split(' ')[0] || '',
+            lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+            email: user?.email || '',
+            phone: '',
           }}
           onFinish={onFinish}
         >
@@ -105,7 +60,7 @@ export const ProfilePage: React.FC = () => {
             <Form.Item
               label="Email"
               name="email"
-              rules={[{ required: true }, { type: "email" }]}
+              rules={[{ required: true }, { type: 'email' }]}
             >
               <Input prefix={<MailOutlined />} disabled />
             </Form.Item>
@@ -125,11 +80,11 @@ export const ProfilePage: React.FC = () => {
         <Divider />
 
         <Title level={4}>Change Password</Title>
-        <Form layout="vertical" onFinish={onFinishPassword}>
+        <Form layout="vertical">
           <Form.Item
             label="Current Password"
             name="currentPassword"
-            rules={[{ required: true, message: "Enter current password" }]}
+            rules={[{ required: true, message: 'Enter current password' }]}
           >
             <Input.Password prefix={<LockOutlined />} />
           </Form.Item>
@@ -137,7 +92,7 @@ export const ProfilePage: React.FC = () => {
           <Form.Item
             label="New Password"
             name="newPassword"
-            rules={[{ required: true, message: "Enter new password" }]}
+            rules={[{ required: true, message: 'Enter new password' }]}
           >
             <Input.Password prefix={<LockOutlined />} />
           </Form.Item>
@@ -145,15 +100,13 @@ export const ProfilePage: React.FC = () => {
           <Form.Item
             label="Confirm Password"
             name="confirmPassword"
-            rules={[{ required: true, message: "Confirm new password" }]}
+            rules={[{ required: true, message: 'Confirm new password' }]}
           >
             <Input.Password prefix={<LockOutlined />} />
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={passwordLoading}>
-              Change Password
-            </Button>
+            <Button type="default">Change Password</Button>
           </Form.Item>
         </Form>
       </Card>

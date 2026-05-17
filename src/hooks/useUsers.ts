@@ -16,7 +16,6 @@ export const useUsers = (params?: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -30,18 +29,13 @@ export const useUsers = (params?: {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params?.page, params?.size, params?.roleName, params?.isActive, refreshKey]);
+  }, [params?.page, params?.size, params?.roleName, params?.isActive]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const refetch = useCallback(() => {
-    setRefreshKey((k) => k + 1);
-  }, []);
-
-  return { data, loading, error, total, refetch };
+  return { data, loading, error, total, refetch: fetchUsers };
 };
 
 export const useUser = (id: number | null) => {

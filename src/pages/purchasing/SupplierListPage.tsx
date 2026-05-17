@@ -1,17 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  Card,
-  Modal,
-  Select,
-  Table,
-  Tag,
-  Space,
-  Input,
-  InputNumber,
-  message,
-} from "antd";
+import { Button, Card, Modal, Select, Table, Tag, Space, Input, InputNumber, message } from "antd";
 import {
   PlusOutlined,
   EyeOutlined,
@@ -23,7 +12,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useSuppliers } from "../../hooks/useSuppliers";
 import type { CreateSupplierDto } from "../../types/supplier.types";
-import formStyles from "../../components/common/FormCard/FormCard.module.css";
 import styles from "./SupplierListPage.module.css";
 
 const supplierSchema = yup.object({
@@ -34,10 +22,7 @@ const supplierSchema = yup.object({
   phone: yup.string().required("Phone is required"),
   address: yup.string().required("Address is required"),
   taxId: yup.string().required("Tax ID is required"),
-  paymentTerms: yup
-    .number()
-    .required("Payment terms is required")
-    .min(1, "Must be at least 1"),
+  paymentTerms: yup.number().required("Payment terms is required").min(1, "Must be at least 1"),
 });
 
 type SupplierFormData = yup.InferType<typeof supplierSchema>;
@@ -63,23 +48,9 @@ export const SupplierListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<SupplierFormData>({
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<SupplierFormData>({
     resolver: yupResolver(supplierSchema),
-    defaultValues: {
-      code: "",
-      name: "",
-      contactPerson: "",
-      email: "",
-      phone: "",
-      address: "",
-      taxId: "",
-      paymentTerms: 30,
-    },
+    defaultValues: { code: "", name: "", contactPerson: "", email: "", phone: "", address: "", taxId: "", paymentTerms: 30 },
   });
 
   const loadSuppliers = useCallback(async () => {
@@ -255,158 +226,68 @@ export const SupplierListPage: React.FC = () => {
         okText="Create Supplier"
       >
         <form onSubmit={handleSubmit(handleCreateSupplier)}>
-          <div className={formStyles.formItem}>
-            <label>Supplier Code *</label>
-            <Controller
-              name="code"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="e.g. SUP-001"
-                  status={errors.code ? "error" : undefined}
-                />
-              )}
-            />
-            {errors.code && (
-              <span className={formStyles.error}>{errors.code.message}</span>
-            )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Supplier Code *</label>
+            <Controller name="code" control={control} render={({ field }) => (
+              <Input {...field} placeholder="e.g. SUP-001" status={errors.code ? "error" : undefined} />
+            )} />
+            {errors.code && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.code.message}</span>}
           </div>
-          <div className={formStyles.formItem}>
-            <label>Supplier Name *</label>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="Enter supplier name"
-                  status={errors.name ? "error" : undefined}
-                />
-              )}
-            />
-            {errors.name && (
-              <span className={formStyles.error}>{errors.name.message}</span>
-            )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Supplier Name *</label>
+            <Controller name="name" control={control} render={({ field }) => (
+              <Input {...field} placeholder="Enter supplier name" status={errors.name ? "error" : undefined} />
+            )} />
+            {errors.name && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.name.message}</span>}
           </div>
-          <div className={formStyles.formItem}>
-            <label>Contact Person *</label>
-            <Controller
-              name="contactPerson"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="Full name"
-                  status={errors.contactPerson ? "error" : undefined}
-                />
-              )}
-            />
-            {errors.contactPerson && (
-              <span className={formStyles.error}>
-                {errors.contactPerson.message}
-              </span>
-            )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Contact Person *</label>
+            <Controller name="contactPerson" control={control} render={({ field }) => (
+              <Input {...field} placeholder="Full name" status={errors.contactPerson ? "error" : undefined} />
+            )} />
+            {errors.contactPerson && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.contactPerson.message}</span>}
           </div>
-          <div className={formStyles.formItem}>
-            <label>Email *</label>
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="email@example.com"
-                  status={errors.email ? "error" : undefined}
-                />
-              )}
-            />
-            {errors.email && (
-              <span className={formStyles.error}>{errors.email.message}</span>
-            )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Email *</label>
+            <Controller name="email" control={control} render={({ field }) => (
+              <Input {...field} placeholder="email@example.com" status={errors.email ? "error" : undefined} />
+            )} />
+            {errors.email && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.email.message}</span>}
           </div>
-          <div className={formStyles.formItem}>
-            <label>Phone *</label>
-            <Controller
-              name="phone"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="Phone number"
-                  status={errors.phone ? "error" : undefined}
-                />
-              )}
-            />
-            {errors.phone && (
-              <span className={formStyles.error}>{errors.phone.message}</span>
-            )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Phone *</label>
+            <Controller name="phone" control={control} render={({ field }) => (
+              <Input {...field} placeholder="Phone number" status={errors.phone ? "error" : undefined} />
+            )} />
+            {errors.phone && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.phone.message}</span>}
           </div>
-          <div className={formStyles.formItem}>
-            <label>Address *</label>
-            <Controller
-              name="address"
-              control={control}
-              render={({ field }) => (
-                <Input.TextArea
-                  {...field}
-                  rows={2}
-                  placeholder="Full address"
-                  status={errors.address ? "error" : undefined}
-                />
-              )}
-            />
-            {errors.address && (
-              <span className={formStyles.error}>{errors.address.message}</span>
-            )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Address *</label>
+            <Controller name="address" control={control} render={({ field }) => (
+              <Input.TextArea {...field} rows={2} placeholder="Full address" status={errors.address ? "error" : undefined} />
+            )} />
+            {errors.address && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.address.message}</span>}
           </div>
-          <div className={formStyles.formItem}>
-            <label>Tax ID *</label>
-            <Controller
-              name="taxId"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="Tax identification number"
-                  status={errors.taxId ? "error" : undefined}
-                />
-              )}
-            />
-            {errors.taxId && (
-              <span className={formStyles.error}>{errors.taxId.message}</span>
-            )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Tax ID *</label>
+            <Controller name="taxId" control={control} render={({ field }) => (
+              <Input {...field} placeholder="Tax identification number" status={errors.taxId ? "error" : undefined} />
+            )} />
+            {errors.taxId && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.taxId.message}</span>}
           </div>
-          <div className={formStyles.formItem}>
-            <label>Payment Terms (days) *</label>
-            <Controller
-              name="paymentTerms"
-              control={control}
-              render={({ field }) => (
-                <InputNumber
-                  {...field}
-                  onChange={(value) => field.onChange(value ?? 30)}
-                  style={{ width: "100%" }}
-                  min={1}
-                  placeholder="30"
-                  status={errors.paymentTerms ? "error" : undefined}
-                />
-              )}
-            />
-            {errors.paymentTerms && (
-              <span className={formStyles.error}>
-                {errors.paymentTerms.message}
-              </span>
-            )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Payment Terms (days) *</label>
+            <Controller name="paymentTerms" control={control} render={({ field }) => (
+              <InputNumber {...field} onChange={(value) => field.onChange(value ?? 30)} style={{ width: "100%" }} min={1} placeholder="30" status={errors.paymentTerms ? "error" : undefined} />
+            )} />
+            {errors.paymentTerms && <span style={{ color: "#ff4d4f", fontSize: 12 }}>{errors.paymentTerms.message}</span>}
           </div>
         </form>
       </Modal>
 
       {filteredSuppliers.length === 0 && !loading && (
         <div className={styles.emptyState}>
-          {searchText || statusFilter
-            ? "No suppliers match your filters."
-            : 'No suppliers found. Click "Add Supplier" to create one.'}
+          {searchText || statusFilter ? "No suppliers match your filters." : 'No suppliers found. Click "Add Supplier" to create one.'}
         </div>
       )}
     </div>

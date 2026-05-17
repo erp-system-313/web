@@ -11,19 +11,6 @@ export interface AuthUser {
   email: string;
   name: string;
   role: string;
-  employeeId?: number;
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
-export interface UpdateProfileRequest {
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
 }
 
 export interface LoginResponse {
@@ -118,22 +105,6 @@ export const authService = {
           message: handleApiError(error),
         },
       };
-    }
-  },
-
-  changePassword: async (data: ChangePasswordRequest): Promise<void> => {
-    try {
-      await api.put("/v1/users/me/password", data);
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
-  },
-
-  updateProfile: async (data: UpdateProfileRequest): Promise<void> => {
-    try {
-      await api.put("/v1/users/me", data);
-    } catch (error) {
-      throw new Error(handleApiError(error));
     }
   },
 

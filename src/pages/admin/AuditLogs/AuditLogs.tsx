@@ -8,11 +8,9 @@ import {
   DatePicker,
   Tag,
   Spin,
-  Alert,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import dayjs from "dayjs";
 import { useAuditLogs } from "../../../hooks/useAuditLogs";
 import styles from "./AuditLogs.module.css";
 
@@ -36,7 +34,6 @@ export const AuditLogsPage: React.FC = () => {
   const [entityTypeFilter, setEntityTypeFilter] = useState<
     string | undefined
   >();
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -48,8 +45,6 @@ export const AuditLogsPage: React.FC = () => {
     page: page - 1,
     size: pageSize,
     entityType: entityTypeFilter,
-    startDate: dateRange?.[0]?.startOf("day").toISOString(),
-    endDate: dateRange?.[1]?.endOf("day").toISOString(),
   });
 
   const filteredLogs = logs.filter((log) => {
@@ -117,7 +112,7 @@ export const AuditLogsPage: React.FC = () => {
             placeholder="Search..."
             prefix={<SearchOutlined />}
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => setSearch(e.target.value)}
             style={{ width: 250 }}
           />
           <Select
@@ -125,25 +120,15 @@ export const AuditLogsPage: React.FC = () => {
             allowClear
             style={{ width: 150 }}
             value={entityTypeFilter}
-            onChange={(v) => { setEntityTypeFilter(v); setPage(1); }}
+            onChange={setEntityTypeFilter}
           >
             <Select.Option value="User">User</Select.Option>
             <Select.Option value="Order">Order</Select.Option>
             <Select.Option value="Product">Product</Select.Option>
             <Select.Option value="Inventory">Inventory</Select.Option>
           </Select>
-          <RangePicker value={dateRange as any} onChange={(dates) => { setDateRange(dates as any); setPage(1); }} />
+          <RangePicker />
         </div>
-
-        {search && (
-          <Alert
-            message="Search is applied to the current page only"
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
-            closable
-          />
-        )}
 
         {loading ? (
           <div style={{ textAlign: "center", padding: 40 }}>

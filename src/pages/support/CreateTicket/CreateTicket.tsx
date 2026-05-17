@@ -1,13 +1,25 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Form, Input, Select, Button, message, Space } from "antd";
+import {
+  Card,
+  Form,
+  Input,
+  Select,
+  Button,
+  Typography,
+  message,
+  Space,
+} from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useCreateTicket } from "../../../hooks/useSupport";
 import { salesService } from "../../../services/salesService";
 import { hrService } from "../../../services/hrService";
 import type { CreateTicketDto } from "../../../types/support";
 import type { Customer } from "../../../types/sales";
 import type { Employee } from "../../../types/hr";
-import { FormCard } from "../../../components/common";
+import styles from "./CreateTicket.module.css";
+
+const { Title } = Typography;
 const { TextArea } = Input;
 
 export const CreateTicket: React.FC = () => {
@@ -83,80 +95,97 @@ export const CreateTicket: React.FC = () => {
   };
 
   return (
-    <FormCard title="Create New Ticket" backPath="/support/tickets">
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{ priority: "MEDIUM" }}
-        style={{ maxWidth: 600 }}
-      >
-        <Form.Item
-          name="title"
-          label="Title"
-          rules={[{ required: true, message: "Please enter a title" }]}
+    <div>
+      <Space className={styles.backButton}>
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/support/tickets")}
         >
-          <Input placeholder="Brief description of the issue" />
-        </Form.Item>
+          Back to Tickets
+        </Button>
+      </Space>
 
-        <Form.Item name="description" label="Description">
-          <TextArea rows={4} placeholder="Detailed description of the issue" />
-        </Form.Item>
-
-        <Form.Item
-          name="customerId"
-          label="Customer"
-          rules={[{ required: true, message: "Please select a customer" }]}
+      <Card>
+        <Title level={4}>Create New Ticket</Title>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{ priority: "MEDIUM" }}
+          style={{ maxWidth: 600 }}
         >
-          <Select
-            showSearch
-            placeholder="Search customer by name..."
-            filterOption={false}
-            onSearch={handleCustomerSearch}
-            options={customerOptions}
-            loading={searching}
-            notFoundContent={null}
-          />
-        </Form.Item>
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[{ required: true, message: "Please enter a title" }]}
+          >
+            <Input placeholder="Brief description of the issue" />
+          </Form.Item>
 
-        <Form.Item
-          name="priority"
-          label="Priority"
-          rules={[{ required: true, message: "Please select a priority" }]}
-        >
-          <Select
-            options={[
-              { value: "LOW", label: "Low" },
-              { value: "MEDIUM", label: "Medium" },
-              { value: "HIGH", label: "High" },
-              { value: "URGENT", label: "Urgent" },
-            ]}
-          />
-        </Form.Item>
+          <Form.Item name="description" label="Description">
+            <TextArea
+              rows={4}
+              placeholder="Detailed description of the issue"
+            />
+          </Form.Item>
 
-        <Form.Item name="assignedTo" label="Assigned To">
-          <Select
-            showSearch
-            placeholder="Search employee..."
-            filterOption={false}
-            onSearch={handleEmployeeSearch}
-            options={employeeOptions}
-            loading={searchingEmployee}
-            allowClear
-            notFoundContent={null}
-          />
-        </Form.Item>
+          <Form.Item
+            name="customerId"
+            label="Customer"
+            rules={[{ required: true, message: "Please select a customer" }]}
+          >
+            <Select
+              showSearch
+              placeholder="Search customer by name..."
+              filterOption={false}
+              onSearch={handleCustomerSearch}
+              options={customerOptions}
+              loading={searching}
+              notFoundContent={null}
+            />
+          </Form.Item>
 
-        <Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Submit
-            </Button>
-            <Button onClick={() => navigate("/support/tickets")}>Cancel</Button>
-          </Space>
-        </Form.Item>
-      </Form>
-    </FormCard>
+          <Form.Item
+            name="priority"
+            label="Priority"
+            rules={[{ required: true, message: "Please select a priority" }]}
+          >
+            <Select
+              options={[
+                { value: "LOW", label: "Low" },
+                { value: "MEDIUM", label: "Medium" },
+                { value: "HIGH", label: "High" },
+                { value: "URGENT", label: "Urgent" },
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item name="assignedTo" label="Assigned To">
+            <Select
+              showSearch
+              placeholder="Search employee..."
+              filterOption={false}
+              onSearch={handleEmployeeSearch}
+              options={employeeOptions}
+              loading={searchingEmployee}
+              allowClear
+              notFoundContent={null}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Submit
+              </Button>
+              <Button onClick={() => navigate("/support/tickets")}>
+                Cancel
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Card>
+    </div>
   );
 };
 
