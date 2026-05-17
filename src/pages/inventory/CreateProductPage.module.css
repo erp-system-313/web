@@ -13,3 +13,10 @@
 .formItem {
   margin-bottom: 16px;
 }
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

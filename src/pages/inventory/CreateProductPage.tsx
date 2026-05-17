@@ -49,6 +49,13 @@ export const CreateProductPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    inventoryService.getCategories(1, 100).then(res => {
+      setCategories(res.data);
+    }).catch(() => {});
+  }, []);
 
   const [basicData, setBasicData] = useState<BasicInfoData | null>(null);
   const [pricingData, setPricingData] = useState<PricingData | null>(null);
