@@ -66,6 +66,9 @@ export const CreateProductPage: React.FC = () => {
       .catch(() => {});
   }, []);
 
+  const [basicData, setBasicData] = useState<BasicInfoData | null>(null);
+  const [pricingData, setPricingData] = useState<PricingData | null>(null);
+
   const { control: basicControl, handleSubmit: handleBasicSubmit, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
     resolver: yupResolver(basicInfoSchema),
     mode: 'onBlur',
@@ -81,16 +84,6 @@ export const CreateProductPage: React.FC = () => {
     resolver: yupResolver(inventorySchema),
     mode: 'onBlur',
   });
-
-  const [basicData, setBasicData] = useState<BasicInfoData | null>(null);
-  const [pricingData, setPricingData] = useState<PricingData | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    inventoryService.getCategories(1, 100).then(res => {
-      setCategories(res.data);
-    }).catch(() => {});
-  }, []);
 
   const categoryTreeData = buildCategoryTree(categories);
 
