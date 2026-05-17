@@ -11,16 +11,6 @@
   font-weight: 600;
 }
 
-.formItem {
-  margin-bottom: 16px;
-}
-
-.formActions {
-  display: flex;
-  gap: 8px;
-  margin-top: 24px;
-}
-
 .emptyState {
   text-align: center;
   padding: 48px 24px;

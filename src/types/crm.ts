@@ -28,6 +28,7 @@ export interface CreateLeadDto {
   source?: string;
   assignedTo?: string;
   notes?: string;
+  status?: LeadStatus;
 }
 
 export interface Opportunity {
@@ -42,6 +43,13 @@ export interface Opportunity {
   expectedCloseDate: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ConvertLeadPayload {
+  stageId: number;
+  revenue?: number;
+  probability?: number;
+  closeDate?: string;
 }
 
 export interface CrmDashboardStats {

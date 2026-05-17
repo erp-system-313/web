@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -19,6 +19,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { DataTable, StatusBadge } from "../../../components/common";
 import { useJournalEntries, useJournalEntry } from "../../../hooks";
+import { AuthContext } from "../../../contexts/AuthContext";
 import type {
   JournalEntry,
   JournalEntryLine,
@@ -28,6 +29,9 @@ import styles from "./JournalEntries.module.css";
 
 export const JournalEntries: React.FC = () => {
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  const userRole = (authContext?.user?.role || "STAFF").toLowerCase();
+  const isAdminOrManager = userRole === "admin" || userRole === "manager";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     JournalEntryStatus | undefined
@@ -214,9 +218,9 @@ export const JournalEntries: React.FC = () => {
         onCancel={() => setViewModalOpen(false)}
         width={800}
         footer={
-          selectedEntry?.status === "DRAFT" ? (
-            <Space>
-              <Button onClick={() => setViewModalOpen(false)}>Close</Button>
+          <Space>
+            <Button onClick={() => setViewModalOpen(false)}>Close</Button>
+            {selectedEntry?.status === "DRAFT" && isAdminOrManager && (
               <Button
                 type="primary"
                 icon={<CheckOutlined />}
@@ -225,10 +229,8 @@ export const JournalEntries: React.FC = () => {
               >
                 Post Entry
               </Button>
-            </Space>
-          ) : (
-            <Space>
-              <Button onClick={() => setViewModalOpen(false)}>Close</Button>
+            )}
+            {selectedEntry?.status !== "DRAFT" && isAdminOrManager && (
               <Button
                 icon={<UndoOutlined />}
                 onClick={handleReverse}
@@ -236,8 +238,8 @@ export const JournalEntries: React.FC = () => {
               >
                 Reverse Entry
               </Button>
-            </Space>
-          )
+            )}
+          </Space>
         }
       >
         {selectedEntry && (

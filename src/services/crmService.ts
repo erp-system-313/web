@@ -1,6 +1,6 @@
 import { apiClient } from '../api/client';
 import { endpoints } from '../api/endpoints';
-import type { Lead, CreateLeadDto, LeadFilters, CrmDashboardStats, PipelineStage, Opportunity } from '../types/crm';
+import type { Lead, CreateLeadDto, LeadFilters, CrmDashboardStats, PipelineStage, Opportunity, ConvertLeadPayload } from '../types/crm';
 
 export const crmService = {
   async getDashboard(): Promise<CrmDashboardStats> {
@@ -37,18 +37,21 @@ export const crmService = {
     return response.data.data;
   },
 
-  async convertLead(id: number): Promise<void> {
-    await apiClient.post(endpoints.crm.convertLead(id));
+  async convertLead(id: number, payload?: ConvertLeadPayload): Promise<Opportunity> {
+    const response = await apiClient.post(endpoints.crm.convertLead(id), payload ?? {});
+    return response.data.data;
   },
 
   async getPipelineStages(): Promise<PipelineStage[]> {
     const response = await apiClient.get(endpoints.crm.pipelines);
-    return response.data.data || [];
+    const data = response.data?.data;
+    return Array.isArray(data) ? data : [];
   },
 
   async getOpportunities(): Promise<Opportunity[]> {
     const response = await apiClient.get(endpoints.crm.opportunities);
-    return response.data.data || [];
+    const data = response.data?.data;
+    return Array.isArray(data) ? data : [];
   },
 
   async updateOpportunityStage(id: number, stageId: number): Promise<Opportunity> {

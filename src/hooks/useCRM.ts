@@ -6,16 +6,17 @@ export const useLeads = (filters: LeadFilters = {}) => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchLeads = useCallback(async (f: LeadFilters = filters) => {
     setLoading(true);
+    setError(null);
     try {
       const result = await crmService.getLeads(f);
       setLeads(result.data);
       setTotal(result.total);
     } catch {
-      setLeads([]);
-      setTotal(0);
+      setError('Failed to load leads');
     } finally {
       setLoading(false);
     }
@@ -29,32 +30,36 @@ export const useLeads = (filters: LeadFilters = {}) => {
     return lead;
   };
 
-  return { leads, total, loading, fetchLeads, createLead };
+  return { leads, total, loading, error, fetchLeads, createLead };
 };
 
 export const useLead = (id: number) => {
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
+    setError(null);
     crmService.getLead(id)
       .then(setLead)
-      .catch(() => setLead(null))
+      .catch(() => setError('Failed to load lead'))
       .finally(() => setLoading(false));
   }, [id]);
 
-  return { lead, loading };
+  return { lead, loading, error };
 };
 
 export const usePipelineStages = () => {
   const [stages, setStages] = useState<PipelineStage[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const [s, o] = await Promise.all([
         crmService.getPipelineStages(),
@@ -63,8 +68,7 @@ export const usePipelineStages = () => {
       setStages(s);
       setOpportunities(o);
     } catch {
-      setStages([]);
-      setOpportunities([]);
+      setError('Failed to load pipeline data');
     } finally {
       setLoading(false);
     }
@@ -73,24 +77,35 @@ export const usePipelineStages = () => {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const moveOpportunity = async (opportunityId: number, stageId: number) => {
-    await crmService.updateOpportunityStage(opportunityId, stageId);
+    try {
+      await crmService.updateOpportunityStage(opportunityId, stageId);
+    } catch {
+      const stage = stages.find(s => s.id === stageId);
+      setOpportunities(prev =>
+        prev.map(o => o.id === opportunityId ? { ...o, stageId, stageName: stage?.name || o.stageName } : o)
+      );
+      return false;
+    }
     await fetchData();
+    return true;
   };
 
-  return { stages, opportunities, loading, moveOpportunity, refresh: fetchData };
+  return { stages, opportunities, loading, error, moveOpportunity, refresh: fetchData };
 };
 
 export const useCRMDashboard = () => {
   const [stats, setStats] = useState<CrmDashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
     crmService.getDashboard()
       .then(setStats)
-      .catch(() => setStats(null))
+      .catch(() => setError('Failed to load dashboard'))
       .finally(() => setLoading(false));
   }, []);
 
-  return { stats, loading };
+  return { stats, loading, error };
 };

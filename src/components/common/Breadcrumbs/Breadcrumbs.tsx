@@ -28,6 +28,7 @@ const routeLabels: Record<string, string> = {
   invoices: "Invoices",
   journal: "Journal",
   accounts: "Accounts",
+  reports: "Reports",
   sales: "Sales",
   customers: "Customers",
   admin: "Admin",

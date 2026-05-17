@@ -22,7 +22,7 @@ export const HRDashboard: React.FC = () => {
       try {
         const [leaveRes, attRes] = await Promise.all([
           hrService.leave.getAll({ status: "PENDING", page: 0, size: 10 }),
-          hrService.attendance.getAll({ date: new Date().toISOString().split("T")[0], page: 0, size: 200 }),
+          hrService.attendance.getAll({ startDate: new Date().toISOString().split("T")[0], endDate: new Date().toISOString().split("T")[0], page: 0, size: 200 }),
         ]);
         setPendingLeaves(leaveRes?.content ?? []);
         setPresentToday((attRes?.content ?? []).filter((r: { status: string }) => r.status === "PRESENT").length);

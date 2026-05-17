@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   Card,
@@ -10,6 +10,7 @@ import {
   Modal,
   Form,
   Select,
+  Switch,
   message,
   Spin,
 } from "antd";
@@ -20,68 +21,80 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import {
-  useUsers,
-  useCreateUser,
-  useUpdateUser,
-  useDeleteUser,
-} from "../../../hooks/useUsers";
+import { usersService } from "../../../services/usersService";
+import type { User } from "../../../services/usersService";
 import { useRoles } from "../../../hooks/useAdmin";
 import styles from "./Users.module.css";
 
 const { Title } = Typography;
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  email: string;
-  roleName: string;
-  roleId: number;
-  isActive: boolean;
-  createdAt: string;
-}
 
 export const UsersListPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [form] = Form.useForm();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [saving, setSaving] = useState(false);
 
-  const { data: users, loading, total, refetch } = useUsers();
-  const { create, loading: creating } = useCreateUser();
-  const { update, loading: updating } = useUpdateUser();
-  const { remove, loading: deleting } = useDeleteUser();
   const { data: roles } = useRoles();
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await usersService.getAll();
+      setUsers(response.content);
+      setTotal(response.totalElements);
+    } catch (err) {
+      message.error("Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter((u) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
-      u.firstName.toLowerCase().includes(q) ||
-      u.lastName.toLowerCase().includes(q) ||
+      (u.firstName || "").toLowerCase().includes(q) ||
+      (u.lastName || "").toLowerCase().includes(q) ||
       u.email.toLowerCase().includes(q) ||
-      u.roleName.toLowerCase().includes(q)
+      (u.roleName || "").toLowerCase().includes(q)
     );
   });
 
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      setSaving(true);
       if (editingUser) {
-        await update(editingUser.id, values);
+        await usersService.update(editingUser.id, values);
         message.success("User updated successfully");
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === editingUser.id
+              ? { ...u, ...values, roleName: u.roleName }
+              : u,
+          ),
+        );
       } else {
-        await create(values);
+        const { isActive, ...createValues } = values;
+        await usersService.create(createValues);
         message.success("User created successfully");
+        await fetchUsers();
       }
       setIsModalOpen(false);
       form.resetFields();
       setEditingUser(null);
-      refetch();
     } catch (error) {
       message.error("Failed to save user");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -91,9 +104,10 @@ export const UsersListPage: React.FC = () => {
       content: "Are you sure you want to delete this user?",
       onOk: async () => {
         try {
-          await remove(id);
+          await usersService.delete(id);
           message.success("User deleted successfully");
-          refetch();
+          setUsers((prev) => prev.filter((u) => u.id !== id));
+          setTotal((prev) => prev - 1);
         } catch (error) {
           message.error("Failed to delete user");
         }
@@ -165,7 +179,6 @@ export const UsersListPage: React.FC = () => {
             danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.id)}
-            loading={deleting}
           />
         </Space>
       ),
@@ -183,6 +196,7 @@ export const UsersListPage: React.FC = () => {
             onClick={() => {
               setEditingUser(null);
               form.resetFields();
+              form.setFieldsValue({ isActive: true });
               setIsModalOpen(true);
             }}
           >
@@ -225,7 +239,7 @@ export const UsersListPage: React.FC = () => {
           form.resetFields();
           setEditingUser(null);
         }}
-        confirmLoading={creating || updating}
+        confirmLoading={saving}
       >
         <Form form={form} layout="vertical">
           <Form.Item
@@ -274,6 +288,9 @@ export const UsersListPage: React.FC = () => {
                 <Select.Option key={r.id} value={r.id}>{r.name}</Select.Option>
               ))}
             </Select>
+          </Form.Item>
+          <Form.Item name="isActive" label="Active" valuePropName="checked">
+            <Switch />
           </Form.Item>
         </Form>
       </Modal>

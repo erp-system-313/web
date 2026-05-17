@@ -18,8 +18,14 @@ const basicInfoSchema = yup.object({
 });
 
 const pricingSchema = yup.object({
-  unitPrice: yup.number().required('Unit price is required').min(0, 'Price must be positive'),
-  costPrice: yup.number().required('Cost price is required').min(0, 'Price must be positive'),
+  unitPrice: yup
+    .number()
+    .required("Unit price is required")
+    .min(0, "Price must be positive"),
+  costPrice: yup
+    .number()
+    .required("Cost price is required")
+    .min(0, "Price must be positive"),
 });
 
 const inventorySchema = yup.object({
@@ -49,6 +55,16 @@ export const CreateProductPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    inventoryService
+      .getCategories(1, 100)
+      .then((res) => {
+        setCategories(res.data);
+      })
+      .catch(() => {});
+  }, []);
 
   const { control: basicControl, handleSubmit: handleBasicSubmit, formState: { errors: errorsBasic } } = useForm<BasicInfoData>({
     resolver: yupResolver(basicInfoSchema),
@@ -127,10 +143,15 @@ export const CreateProductPage: React.FC = () => {
     }
   };
 
+  const categoryOptions = categories.map((c) => ({
+    value: c.id,
+    label: c.name,
+  }));
+
   const tabItems = [
     {
-      key: 'basic',
-      label: 'Basic Info',
+      key: "basic",
+      label: "Basic Info",
       children: (
         <form onSubmit={handleBasicSubmit(onBasicSubmit)}>
           <div className={styles.formItem}>
@@ -160,16 +181,20 @@ export const CreateProductPage: React.FC = () => {
               <Input.TextArea {...field} rows={4} placeholder="Enter product description" />
             )} />
           </div>
-          <div className={styles.actions}>
-            <Button onClick={() => navigate('/inventory/products')}>Cancel</Button>
-            <Button type="primary" htmlType="submit">Next</Button>
+          <div className={formStyles.actions}>
+            <Button onClick={() => navigate("/inventory/products")}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit">
+              Next
+            </Button>
           </div>
         </form>
       ),
     },
     {
-      key: 'pricing',
-      label: 'Pricing',
+      key: "pricing",
+      label: "Pricing",
       children: (
         <form onSubmit={handlePricingSubmit(onPricingSubmit)}>
           <div className={styles.formItem}>
@@ -186,16 +211,18 @@ export const CreateProductPage: React.FC = () => {
             )} />
             {errorsPricing.costPrice && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsPricing.costPrice.message}</span>}
           </div>
-          <div className={styles.actions}>
-            <Button onClick={() => setActiveTab('basic')}>Previous</Button>
-            <Button type="primary" htmlType="submit">Next</Button>
+          <div className={formStyles.actions}>
+            <Button onClick={() => setActiveTab("basic")}>Previous</Button>
+            <Button type="primary" htmlType="submit">
+              Next
+            </Button>
           </div>
         </form>
       ),
     },
     {
-      key: 'inventory',
-      label: 'Inventory',
+      key: "inventory",
+      label: "Inventory",
       children: (
         <form onSubmit={handleInventorySubmit(onInventorySubmit)}>
           <div className={styles.formItem}>
@@ -212,9 +239,16 @@ export const CreateProductPage: React.FC = () => {
             )} />
             {errorsInventory.reorderLevel && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errorsInventory.reorderLevel.message}</span>}
           </div>
-          <div className={styles.actions}>
-            <Button onClick={() => setActiveTab('pricing')} disabled={isSubmitting}>Previous</Button>
-            <Button type="primary" htmlType="submit" loading={isSubmitting}>Create Product</Button>
+          <div className={formStyles.actions}>
+            <Button
+              onClick={() => setActiveTab("pricing")}
+              disabled={isSubmitting}
+            >
+              Previous
+            </Button>
+            <Button type="primary" htmlType="submit" loading={isSubmitting}>
+              Create Product
+            </Button>
           </div>
         </form>
       ),

@@ -91,6 +91,18 @@ export const usePurchaseOrders = (): UsePurchaseOrdersReturn => {
     }
   }, []);
 
+  const getOrder = useCallback(
+    async (id: number): Promise<PurchaseOrder | null> => {
+      try {
+        return await purchasingService.getPurchaseOrder(id);
+      } catch (error) {
+        message.error("Failed to fetch purchase order");
+        return null;
+      }
+    },
+    [],
+  );
+
   const deleteOrder = useCallback(async (id: number): Promise<void> => {
     try {
       await purchasingService.deletePurchaseOrder(id);

@@ -11,11 +11,6 @@
   font-weight: 600;
 }
 
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
 .formGrid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -24,16 +19,6 @@
 
 .formCard {
   margin-bottom: 24px;
-}
-
-.formSection {
-  margin-bottom: 16px;
-}
-
-.formRow {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
 }
 
 .supplierInfo {
@@ -69,19 +54,4 @@
   justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid #f0f0f0;
-}
-
-.itemCell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.itemName {
-  font-weight: 500;
-}
-
-.itemSku {
-  color: #999;
-  font-size: 12px;
 }

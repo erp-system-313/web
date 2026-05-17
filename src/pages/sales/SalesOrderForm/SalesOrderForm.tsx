@@ -4,20 +4,23 @@ import { Card, Button, Space, message, Divider, Row, Col, Select } from "antd";
 import {
   SaveOutlined,
   SendOutlined,
-  ArrowLeftOutlined,
   PlusOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { StatusBadge, Autocomplete } from "../../../components/common";
+import {
+  StatusBadge,
+  Autocomplete,
+  FormCard,
+} from "../../../components/common";
 import { useSalesOrder } from "../../../hooks";
 import { salesService } from "../../../services/salesService";
 import { inventoryService } from "../../../services/inventoryService";
 import type { Product } from "../../../types/product.types";
 import type { SalesOrder } from "../../../types/sales";
-import styles from "./SalesOrderForm.module.css";
+import formStyles from "../../../components/common/FormCard/FormCard.module.css";
 
 interface FormValues {
   customerId?: number;
@@ -142,7 +145,9 @@ export const SalesOrderForm: React.FC = () => {
         message.error("Failed to save order");
         return;
       }
-      message.success(isEditMode ? "Order saved successfully" : "Order created successfully");
+      message.success(
+        isEditMode ? "Order saved successfully" : "Order created successfully",
+      );
       navigate("/sales/orders");
     } catch {
       message.error("Failed to save order");
@@ -243,23 +248,21 @@ export const SalesOrderForm: React.FC = () => {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/sales/orders")}
-        >
-          Back
-        </Button>
-        <h1>{isEditMode ? "Edit Order" : "New Sales Order"}</h1>
-        {existingOrder && <StatusBadge status={existingOrder.status} />}
-      </div>
+    <FormCard
+      title={isEditMode ? "Edit Order" : "New Sales Order"}
+      backPath="/sales/orders"
+    >
+      {existingOrder && (
+        <div style={{ marginBottom: 16 }}>
+          <StatusBadge status={existingOrder.status} />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Card title="Order Details" className={styles.card}>
+        <Card title="Order Details">
           <Row gutter={16}>
             <Col span={8}>
-              <div className={styles.formItem}>
+              <div className={formStyles.formItem}>
                 <label>Customer *</label>
                 <Controller
                   name="customerId"
@@ -279,22 +282,18 @@ export const SalesOrderForm: React.FC = () => {
                   )}
                 />
                 {errors.customerId && (
-                  <span className={styles.error}>
+                  <span className={formStyles.error}>
                     {errors.customerId.message}
                   </span>
                 )}
               </div>
             </Col>
             <Col span={8}>
-              <div className={styles.formItem}>
+              <div className={formStyles.formItem}>
                 <label>Order Date *</label>
-                <input
-                  type="date"
-                  {...register("orderDate")}
-                  className={styles.dateInput}
-                />
+                <input type="date" {...register("orderDate")} />
                 {errors.orderDate && (
-                  <span className={styles.error}>
+                  <span className={formStyles.error}>
                     {errors.orderDate.message}
                   </span>
                 )}
@@ -303,8 +302,8 @@ export const SalesOrderForm: React.FC = () => {
           </Row>
         </Card>
 
-        <Card title="Line Items" className={styles.card}>
-          <table className={styles.lineItemsTable}>
+        <Card title="Line Items">
+          <table>
             <thead>
               <tr>
                 <th>Product</th>
@@ -318,41 +317,51 @@ export const SalesOrderForm: React.FC = () => {
             <tbody>
               {fields.map((field, index) => (
                 <tr key={field.id}>
-                    <td>
-                      <Controller
-                        name={`lines.${index}.productId`}
-                        control={control}
-                        render={() => (
-                          <Select
-                            placeholder="Select a product..."
-                            style={{ width: '100%' }}
-                            loading={productsLoading}
-                            showSearch
-                            filterOption={(input, option) =>
-                              (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-                            }
-                            options={products.map(p => ({
-                              value: p.id,
-                              label: `${p.name} (${p.sku})`,
-                            }))}
-                            value={watchedLines[index]?.productId || undefined}
-                            onChange={(value) => {
-                              const product = products.find(p => p.id === value);
-                              handleProductChange(
-                                index,
-                                value as number | null,
-                                product
-                                  ? { name: product.name, sku: product.sku, costPrice: product.costPrice }
-                                  : undefined,
-                              );
-                            }}
-                            onFocus={loadProducts}
-                            notFoundContent={productsLoading ? "Loading..." : "No products found"}
-                            allowClear
-                          />
-                        )}
-                      />
-                    </td>
+                  <td>
+                    <Controller
+                      name={`lines.${index}.productId`}
+                      control={control}
+                      render={() => (
+                        <Select
+                          placeholder="Select a product..."
+                          style={{ width: "100%" }}
+                          loading={productsLoading}
+                          showSearch
+                          filterOption={(input, option) =>
+                            (option?.label as string)
+                              ?.toLowerCase()
+                              .includes(input.toLowerCase())
+                          }
+                          options={products.map((p) => ({
+                            value: p.id,
+                            label: `${p.name} (${p.sku})`,
+                          }))}
+                          value={watchedLines[index]?.productId || undefined}
+                          onChange={(value) => {
+                            const product = products.find(
+                              (p) => p.id === value,
+                            );
+                            handleProductChange(
+                              index,
+                              value as number | null,
+                              product
+                                ? {
+                                    name: product.name,
+                                    sku: product.sku,
+                                    costPrice: product.costPrice,
+                                  }
+                                : undefined,
+                            );
+                          }}
+                          onFocus={loadProducts}
+                          notFoundContent={
+                            productsLoading ? "Loading..." : "No products found"
+                          }
+                          allowClear
+                        />
+                      )}
+                    />
+                  </td>
                   <td>{watchedLines[index]?.productSku || "-"}</td>
                   <td>
                     <input
@@ -366,7 +375,6 @@ export const SalesOrderForm: React.FC = () => {
                             parseInt(e.target.value) || 1,
                           ),
                       })}
-                      className={styles.numberInput}
                     />
                   </td>
                   <td>${(watchedLines[index]?.unitPrice || 0).toFixed(2)}</td>
@@ -395,47 +403,44 @@ export const SalesOrderForm: React.FC = () => {
                 lineTotal: 0,
               })
             }
-            className={styles.addLineBtn}
           >
             Add Line Item
           </Button>
 
           <Divider />
 
-          <div className={styles.totals}>
-            <div className={styles.totalRow}>
+          <div>
+            <div>
               <span>Subtotal:</span>
               <span>${(totals.subtotal ?? 0).toFixed(2)}</span>
             </div>
-            <div className={styles.totalRow}>
+            <div>
               <span>Tax (10%):</span>
               <span>${(tax ?? 0).toFixed(2)}</span>
             </div>
-            <div className={`${styles.totalRow} ${styles.grandTotal}`}>
+            <div>
               <span>Total:</span>
               <span>${(total ?? 0).toFixed(2)}</span>
             </div>
           </div>
         </Card>
 
-        <Card title="Additional Information" className={styles.card}>
+        <Card title="Additional Information">
           <Row gutter={16}>
             <Col span={24}>
-              <div className={styles.formItem}>
+              <div className={formStyles.formItem}>
                 <label>Notes</label>
                 <textarea
                   {...register("notes")}
                   rows={3}
                   placeholder="Add notes for this order..."
-                  className={styles.textarea}
                 />
               </div>
             </Col>
-
           </Row>
         </Card>
 
-        <div className={styles.actions}>
+        <div className={formStyles.actions}>
           <Space>
             <Button
               type="primary"
@@ -448,6 +453,7 @@ export const SalesOrderForm: React.FC = () => {
             <Button
               type="primary"
               icon={<SendOutlined />}
+              htmlType="button"
               onClick={onSubmitForApproval}
               loading={saving}
             >
@@ -456,7 +462,7 @@ export const SalesOrderForm: React.FC = () => {
           </Space>
         </div>
       </form>
-    </div>
+    </FormCard>
   );
 };
 

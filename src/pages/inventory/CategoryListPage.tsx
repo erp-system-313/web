@@ -1,30 +1,52 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Modal, Input, Select, Card, Tree, Space, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import type { Category, CreateCategoryDto } from '../../types/category.types';
-import { useCategories } from '../../hooks/useCategories';
-import styles from './CategoryListPage.module.css';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Button,
+  Modal,
+  Input,
+  Select,
+  Card,
+  Tree,
+  Space,
+  Popconfirm,
+} from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import type { Category, CreateCategoryDto } from "../../types/category.types";
+import { useCategories } from "../../hooks/useCategories";
+import styles from "./CategoryListPage.module.css";
+import formStyles from "../../components/common/FormCard/FormCard.module.css";
 
 const schema = yup.object({
-  name: yup.string().required('Category name is required'),
-  description: yup.string().default(''),
+  name: yup.string().required("Category name is required"),
+  description: yup.string().default(""),
   parentId: yup.number().nullable().default(null),
 });
 
 type CategoryFormData = yup.InferType<typeof schema>;
 
 export const CategoryListPage: React.FC = () => {
-  const { categories, loading, fetchCategories, createCategory, updateCategory, deleteCategory } = useCategories();
-  
+  const {
+    categories,
+    loading,
+    fetchCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+  } = useCategories();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormData>({
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CategoryFormData>({
     resolver: yupResolver(schema),
-    defaultValues: { name: '', description: '', parentId: null },
+    defaultValues: { name: "", description: "", parentId: null },
   });
 
   const loadCategories = useCallback(async () => {
@@ -52,12 +74,16 @@ export const CategoryListPage: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingCategory(null);
-    reset({ name: '', description: '', parentId: null });
+    reset({ name: "", description: "", parentId: null });
   };
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
-    reset({ name: category.name, description: category.description, parentId: category.parentId });
+    reset({
+      name: category.name,
+      description: category.description,
+      parentId: category.parentId,
+    });
     setIsModalOpen(true);
   };
 
@@ -66,75 +92,147 @@ export const CategoryListPage: React.FC = () => {
   };
 
   const buildTreeData = () => {
-    return categories.filter(cat => !cat.parentId).map(cat => ({
-      key: cat.id,
-      title: (
-        <Space>
-          <span>{cat.name}</span>
-          <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(cat)} />
-          <Popconfirm title="Delete this category?" onConfirm={() => handleDelete(cat.id)} okText="Delete" okType="danger">
-            <Button type="text" size="small" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </Space>
-      ),
-      children: categories.filter(child => child.parentId === cat.id).map(child => ({
-        key: child.id,
+    return categories
+      .filter((cat) => !cat.parentId)
+      .map((cat) => ({
+        key: cat.id,
         title: (
           <Space>
-            <span>{child.name}</span>
-            <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(child)} />
-            <Popconfirm title="Delete this category?" onConfirm={() => handleDelete(child.id)} okText="Delete" okType="danger">
-              <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+            <span>{cat.name}</span>
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(cat)}
+            />
+            <Popconfirm
+              title="Delete this category?"
+              onConfirm={() => handleDelete(cat.id)}
+              okText="Delete"
+              okType="danger"
+            >
+              <Button
+                type="text"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+              />
             </Popconfirm>
           </Space>
         ),
-      })),
-    }));
+        children: categories
+          .filter((child) => child.parentId === cat.id)
+          .map((child) => ({
+            key: child.id,
+            title: (
+              <Space>
+                <span>{child.name}</span>
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => handleEdit(child)}
+                />
+                <Popconfirm
+                  title="Delete this category?"
+                  onConfirm={() => handleDelete(child.id)}
+                  okText="Delete"
+                  okType="danger"
+                >
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                  />
+                </Popconfirm>
+              </Space>
+            ),
+          })),
+      }));
   };
 
-  const parentCategoryOptions = categories.filter(cat => cat.id !== editingCategory?.id).map(cat => ({ value: cat.id, label: cat.name }));
+  const parentCategoryOptions = categories
+    .filter((cat) => cat.id !== editingCategory?.id)
+    .map((cat) => ({ value: cat.id, label: cat.name }));
 
   return (
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Categories</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>Add Category</Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setIsModalOpen(true)}
+        >
+          Add Category
+        </Button>
       </div>
 
       <Card>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 48 }}>Loading categories...</div>
+          <div style={{ textAlign: "center", padding: 48 }}>
+            Loading categories...
+          </div>
         ) : categories.length === 0 ? (
-          <div className={styles.emptyState}>No categories found. Click "Add Category" to create one.</div>
+          <div className={styles.emptyState}>
+            No categories found. Click "Add Category" to create one.
+          </div>
         ) : (
           <Tree showLine defaultExpandAll treeData={buildTreeData()} />
         )}
       </Card>
 
-      <Modal title={editingCategory ? 'Edit Category' : 'Add Category'} open={isModalOpen} onCancel={handleCloseModal} footer={null}>
+      <Modal
+        title={editingCategory ? "Edit Category" : "Add Category"}
+        open={isModalOpen}
+        onCancel={handleCloseModal}
+        footer={null}
+      >
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.formItem}>
-            <label style={{ display: 'block', marginBottom: 8 }}>Category Name *</label>
-            <Controller name="name" control={control} render={({ field }) => (
-              <Input {...field} status={errors.name ? 'error' : undefined} />
-            )} />
-            {errors.name && <span style={{ color: '#ff4d4f', fontSize: 12 }}>{errors.name.message}</span>}
+          <div className={formStyles.formItem}>
+            <label>Category Name *</label>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <Input {...field} status={errors.name ? "error" : undefined} />
+              )}
+            />
+            {errors.name && (
+              <span className={formStyles.error}>{errors.name.message}</span>
+            )}
           </div>
-          <div className={styles.formItem}>
-            <label style={{ display: 'block', marginBottom: 8 }}>Description</label>
-            <Controller name="description" control={control} render={({ field }) => (
-              <Input.TextArea {...field} rows={3} />
-            )} />
+          <div className={formStyles.formItem}>
+            <label>Description</label>
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => <Input.TextArea {...field} rows={3} />}
+            />
           </div>
-          <div className={styles.formItem}>
-            <label style={{ display: 'block', marginBottom: 8 }}>Parent Category</label>
-            <Controller name="parentId" control={control} render={({ field }) => (
-              <Select {...field} onChange={(value) => field.onChange(value ?? null)} placeholder="None (Top Level)" allowClear style={{ width: '100%' }} options={parentCategoryOptions} />
-            )} />
+          <div className={formStyles.formItem}>
+            <label>Parent Category</label>
+            <Controller
+              name="parentId"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  onChange={(value) => field.onChange(value ?? null)}
+                  placeholder="None (Top Level)"
+                  allowClear
+                  style={{ width: "100%" }}
+                  options={parentCategoryOptions}
+                />
+              )}
+            />
           </div>
-          <div className={styles.formActions}>
+          <div className={formStyles.actions}>
             <Button onClick={handleCloseModal}>Cancel</Button>
-            <Button type="primary" htmlType="submit">{editingCategory ? 'Update Category' : 'Save Category'}</Button>
+            <Button type="primary" htmlType="submit">
+              {editingCategory ? "Update Category" : "Save Category"}
+            </Button>
           </div>
         </form>
       </Modal>
